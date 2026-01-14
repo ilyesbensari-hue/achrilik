@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("BUYER") // BUYER, SELLER, ADMIN
+  store     Store?
+  orders    Order[]
+  address   String?
+  phone     String?
+  createdAt DateTime @default(now())
+  reviews   Review[]
+}
+
+model Store {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  ownerId      String    @unique
+  owner        User      @relation(fields: [ownerId], references: [id])
+  products     Product[]
+  latitude     Float?    // For geolocation
+  longitude    Float?
+  address      String?
+  city         String?
+  phone        String?   // Contact phone number
+  hours        String?   // Opening hours (JSON format)
+  clickCollect Boolean   @default(true) // Click & Collect available
+  createdAt    DateTime  @default(now())
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  parentId  String?
+  parent    Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryToCategory")
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  price       Int
+  images      String
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id])
+  variants    Variant[]
+  createdAt   DateTime  @default(now())
+  reviews     Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  images    String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Variant {
+  id        String      @id @default(cuid())
+  productId String
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String
+  color     String
+  stock     Int
+  orderItems OrderItem[]
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  status        String      @default("PENDING") // PENDING, CONFIRMED, READY, DELIVERED, CANCELLED
+  total         Float
+  paymentMethod String      // CASH_ON_DELIVERY, STORE_PAYMENT, ONLINE
+  deliveryType  String      // DELIVERY, CLICK_COLLECT
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  variantId String
+  variant   Variant @relation(fields: [variantId], references: [id])
+  quantity  Int
+  price     Float
+}
