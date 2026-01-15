@@ -5,60 +5,55 @@
 @tailwind utilities;
 
 :root {
-  /* Achrilik - Palette Algérienne (Vert/Rouge/Blanc) */
+  /* Achrilik - Minimalist Palette (Black/White/Gray + Green Accent) */
   --background: #ffffff;
-  --foreground: #1a1a1a;
+  --foreground: #000000;
 
-  /* Primary Green Palette (Drapeau Algérien) */
+  /* Primary Green Palette (Accent Only) */
   --primary-green: #006233;
-  /* Main green */
   --primary-green-dark: #004d28;
-  /* Hover/Active */
-  --primary-green-light: #e8f5f0;
-  /* Background accents */
-  --primary-green-50: #cce8dd;
-  /* Light hover */
+  --primary-green-light: #f0f7f4;
+  --primary-green-50: #e8f5f0;
 
-  /* Accent Red Palette (Drapeau Algérien) */
+  /* Accent Red Palette (Minimal Use) */
   --accent-red: #D21034;
-  /* Main red */
   --accent-red-dark: #a80d2a;
-  /* Hover/Active */
-  --accent-red-light: #fceef1;
-  /* Background accents */
-  --accent-red-50: #f8d7dd;
-  /* Light hover */
+  --accent-red-light: #fef5f7;
 
-  /* Neutral Grays */
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-900: #111827;
+  /* Minimalist Grays */
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
 
-  /* Legacy support - remappé au vert */
-  --primary: #006233;
+  /* Legacy support - minimalist remap */
+  --primary: #000000;
   --primary-foreground: #ffffff;
-  --secondary: #f9fafb;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f3f4f6;
-  --muted-foreground: #4b5563;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
+  --secondary: #fafafa;
+  --secondary-foreground: #000000;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
 
-  /* Design tokens */
-  --radius: 0.5rem;
+  /* Design tokens - Minimalist */
+  --radius: 0.375rem;
+  /* rounded-md */
   --radius-sm: 0.25rem;
-  --radius-lg: 0.75rem;
+  --radius-lg: 0.5rem;
 
-  /* Shadows - Style subtil */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08);
-  --shadow-hover: 0 8px 16px -4px rgb(0 0 0 / 0.12);
+  /* Shadows - Ultra Subtle */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.02);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04);
+  --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+  --shadow-hover: 0 4px 8px -2px rgb(0 0 0 / 0.10);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
@@ -274,12 +269,9 @@ a {
 
 .btn,
 button:not(.unstyled) {
-  @apply px-4 py-2 rounded-lg font-semibold transition-all;
-  @apply border-2 bg-[#006233] text-white;
-  border-color: #006233;
-  @apply hover:bg-[#004d28];
+  @apply px-4 py-2 rounded-md font-semibold transition-all;
+  @apply border-2;
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
-  focus-ring-color: #006233;
   @apply shadow-sm hover:shadow-md;
 }
 
@@ -498,24 +490,25 @@ img {
 .product-card-zalando {
   display: block;
   background: white;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   transition: all var(--transition-base);
   position: relative;
   cursor: pointer;
+  border: 1px solid var(--gray-200);
 }
 
 .product-card-zalando:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--gray-300);
 }
 
 .product-card-zalando .product-image {
   position: relative;
   width: 100%;
-  /* 4:5 aspect ratio for more compact product cards */
   aspect-ratio: 4/5;
-  background: #f5f5f5;
+  background: var(--gray-50);
   overflow: hidden;
 }
 
@@ -527,28 +520,28 @@ img {
 }
 
 .product-card-zalando:hover .product-image img {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .product-card-zalando .product-info {
-  padding: 12px 8px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .product-card-zalando .product-brand {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #666;
-  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: var(--gray-500);
+  font-weight: 500;
 }
 
 .product-card-zalando .product-title {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 400;
-  color: #1a1a1a;
+  color: var(--foreground);
   line-height: 1.3;
   margin: 0;
   overflow: hidden;
@@ -559,28 +552,28 @@ img {
 }
 
 .product-card-zalando .product-price {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
   margin-top: 4px;
 }
 
 /* Mobile optimizations */
 @media (max-width: 640px) {
   .product-card-zalando .product-info {
-    padding: 10px 6px;
+    padding: 10px 8px;
   }
 
   .product-card-zalando .product-brand {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   .product-card-zalando .product-title {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .product-card-zalando .product-price {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 }
 

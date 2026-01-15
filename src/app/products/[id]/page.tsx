@@ -19,11 +19,16 @@ const COMPLEMENTARY_CATEGORIES: Record<string, string[]> = {
 
 async function getProduct(id: string) {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/products/${id}`, {
-            cache: 'no-store'
+        const product = await prisma.product.findUnique({
+            where: { id },
+            include: {
+                store: true,
+                category: true,
+                reviews: true,
+                variants: true
+            }
         });
-        if (!res.ok) return null;
-        return res.json();
+        return product;
     } catch (error) {
         console.error('Failed to fetch product:', error);
         return null;
@@ -123,7 +128,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <p className="font-semibold text-gray-900 hover:text-indigo-600 underline decoration-dotted">{product.store.name}</p>
-                                        <SellerRating rating={product.store.averageRating || 0} count={product.store.reviewCount || 0} size="sm" />
+                                        <SellerRating rating={0} count={0} size="sm" />
                                     </div>
                                     <p className="text-gray-500">📍 {product.store.city} <span className="text-xs text-indigo-500">(Voir la boutique)</span></p>
                                 </div>

@@ -144,73 +144,41 @@ export default function Navbar() {
 
 
                 {/* Mobile Right: Seller + User + Cart */}
-                <div className="flex items-center gap-1 lg:hidden">
-                    {/* Seller Icon (Mobile) - REMOVED to save space, moved to menu */}
+                {/* Icons & Actions */}
+                <div className="flex items-center gap-2 md:gap-4">
+                    {/* Search - Hidden on mobile, often toggleable - Replaced with existing search button */}
+                    <button className="p-2 text-gray-700 hover:text-[#006233] transition-colors hidden"> {/* Hidden as desktop search is already present */}
+                        {/* <Search size={22} strokeWidth={2} /> */}
+                    </button>
 
-                    {/* User Icon (Mobile) */}
-                    <Link href={user ? "/profile" : "/login"} className="p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </Link>
-
-                    {/* Cart Icon (Mobile) */}
-                    <Link href="/cart" className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                        {cartCount > 0 && (
-                            <span className="absolute top-1 right-0 bg-[#D21034] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
-                                {cartCount}
-                            </span>
-                        )}
-                    </Link>
-                </div>
-
-                {/* Desktop Actions */}
-                <div className="hidden lg:flex items-center gap-4">
-                    {/* Show "Espace Vendeur" only if NOT logged in */}
-                    {!user && (
-                        <Link href="/sell" className="text-sm font-medium hover:text-[#006233] transition-colors border-2 border-[#006233] px-4 py-2 rounded-lg hover:bg-[#e8f5f0] text-[#006233]">
-                            Devenir Vendeur
-                        </Link>
-                    )}
-
-                    {/* Show "Mes Produits" if logged in as SELLER */}
-                    {user && user.role === 'SELLER' && (
-                        <Link href="/sell" className="text-sm font-medium hover:text-blue-600 transition-colors border-2 border-green-600 px-4 py-2 rounded-lg hover:bg-green-50 text-green-700 border-green-600">
-                            📦 Mes Produits
-                        </Link>
-                    )}
-
-                    {/* Auth buttons */}
+                    {/* Account */}
+                    {/* status === 'loading' is not defined, using user state */}
                     {user ? (
-                        <div className="flex items-center gap-3">
-                            <Link href="/profile" className="text-sm text-gray-700 hover:text-[#006233] transition-colors font-medium">👋 {user.name}</Link>
-                            <button
-                                onClick={handleLogout}
-                                className="btn btn-outline text-sm px-4 py-2 h-9"
-                            >
-                                Déconnexion
-                            </button>
-                        </div>
+                        <Link href="/profile" className="p-2 text-gray-700 hover:text-[#006233] transition-colors relative group">
+                            {/* Replaced User icon with existing SVG */}
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </Link>
                     ) : (
-                        <div className="flex items-center gap-2">
-                            <Link href="/login" className="text-sm font-semibold hover:text-[#006233] px-3 py-2 transition-colors">
+                        <div className="hidden md:flex items-center gap-3">
+                            <Link href="/login" className="text-sm font-bold text-gray-700 hover:text-[#006233]">
                                 Connexion
                             </Link>
-                            <Link href="/register" className="btn btn-primary text-sm px-4 py-2 h-9">
-                                Inscription
+                            <Link href="/register" className="btn btn-primary text-xs px-4 py-2">
+                                S'inscrire
                             </Link>
                         </div>
                     )}
 
-                    <Link href="/cart" className="relative p-2 ml-1 hover:bg-gray-100 rounded-full transition-colors group">
-                        <svg className="w-6 h-6 text-gray-700 group-hover:text-[#006233] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Cart */}
+                    <Link href="/cart" className="p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
+                        {/* Replaced ShoppingBag icon with existing SVG */}
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
                         {cartCount > 0 && (
-                            <span className="absolute top-0 right-0 bg-[#D21034] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-scale-in border-2 border-white">
+                            <span className="absolute top-0 right-0 w-5 h-5 bg-[#D21034] text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white animate-scale-in">
                                 {cartCount}
                             </span>
                         )}

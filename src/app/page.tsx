@@ -3,6 +3,7 @@ import Image from 'next/image';
 import CategorySidebar from '@/components/CategorySidebar';
 import SellerRating from '@/components/SellerRating';
 import ProductGrid from '@/components/ProductGrid';
+import HomeProductsClient from '@/components/HomeProductsClient';
 import { prisma } from '@/lib/prisma';
 
 // Enable ISR with 60 second revalidation
@@ -135,38 +136,29 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
 
   return (
     <div className="min-h-screen">
-      {/* Hero Banner */}
-      <section className="relative min-h-[500px] lg:h-[600px] bg-gradient-to-br from-[#e8f5f0] via-white to-[#e8f5f0] overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-[#cce8dd]/50 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-1/2 h-full bg-gradient-to-tr from-[#e8f5f0]/50 to-transparent"></div>
-        </div>
+      {/* Hero Banner - Minimalist */}
+      <section className="relative min-h-[400px] lg:h-[500px] bg-white border-b border-gray-100">
         <div className="container h-full flex items-center justify-center relative z-10">
-          <div className="text-center max-w-4xl px-4">
-            <div className="flex justify-center mb-8">
+          <div className="text-center max-w-3xl px-4">
+            <div className="flex justify-center mb-6">
               <Image
                 src="/achrilik-logo.png"
                 alt="Achrilik Logo"
-                width={192} // w-48 = 192px
-                height={80}
-                className="w-48 h-auto object-contain animate-fade-in"
+                width={128}
+                height={53}
+                className="w-32 h-auto object-contain"
                 priority
               />
             </div>
-            <div className="inline-block px-4 py-2 bg-[#f8d7dd] text-[#D21034] rounded-full text-sm font-semibold mb-6 animate-fade-in">
-              ✨ E-commerce à Oran
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-8xl font-black mb-6 tracking-tight animate-fade-in">
-              <span className="bg-gradient-to-r from-[#004d28] via-[#006233] to-[#006233] bg-clip-text text-transparent">
-                Achrilik
-              </span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 tracking-tight text-black">
+              Achrilik
             </h1>
-            <p className="text-xl md:text-2xl mb-10 text-gray-700 font-light">
-              Découvrez la mode à Oran - Achetez local, livraison rapide
+            <p className="text-lg md:text-xl mb-8 text-gray-600 font-light">
+              Mode à Oran - Achetez local, livraison rapide
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Link href="/categories/femmes" className="bg-gradient-to-r from-[#006233] to-[#004d28] text-white px-6 py-3 md:px-10 md:py-4 rounded-xl font-semibold hover:from-[#004d28] hover:to-[#006233] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                Explorer la Collection
+            <div className="flex gap-4 justify-center">
+              <Link href="/categories/femmes" className="border-2 border-black text-black px-8 py-3 rounded-md font-medium hover:bg-black hover:text-white transition-all">
+                Explorer
               </Link>
             </div>
           </div>
@@ -248,76 +240,7 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
                 ) : null}
               </section>
             ) : (
-              <>
-                {/* Featured / All Products Mixed (Initial Attraction) */}
-                <section className="pb-12">
-                  <div className="mb-8">
-                    <h2 className="text-3xl font-black mb-2">🔥 Nouveautés</h2>
-                    <p className="text-gray-600">Les derniers articles ajoutés</p>
-                  </div>
-                  <ProductGrid products={products.slice(0, 12)} />
-                </section>
-
-                {/* Femmes */}
-                <section className="pb-16 border-t border-gray-100 pt-12">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">👗 Mode Femme</h2>
-                    </div>
-                    <Link href="/categories/femmes" className="text-[#006233] font-semibold hover:underline">
-                      Voir tout →
-                    </Link>
-                  </div>
-                  <ProductGrid
-                    products={products.filter(p => p.category?.slug.includes('femmes') || p.category?.parent?.slug.includes('femmes')).slice(0, 4)}
-                  />
-                </section>
-
-                {/* Hommes */}
-                <section className="pb-16 border-t border-gray-100 pt-12">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">👔 Mode Homme</h2>
-                    </div>
-                    <Link href="/categories/hommes" className="text-[#006233] font-semibold hover:underline">
-                      Voir tout →
-                    </Link>
-                  </div>
-                  <ProductGrid
-                    products={products.filter(p => p.category?.slug.includes('hommes') || p.category?.slug.includes('homme') || p.category?.parent?.slug.includes('hommes') || p.category?.parent?.slug.includes('homme')).slice(0, 4)}
-                  />
-                </section>
-
-                {/* Enfants */}
-                <section className="pb-16 border-t border-gray-100 pt-12">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">👶 Mode Enfant</h2>
-                    </div>
-                    <Link href="/categories/enfants" className="text-[#006233] font-semibold hover:underline">
-                      Voir tout →
-                    </Link>
-                  </div>
-                  <ProductGrid
-                    products={products.filter(p => p.category?.slug === 'enfants' || p.category?.parent?.slug === 'enfants').slice(0, 4)}
-                  />
-                </section>
-
-                {/* Accessoires */}
-                <section className="pb-16 border-t border-gray-100 pt-12">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
-                    <div>
-                      <h2 className="text-2xl font-bold mb-1">👜 Accessoires</h2>
-                    </div>
-                    <Link href="/categories/accessoires" className="text-[#006233] font-semibold hover:underline">
-                      Voir tout →
-                    </Link>
-                  </div>
-                  <ProductGrid
-                    products={products.filter(p => p.category?.slug === 'accessoires' || p.category?.parent?.slug === 'accessoires').slice(0, 4)}
-                  />
-                </section>
-              </>
+              <HomeProductsClient products={products} />
             )}
           </div>
         </div>
