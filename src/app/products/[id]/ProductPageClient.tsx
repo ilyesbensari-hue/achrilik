@@ -146,8 +146,8 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                     key={index}
                                     onClick={() => setSelectedImageIndex(index)}
                                     className={`w-3 h-3 rounded-full transition-all shadow-sm border ${selectedImageIndex === index
-                                            ? 'bg-white scale-125 border-gray-400'
-                                            : 'bg-white/50 hover:bg-white/75 border-transparent'
+                                        ? 'bg-white scale-125 border-gray-400'
+                                        : 'bg-white/50 hover:bg-white/75 border-transparent'
                                         }`}
                                 />
                             ))}
@@ -163,8 +163,8 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                 key={index}
                                 onClick={() => setSelectedImageIndex(index)}
                                 className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
-                                        ? 'border-indigo-600 shadow-md scale-95 ring-2 ring-indigo-200'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-indigo-600 shadow-md scale-95 ring-2 ring-indigo-200'
+                                    : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 <img src={img} alt="" className="w-full h-full object-cover" />
@@ -174,12 +174,12 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                 )}
 
                 {/* Selection Area - moved from server component */}
-                <div className="bg-gray-50 p-6 rounded-2xl space-y-6 mt-6">
+                <div className="bg-gray-50 dark:bg-white p-6 rounded-2xl space-y-6 mt-6">
                     {/* Size Selection */}
                     {sizes.length > 1 && (
                         <div>
                             <div className="flex justify-between items-center mb-3">
-                                <label className="text-sm font-bold text-gray-900">Taille</label>
+                                <label className="text-sm font-bold text-gray-900 dark:text-gray-900">Taille</label>
                                 {selectedSize && <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Sélectionné: {selectedSize}</span>}
                             </div>
                             <div className="flex gap-3 flex-wrap">
@@ -188,8 +188,8 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                         key={size}
                                         onClick={() => setSelectedSize(size)}
                                         className={`min-w-[3.5rem] h-14 px-4 rounded-xl font-bold transition-all border-2 ${selectedSize === size
-                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg scale-105'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'
+                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg scale-105'
+                                            : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'
                                             }`}
                                     >
                                         {size}
@@ -203,7 +203,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                     {colors.length > 1 && (
                         <div>
                             <div className="flex justify-between items-center mb-3">
-                                <label className="text-sm font-bold text-gray-900">Couleur</label>
+                                <label className="text-sm font-bold text-gray-900 dark:text-gray-900">Couleur</label>
                                 {selectedColor && (
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: selectedColor }}></div>
@@ -217,8 +217,8 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                         key={color}
                                         onClick={() => setSelectedColor(color)}
                                         className={`w-12 h-12 rounded-full border-4 shadow-sm transition-all relative ${selectedColor === color
-                                                ? 'border-indigo-600 scale-110 ring-2 ring-indigo-200'
-                                                : 'border-white hover:scale-105 hover:border-gray-200'
+                                            ? 'border-indigo-600 scale-110 ring-2 ring-indigo-200'
+                                            : 'border-white hover:scale-105 hover:border-gray-200'
                                             }`}
                                         style={{ backgroundColor: color }}
                                         title={color}
@@ -238,7 +238,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
 
                     {/* Quantity */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-900 mb-3">Quantité</label>
+                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-900 mb-3">Quantité</label>
                         <div className="flex items-center gap-4 bg-white w-fit p-1 rounded-xl border border-gray-200 shadow-sm">
                             <button
                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -246,7 +246,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                             >
                                 -
                             </button>
-                            <span className="text-xl font-bold w-16 text-center">{quantity}</span>
+                            <span className="text-xl font-bold w-16 text-center text-gray-900 dark:text-gray-900">{quantity}</span>
                             <button
                                 onClick={() => setQuantity(quantity + 1)}
                                 className="w-12 h-12 rounded-lg bg-indigo-50 hover:bg-indigo-100 font-bold text-lg text-indigo-600 flex items-center justify-center transition-colors"
