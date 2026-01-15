@@ -63,6 +63,8 @@
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Dark mode disabled - app designed for light mode only */
+/* 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #020617;
@@ -81,6 +83,7 @@
     --input: #1e293b;
   }
 }
+*/
 
 * {
   box-sizing: border-box;
