@@ -13,7 +13,9 @@ export default function AddProductPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
+    const [categoryId, setCategoryId] = useState('');
     const [images, setImages] = useState<string[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
 
     // Variants
     const [variants, setVariants] = useState<{ size: string, color: string, stock: number }[]>([]);
@@ -24,6 +26,23 @@ export default function AddProductPage() {
     const [vStock, setVStock] = useState(10);
 
     useEffect(() => {
+        // Fetch categories
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => {
+                // Flatten categories (parent + children)
+                const allCategories: any[] = [];
+                data.forEach((cat: any) => {
+                    allCategories.push(cat);
+                    if (cat.children) {
+                        cat.children.forEach((child: any) => {
+                            allCategories.push(child);
+                        });
+                    }
+                });
+                setCategories(allCategories);
+            });
+
         const userStr = localStorage.getItem('user');
         if (!userStr) {
             router.push('/login');
@@ -89,6 +108,7 @@ export default function AddProductPage() {
                     title,
                     description,
                     price: parseFloat(price),
+                    categoryId,
                     images: images.join(','),
                     storeId,
                     variants
@@ -121,6 +141,18 @@ export default function AddProductPage() {
                     <div>
                         <label className="label mb-1 block">Description</label>
                         <textarea className="input h-24 py-2" required value={description} onChange={e => setDescription(e.target.value)} />
+                    </div>
+
+                    <div>
+                        <label className="label mb-1 block">Catégorie</label>
+                        <select className="input" required value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+                            <option value="">-- Sélectionnez une catégorie --</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>
+                                    {cat.parentId ? `  └─ ${cat.name}` : cat.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
