@@ -226,10 +226,26 @@ export default function ProfilePage() {
                                 </button>
                             )}
 
+                            {/* CTA for BUYERS to become sellers */}
+                            {user.role === 'BUYER' && !isEditing && (
+                                <div className="space-y-2 w-full pt-2 border-t mt-2">
+                                    <Link
+                                        href="/become-seller"
+                                        className="btn w-full bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <span>🚀</span> Devenir Vendeur
+                                    </Link>
+                                    <p className="text-xs text-gray-500 text-center px-2">
+                                        Créez votre boutique en 2 minutes • 0% commission
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Dashboard link for SELLERS */}
                             {user.role === 'SELLER' && !isEditing && (
                                 <div className="space-y-2 w-full pt-2 border-t mt-2">
-                                    <Link href="/sell" className="btn btn-outline w-full flex items-center justify-center gap-2">
-                                        <span>🏪</span> Configurer boutique
+                                    <Link href="/sell" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
+                                        <span>📊</span> Mon Dashboard Vendeur
                                     </Link>
                                 </div>
                             )}

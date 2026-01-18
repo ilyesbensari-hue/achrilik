@@ -217,10 +217,28 @@ export default function CartPage() {
                         </div>
 
                         <button
-                            onClick={() => router.push('/checkout')}
+                            onClick={(e) => {
+                                const userId = localStorage.getItem('userId');
+                                const userStr = localStorage.getItem('user');
+                                let isLoggedIn = !!userId;
+
+                                if (userStr) {
+                                    try {
+                                        const user = JSON.parse(userStr);
+                                        if (user.id) isLoggedIn = true;
+                                    } catch (e) { }
+                                }
+
+                                if (!isLoggedIn) {
+                                    alert('Veuillez vous connecter pour commander');
+                                    router.push('/login');
+                                    return;
+                                }
+                                router.push('/checkout');
+                            }}
                             className="btn btn-primary w-full py-4 text-lg font-bold shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all"
                         >
-                            PASSER LA COMMANDE
+                            SE CONNECTER ET PAYER
                         </button>
 
                         <p className="text-center text-xs text-gray-500 mt-4">

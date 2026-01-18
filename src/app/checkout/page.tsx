@@ -46,11 +46,52 @@ export default function CheckoutPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Commande validée ! (Simulation)');
-        localStorage.removeItem('cart');
-        window.location.href = '/';
+
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert('Veuillez vous connecter');
+            window.location.href = '/login';
+            return;
+        }
+        const user = JSON.parse(userStr);
+
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    cart,
+                    deliveryMethod,
+                    paymentMethod,
+                    ...formData
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Erreur');
+            }
+
+            // Success
+            localStorage.removeItem('cart');
+            // Redirect to success page or orders page
+            // Since we don't have a dedicated success page yet, go to Profile/Orders
+            // alert('Commande validée avec succès !');
+            // window.location.href = '/profile';
+            // Actually, let's show a nice alert for now or redirect
+            if (confirm('✅ Commande validée ! Voir mes commandes ?')) {
+                window.location.href = '/profile';
+            } else {
+                window.location.href = '/';
+            }
+
+        } catch (error: any) {
+            alert(error.message);
+        }
     };
 
     if (cart.length === 0) {

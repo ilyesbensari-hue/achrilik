@@ -155,16 +155,16 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                     )}
                 </div>
 
-                {/* Thumbnail Grid */}
+                {/* Thumbnail List (Scrollable) */}
                 {images.length > 1 && (
-                    <div className="grid grid-cols-4 gap-3">
-                        {images.slice(0, 4).map((img: string, index: number) => (
+                    <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar">
+                        {images.map((img: string, index: number) => (
                             <button
                                 key={index}
                                 onClick={() => setSelectedImageIndex(index)}
-                                className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === index
-                                    ? 'border-indigo-600 shadow-md scale-95 ring-2 ring-indigo-200'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                className={`relative min-w-[80px] w-20 h-20 rounded-lg overflow-hidden border-2 transition-all snap-start ${selectedImageIndex === index
+                                        ? 'border-indigo-600 shadow-md ring-2 ring-indigo-200'
+                                        : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'
                                     }`}
                             >
                                 <img src={img} alt="" className="w-full h-full object-cover" />
@@ -183,18 +183,27 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                 {selectedSize && <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Sélectionné: {selectedSize}</span>}
                             </div>
                             <div className="flex gap-3 flex-wrap">
-                                {sizes.map((size) => (
-                                    <button
-                                        key={size}
-                                        onClick={() => setSelectedSize(size)}
-                                        className={`min-w-[3.5rem] h-14 px-4 rounded-xl font-bold transition-all border-2 ${selectedSize === size
-                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg scale-105'
-                                            : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'
-                                            }`}
-                                    >
-                                        {size}
-                                    </button>
-                                ))}
+                                {sizes.map((size) => {
+                                    // Check if this size is available with selected color
+                                    const isAvailable = !selectedColor || product.variants.some((v: any) => v.size === size && v.color === selectedColor && v.stock > 0);
+
+                                    return (
+                                        <button
+                                            key={size}
+                                            onClick={() => isAvailable && setSelectedSize(size)}
+                                            disabled={!isAvailable}
+                                            className={`min-w-[3.5rem] h-14 px-4 rounded-xl font-bold transition-all border-2 
+                                                ${selectedSize === size
+                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg scale-105'
+                                                    : isAvailable
+                                                        ? 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'
+                                                        : 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed opacity-60 decoration-slice line-through'
+                                                }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
@@ -212,26 +221,41 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                 )}
                             </div>
                             <div className="flex gap-3 flex-wrap">
-                                {colors.map((color) => (
-                                    <button
-                                        key={color}
-                                        onClick={() => setSelectedColor(color)}
-                                        className={`w-12 h-12 rounded-full border-4 shadow-sm transition-all relative ${selectedColor === color
-                                            ? 'border-indigo-600 scale-110 ring-2 ring-indigo-200'
-                                            : 'border-white hover:scale-105 hover:border-gray-200'
-                                            }`}
-                                        style={{ backgroundColor: color }}
-                                        title={color}
-                                    >
-                                        {selectedColor === color && (
-                                            <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow-md">
-                                                <svg className="w-6 h-6 filter drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                            </span>
-                                        )}
-                                    </button>
-                                ))}
+                                {colors.map((color) => {
+                                    // Check if this color is available with selected size
+                                    const isAvailable = !selectedSize || product.variants.some((v: any) => v.size === selectedSize && v.color === color && v.stock > 0);
+
+                                    return (
+                                        <button
+                                            key={color}
+                                            onClick={() => isAvailable && setSelectedColor(color)}
+                                            disabled={!isAvailable}
+                                            className={`w-12 h-12 rounded-full border-4 shadow-sm transition-all relative
+                                                ${selectedColor === color
+                                                    ? 'border-indigo-600 scale-110 ring-2 ring-indigo-200'
+                                                    : isAvailable
+                                                        ? 'border-white hover:scale-105 hover:border-gray-200'
+                                                        : 'border-white opacity-40 cursor-not-allowed grayscale'
+                                                }`}
+                                            style={{ backgroundColor: color }}
+                                            title={!isAvailable ? `${color} (Indisponible)` : color}
+                                        >
+                                            {selectedColor === color && (
+                                                <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow-md">
+                                                    <svg className="w-6 h-6 filter drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </span>
+                                            )}
+                                            {/* Cross line for unavailable */}
+                                            {!isAvailable && (
+                                                <span className="absolute inset-0 flex items-center justify-center">
+                                                    <div className="w-full h-0.5 bg-gray-500 rotate-45"></div>
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

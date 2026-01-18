@@ -37,7 +37,7 @@ export default function HomeProductsClient({ products }: HomeProductsClientProps
             {/* Mobile Filter Button (Fixed at bottom right) - Minimalist */}
             <button
                 onClick={() => setShowMobileFilters(true)}
-                className="lg:hidden fixed bottom-6 right-6 z-50 bg-white text-black w-14 h-14 rounded-md shadow-lg border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all active:scale-95"
+                className="lg:hidden fixed bottom-28 right-6 z-50 bg-white text-black w-14 h-14 rounded-full shadow-xl border border-gray-200 flex items-center justify-center hover:bg-black hover:text-white transition-all active:scale-95"
                 aria-label="Filtres"
             >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

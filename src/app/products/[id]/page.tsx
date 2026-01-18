@@ -1,10 +1,14 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import ReviewList from '@/components/ReviewList';
 import ReviewForm from '@/components/ReviewForm';
 import SellerRating from '@/components/SellerRating';
 import ProductPageClient from './ProductPageClient';
 import { prisma } from '@/lib/prisma'; // Direct DB access for efficiency
+
+// Enable ISR with 5 minute revalidation
+export const revalidate = 300;
 
 // Category Mapping for "Complete the Look"
 const COMPLEMENTARY_CATEGORIES: Record<string, string[]> = {
@@ -184,10 +188,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 {complementary.map((item: any) => (
                                     <Link key={item.id} href={`/products/${item.id}`} className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
                                         <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
-                                            <img
+                                            <Image
                                                 src={item.images?.split(',')[0]}
                                                 alt={item.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                fill
+                                                sizes="(max-width: 768px) 50vw, 25vw"
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                loading="lazy"
                                             />
                                         </div>
                                         <div className="p-4">
@@ -211,10 +218,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 {similar.map((item: any) => (
                                     <Link key={item.id} href={`/products/${item.id}`} className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
                                         <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
-                                            <img
+                                            <Image
                                                 src={item.images?.split(',')[0]}
                                                 alt={item.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                fill
+                                                sizes="(max-width: 768px) 50vw, 25vw"
+                                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                loading="lazy"
                                             />
                                         </div>
                                         <div className="p-4">

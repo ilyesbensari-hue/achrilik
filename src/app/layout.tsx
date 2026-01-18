@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import DeliveryBanner from "@/components/DeliveryBanner";
+import BottomNav from "@/components/BottomNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <Navbar />
         <DeliveryBanner />
-        {children}
+        <div className="pb-[120px] md:pb-0">
+          {children}
+        </div>
+        <BottomNav />
       </body>
     </html>
   );

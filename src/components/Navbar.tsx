@@ -85,83 +85,79 @@ export default function Navbar() {
             : 'bg-white border-b'
             }`}>
             <div className="container flex items-center justify-between h-16 px-4">
-                {/* Mobile Left: Hamburger (Green Square) + Logo */}
-                <div className="flex items-center gap-3 lg:hidden">
+                {/* Mobile Left: Hamburger + Logo (Logo hidden on mobile now) */}
+                <div className="flex items-center gap-3">
+                    {/* Mobile Menu Button */}
                     <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2.5 bg-[#006233] text-white rounded-lg hover:bg-[#004d28] transition-colors shadow-sm active:scale-95"
+                        onClick={() => setMobileMenuOpen(true)}
+                        className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                         aria-label="Menu"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {mobileMenuOpen ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            )}
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <Link href="/" className="flex-shrink-0">
+
+                    {/* Desktop Logo (Visible only on Desktop) */}
+                    <Link href="/" className="hidden lg:block flex-shrink-0">
                         <Image
                             src="/achrilik-logo.png"
                             alt="Achrilik Logo"
-                            width={100}
+                            width={120}
                             height={40}
-                            className="h-8 w-auto object-contain"
+                            className="h-10 w-auto object-contain"
                             priority
                         />
                     </Link>
                 </div>
 
-                {/* Desktop Logo */}
-                <Link href="/" className="hidden lg:flex items-center gap-2 group hover:opacity-80 transition-opacity">
-                    <Image
-                        src="/achrilik-logo.png"
-                        alt="Achrilik Logo"
-                        width={150}
-                        height={60}
-                        className="h-14 w-auto object-contain"
-                        priority
+                {/* Search Bar - Hidden on mobile if needed, or adjusted */}
+                <div className="hidden md:flex flex-1 max-w-2xl mx-8 relative group">
+                    <input
+                        type="text"
+                        placeholder="Rechercher des produits, des marques..."
+                        className="w-full bg-gray-50 border border-gray-200 rounded-full py-2.5 pl-5 pr-12 text-sm focus:ring-2 focus:ring-[#cce8dd] focus:border-[#006233] transition-all outline-none group-hover:bg-white group-hover:shadow-sm placeholder-gray-400"
                     />
-                </Link>
-
-                {/* Desktop Search */}
-                <div className="hidden md:block flex-1 max-w-xl mx-8">
-                    <form action="/" method="GET" className="relative">
-                        <input
-                            type="text"
-                            name="search"
-                            placeholder="Rechercher un produit, une marque..."
-                            className="w-full bg-gray-100 border-none rounded-full pl-5 pr-12 py-2.5 text-sm focus:ring-2 focus:ring-[#cce8dd] outline-none transition-all hover:bg-gray-50"
-                        />
-                        <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white rounded-full shadow-sm hover:scale-105 transition-transform">
-                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
-                    </form>
+                    <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-[#006233] text-white rounded-full hover:bg-[#004d28] transition-colors shadow-sm">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
                 </div>
 
 
 
-                {/* Mobile Right: Seller + User + Cart */}
-                {/* Icons & Actions */}
+                {/* Mobile Right: Logo (Mobile) / User + Cart (Desktop) */}
                 <div className="flex items-center gap-2 md:gap-4">
+                    {/* Mobile Logo (Replaces Profile/Cart on Mobile) */}
+                    <Link href="/" className="lg:hidden block">
+                        <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-100 transition-colors">
+                            <Image
+                                src="/achrilik-logo.png"
+                                alt="Achrilik"
+                                width={40}
+                                height={40}
+                                className="w-auto h-4 object-contain opacity-90"
+                            />
+                        </div>
+                    </Link>
+
                     {/* Search - Hidden on mobile, often toggleable - Replaced with existing search button */}
                     <button className="p-2 text-gray-700 hover:text-[#006233] transition-colors hidden"> {/* Hidden as desktop search is already present */}
                         {/* <Search size={22} strokeWidth={2} /> */}
                     </button>
 
-                    {/* Account */}
+                    {/* Account - Hidden on Mobile */}
                     {/* status === 'loading' is not defined, using user state */}
                     {user ? (
-                        <Link href="/profile" className="p-2 text-gray-700 hover:text-[#006233] transition-colors relative group">
+                        <Link href="/profile" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative group">
                             {/* Replaced User icon with existing SVG */}
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                         </Link>
                     ) : (
-                        <div className="hidden md:flex items-center gap-3">
+                        <div className="hidden lg:flex items-center gap-3">
                             <Link href="/login" className="text-sm font-bold text-gray-700 hover:text-[#006233]">
                                 Connexion
                             </Link>
@@ -171,8 +167,20 @@ export default function Navbar() {
                         </div>
                     )}
 
-                    {/* Cart */}
-                    <Link href="/cart" className="p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
+                    {/* Desktop: Devenir Vendeur CTA for BUYERS */}
+                    {user && user.role === 'BUYER' && (
+                        <Link
+                            href="/become-seller"
+                            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-sm"
+                        >
+                            <span>🚀</span>
+                            Devenir Vendeur
+                        </Link>
+                    )}
+
+
+                    {/* Cart - Hidden on Mobile */}
+                    <Link href="/cart" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
                         {/* Replaced ShoppingBag icon with existing SVG */}
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -264,16 +272,16 @@ export default function Navbar() {
                                         </Link>
                                     </div>
                                 )}
-                                {/* "Devenir Vendeur" for mobile viewers (not logged in) */}
-                                {!user && (
+                                {/* "Devenir Vendeur" for BUYERS (mobile) */}
+                                {user && user.role === 'BUYER' && (
                                     <div className="mb-6">
                                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Vendre</h3>
                                         <Link
-                                            href="/sell"
+                                            href="/become-seller"
                                             onClick={() => setMobileMenuOpen(false)}
-                                            className="flex items-center gap-3 p-3 rounded-xl bg-white text-[#006233] font-bold border-2 border-[#006233] hover:bg-[#e8f5f0] transition-colors"
+                                            className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-bold hover:from-green-700 hover:to-green-800 transition-all shadow-md"
                                         >
-                                            <span>💼</span> Devenir Vendeur
+                                            <span>🏪</span> Ouvrir ma boutique
                                         </Link>
                                     </div>
                                 )}

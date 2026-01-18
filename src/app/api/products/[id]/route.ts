@@ -62,14 +62,30 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, description, price, images, variants } = body;
+    const { title, description, price, images, categoryId, variants } = body;
 
-    // Delete existing variants and create new ones
+    // Update product and handle variants safely
     const product = await prisma.$transaction(async (tx) => {
-      // Delete old variants
-      await tx.variant.deleteMany({
+      // Get existing variants
+      const existingVariants = await tx.variant.findMany({
         where: { productId: id },
+        include: {
+          orderItems: true
+        }
       });
+
+      // Separate variants into those with and without orders
+      const variantsWithOrders = existingVariants.filter(v => v.orderItems.length > 0);
+      const variantsWithoutOrders = existingVariants.filter(v => v.orderItems.length === 0);
+
+      // Delete only variants that are NOT linked to any orders
+      if (variantsWithoutOrders.length > 0) {
+        await tx.variant.deleteMany({
+          where: {
+            id: { in: variantsWithoutOrders.map(v => v.id) }
+          },
+        });
+      }
 
       // Update product with new variants
       return await tx.product.update({
@@ -79,6 +95,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           description,
           price: parseFloat(price),
           images,
+          categoryId: categoryId || null,
           variants: {
             create: variants.map((v: any) => ({
               size: v.size,
@@ -89,12 +106,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         },
         include: {
           variants: true,
+          category: true,
         },
       });
     });
 
     return NextResponse.json(product);
   } catch (error) {
+    console.error('Product update error:', error);
     return NextResponse.json({ error: 'Failed to update product', details: error }, { status: 500 });
   }
 }

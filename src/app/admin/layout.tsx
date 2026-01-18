@@ -1,0 +1,113 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+interface User {
+    id: string;
+    email: string;
+    name: string;
+    role: 'BUYER' | 'SELLER' | 'ADMIN';
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+
+    useEffect(() => {
+        // Vérifier que l'utilisateur est admin
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            router.push('/login');
+            return;
+        }
+
+        const userData = JSON.parse(userStr);
+        if (userData.role !== 'ADMIN') {
+            router.push('/');
+            return;
+        }
+
+        setUser(userData);
+        setLoading(false);
+    }, [router]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
+    }
+
+    if (!user) return null;
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Sidebar */}
+            <aside className="fixed left-0 top-0 h-full w-64 bg-slate-800 text-white p-6">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold">Admin Panel</h1>
+                    <p className="text-sm text-gray-400 mt-1">Achrilik</p>
+                </div>
+
+                <nav className="space-y-2">
+                    <Link
+                        href="/admin"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                        <span>📊</span>
+                        <span>Dashboard</span>
+                    </Link>
+                    <Link
+                        href="/admin/users"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                        <span>👥</span>
+                        <span>Utilisateurs</span>
+                    </Link>
+                    <Link
+                        href="/admin/products"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                        <span>📦</span>
+                        <span>Produits</span>
+                    </Link>
+                    <Link
+                        href="/admin/orders"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                        <span>🛒</span>
+                        <span>Commandes</span>
+                    </Link>
+                    <Link
+                        href="/admin/analytics"
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                        <span>📈</span>
+                        <span>Analytics</span>
+                    </Link>
+                </nav>
+
+                <div className="absolute bottom-6 left-6 right-6">
+                    <div className="border-t border-slate-700 pt-4">
+                        <p className="text-sm text-gray-400 mb-2">{user.name}</p>
+                        <Link
+                            href="/"
+                            className="text-sm text-indigo-400 hover:text-indigo-300"
+                        >
+                            ← Retour au site
+                        </Link>
+                    </div>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="ml-64 p-8">
+                {children}
+            </main>
+        </div>
+    );
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import ProductGrid from '@/components/ProductGrid';
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
@@ -365,50 +366,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                             </select>
                         </div>
 
-                        {/* Grid - Zalando Style */}
-                        {filteredProducts.length === 0 ? (
-                            <div className="text-center py-20">
-                                <p className="text-gray-500">Aucun produit trouvé</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {filteredProducts.map((product: any) => (
-                                    <Link
-                                        key={product.id}
-                                        href={`/products/${product.id}`}
-                                        className="product-card-zalando"
-                                    >
-                                        <div className="product-image">
-                                            <img
-                                                src={product.images.split(',')[0]}
-                                                alt={product.title}
-                                            />
-                                        </div>
-                                        <div className="product-info">
-                                            <div className="product-brand">📍 {product.store.city}</div>
-                                            <h3 className="product-title">{product.title}</h3>
+                        {/* Grid - Replaced with reusable ProductGrid component */}
+                        <ProductGrid products={filteredProducts} />
 
-                                            {/* Stars */}
-                                            {product.reviews && product.reviews.length > 0 && (
-                                                <div className="flex items-center gap-1 my-1">
-                                                    <span className="flex text-yellow-400 text-xs">
-                                                        {(() => {
-                                                            const avg = product.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / product.reviews.length;
-                                                            return Array.from({ length: 5 }).map((_, i) => (
-                                                                <span key={i}>{i < Math.round(avg) ? '★' : '☆'}</span>
-                                                            ));
-                                                        })()}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-400">({product.reviews.length})</span>
-                                                </div>
-                                            )}
-
-                                            <div className="product-price">{product.price.toLocaleString()} DA</div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

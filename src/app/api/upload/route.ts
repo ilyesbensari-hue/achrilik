@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { randomBytes } from 'crypto';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -34,27 +32,17 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Generate unique filename
+        // Convert file to buffer
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const fileExt = file.name.split('.').pop() || 'jpg';
-        const uniqueId = randomBytes(16).toString('hex');
-        const filename = `${Date.now()}-${uniqueId}.${fileExt}`;
-
-        // Save to public/uploads/products
-        const uploadDir = join(process.cwd(), 'public', 'uploads', 'products');
-        const filepath = join(uploadDir, filename);
-
-        await writeFile(filepath, buffer);
-
-        // Return the public URL path
-        const publicUrl = `/uploads/products/${filename}`;
+        // Upload to Cloudinary
+        const cloudinaryUrl = await uploadToCloudinary(buffer, 'products');
 
         return NextResponse.json({
             success: true,
-            url: publicUrl,
-            filename
+            url: cloudinaryUrl,
+            filename: file.name
         });
 
     } catch (error) {

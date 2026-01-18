@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
+import bcrypt from 'bcryptjs';
 
 export async function PATCH(
     request: Request,
@@ -9,7 +9,7 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { name, password, email, address, phone } = body; // email might be read-only but let's see
+        const { name, password, email, address, phone } = body;
 
         // Basic validation
         if (!name) {
@@ -17,14 +17,14 @@ export async function PATCH(
         }
 
         const data: any = { name };
+
+        // Hash password if provided
         if (password) {
-            data.password = password; // In real app, hash this! using plain for MVP consistency
+            data.password = await bcrypt.hash(password, 10);
         }
+
         if (address !== undefined) data.address = address;
         if (phone !== undefined) data.phone = phone;
-
-        // If email update is requested, check uniqueness (skipping for MVP complexity unless requested)
-        // Ignoring email update for now to avoid conflicts.
 
         const updatedUser = await prisma.user.update({
             where: { id },

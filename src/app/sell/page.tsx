@@ -56,7 +56,8 @@ export default function SellerPage() {
                 setIsSeller(true);
                 fetchStore(user.id);
             } else {
-                setLoading(false);
+                // BUYERS need to upgrade first
+                router.push('/become-seller');
             }
         } catch (e) {
             // Invalid user data
@@ -148,10 +149,13 @@ export default function SellerPage() {
                     // Update user role if new store
                     user.role = 'SELLER';
                     localStorage.setItem('user', JSON.stringify(user));
-                    setIsSeller(true);
+                    // Trigger storage event to update Navbar
+                    window.dispatchEvent(new Event('storage'));
                 }
-
-                alert(isEditing ? 'Boutique mise à jour !' : 'Boutique créée avec succès !');
+                const data = await res.json();
+                setStore(data.store);
+                setIsEditing(false);
+                alert('Boutique ' + (isEditing ? 'mise à jour' : 'créée') + ' avec succès!');
                 setIsEditing(false);
                 fetchStore(user.id); // Refresh data
                 // window.location.reload(); // Not needed if we refresh state
@@ -303,10 +307,13 @@ export default function SellerPage() {
                         <h1 className="text-3xl font-bold">{store?.name}</h1>
                         <p className="text-gray-500">{store?.description}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <button onClick={() => setIsEditing(true)} className="btn btn-outline whitespace-nowrap">
-                            ✏️ Modifier boutique
+                            ✏️ Ma boutique en ligne
                         </button>
+                        <Link href="/sell/analytics" className="btn btn-outline whitespace-nowrap">
+                            📊 Analytics
+                        </Link>
                         <Link href="/sell/new" className="btn btn-primary whitespace-nowrap">
                             + Ajouter un produit
                         </Link>
@@ -385,7 +392,7 @@ export default function SellerPage() {
                                     {/* Hover Actions */}
                                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                                         <Link
-                                            href={`/sell/edit/${product.id}`}
+                                            href={`/sell/products/${product.id}/edit`}
                                             className="btn btn-sm bg-white text-black hover:bg-gray-100"
                                         >
                                             ✏️ Éditer

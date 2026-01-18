@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SellerRating from '@/components/SellerRating';
+import WishlistButton from '@/components/WishlistButton';
 
 interface Product {
     id: string;
     title: string;
     price: number;
+    description?: string;
     images: string;
     store: {
         name: string;
@@ -32,9 +34,28 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ products, title }: ProductGridProps) {
-    const [viewMode, setViewMode] = useState<'unique' | 'deux' | 'grille'>('deux');
+    const [viewMode, setViewMode] = useState<'deux' | 'trois'>('deux');
+
+    // Load saved preference on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('productViewMode');
+        if (saved === 'deux' || saved === 'trois') {
+            setViewMode(saved);
+        }
+    }, []);
+
+    // Save preference when changed
+    const handleViewChange = (mode: 'deux' | 'trois') => {
+        setViewMode(mode);
+        localStorage.setItem('productViewMode', mode);
+    };
 
     if (products.length === 0) return null;
+
+    // Grid classes based on view mode
+    const gridClasses =
+        viewMode === 'deux' ? 'grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8' :
+            'grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-8';
 
     return (
         <section className="mb-8">
@@ -46,39 +67,41 @@ export default function ProductGrid({ products, title }: ProductGridProps) {
                     </h3>
                 )}
 
-                {/* Mobile View Switcher - Minimalist */}
-                <div className="flex items-center gap-0.5 border border-gray-200 rounded-md overflow-hidden">
+                {/* View Switcher - 2 or 3 columns only */}
+                <div className="flex items-center gap-0.5 border border-gray-200 rounded-md overflow-hidden bg-white shadow-sm">
+                    {/* 2 Columns */}
                     <button
-                        onClick={() => setViewMode('unique')}
-                        className={`p-2 transition-all ${viewMode === 'unique' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:text-black'}`}
+                        onClick={() => handleViewChange('deux')}
+                        className={`p-2.5 transition-all ${viewMode === 'deux' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:text-black hover:bg-gray-50'}`}
+                        title="2 colonnes"
                     >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="4" y="4" width="16" height="16" rx="2" strokeWidth="0" />
+                            <path d="M4 5a1 1 0 011-1h5a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM13 5a1 1 0 011-1h5a1 1 0 011 1v14a1 1 0 01-1 1h-5a1 1 0 01-1-1V5z" />
                         </svg>
                     </button>
+
+                    {/* 3 Columns */}
                     <button
-                        onClick={() => setViewMode('deux')}
-                        className={`p-2 transition-all ${viewMode === 'deux' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:text-black'}`}
+                        onClick={() => handleViewChange('trois')}
+                        className={`p-2.5 transition-all ${viewMode === 'trois' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:text-black hover:bg-gray-50'}`}
+                        title="3 colonnes"
                     >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M4 5a1 1 0 011-1h6a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM12 5a1 1 0 011-1h6a1 1 0 011 1v14a1 1 0 01-1 1h-6a1 1 0 01-1-1V5z" />
+                            <path d="M3 5a1 1 0 011-1h3a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5zM9 5a1 1 0 011-1h3a1 1 0 011 1v14a1 1 0 01-1 1h-3a1 1 0 01-1-1V5zM16 5a1 1 0 011-1h3a1 1 0 011 1v14a1 1 0 01-1 1h-3a1 1 0 01-1-1V5z" />
                         </svg>
                     </button>
                 </div>
             </div>
 
-            <div className={`grid gap-x-4 gap-y-8 transition-all duration-300 ease-in-out ${viewMode === 'unique' ? 'grid-cols-1' :
-                viewMode === 'deux' ? 'grid-cols-2 lg:grid-cols-4' :
-                    'grid-cols-3 lg:grid-cols-5'
-                }`}>
+            <div className={`grid transition-all duration-300 ease-in-out ${gridClasses}`}>
                 {products.map((product) => (
                     <Link
                         href={`/products/${product.id}`}
                         key={product.id}
-                        className={`product-card-zalando group ${viewMode === 'unique' ? 'flex flex-row gap-4 !aspect-auto' : ''}`}
+                        className={`product-card-zalando group`}
                     >
                         {/* Image Container */}
-                        <div className={`product-image ${viewMode === 'unique' ? '!w-1/3 !aspect-[4/5] rounded-md overflow-hidden' : ''}`}>
+                        <div className={`product-image`}>
                             {product.images ? (
                                 <Image
                                     src={product.images.split(',')[0]}
@@ -92,10 +115,15 @@ export default function ProductGrid({ products, title }: ProductGridProps) {
                                     <span>No Image</span>
                                 </div>
                             )}
+
+                            {/* Wishlist Button */}
+                            <div className="absolute top-2 right-2 z-10">
+                                <WishlistButton productId={product.id} size="sm" />
+                            </div>
                         </div>
 
                         {/* Product Info */}
-                        <div className={`product-info ${viewMode === 'unique' ? '!p-0 flex flex-col justify-center' : ''}`}>
+                        <div className={`product-info`}>
                             <span className="product-brand">{product.store.city || 'Oran'}</span>
                             <h3 className="product-title">{product.title}</h3>
                             <div className="product-price">

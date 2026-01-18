@@ -9,7 +9,6 @@ export default function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState<'BUYER' | 'SELLER'>('BUYER');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
@@ -23,9 +22,9 @@ export default function RegisterPage() {
                 body: JSON.stringify({
                     email,
                     password,
-                    userType: role,
+                    userType: 'BUYER', // All new accounts are buyers
                     isRegister: true,
-                    name // Pass name if backend updates to accept it, or rely on email split
+                    name
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -38,7 +37,7 @@ export default function RegisterPage() {
                     id: data.id,
                     email: data.email,
                     name: data.name,
-                    role: role // Trust local state or use data.role
+                    role: data.role || 'BUYER' // Use role from server
                 };
                 localStorage.setItem('user', JSON.stringify(user));
 
@@ -50,12 +49,8 @@ export default function RegisterPage() {
                 // Trigger storage event
                 window.dispatchEvent(new Event('storage'));
 
-                // Redirect based on role
-                if (role === 'SELLER') {
-                    router.push('/sell');
-                } else {
-                    router.push('/');
-                }
+                // All new users go to homepage
+                router.push('/');
             } else {
                 alert(data.error || 'Erreur lors de l\'inscription');
             }
@@ -94,43 +89,11 @@ export default function RegisterPage() {
                 <div className="w-full lg:w-1/2 p-8 md:p-12">
                     <div className="text-center md:text-left mb-8">
                         <h2 className="text-2xl font-bold text-gray-800">Créer un compte</h2>
-                        <p className="text-gray-500 mt-2 text-sm">Choisissez votre type de compte pour commencer.</p>
-                    </div>
-
-                    {/* Role Selection Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-lg mb-8">
-                        <button
-                            type="button"
-                            onClick={() => setRole('BUYER')}
-                            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${role === 'BUYER'
-                                ? 'bg-white text-gray-900 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            <span className="mr-2">👤</span>
-                            Client
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setRole('SELLER')}
-                            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${role === 'SELLER'
-                                ? 'bg-white text-[#006233] shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            <span className="mr-2">🏪</span>
-                            Vendeur
-                        </button>
+                        <p className="text-gray-500 mt-2 text-sm">Créez votre compte pour commencer à acheter.</p>
+                        <p className="text-xs text-gray-400 mt-1">Vous voulez vendre ? <Link href="/why-sell" className="text-[#006233] hover:underline font-medium">En savoir plus</Link></p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {role === 'SELLER' && (
-                            <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-4">
-                                <p className="text-sm text-green-800">
-                                    🚀 En tant que vendeur, vous pourrez créer votre boutique, ajouter des produits et gérer vos commandes.
-                                </p>
-                            </div>
-                        )}
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -161,10 +124,10 @@ export default function RegisterPage() {
                             disabled={loading}
                             className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors shadow-sm mt-6 ${loading
                                 ? 'bg-gray-400 cursor-not-allowed'
-                                : role === 'SELLER' ? 'bg-[#006233] hover:bg-[#004d28]' : 'bg-blue-600 hover:bg-blue-700'
+                                : 'bg-[#006233] hover:bg-[#004d28]'
                                 }`}
                         >
-                            {loading ? 'Création...' : (role === 'SELLER' ? 'Créer ma boutique' : 'Créer mon compte')}
+                            {loading ? 'Création...' : 'Créer mon compte'}
                         </button>
                     </form>
 

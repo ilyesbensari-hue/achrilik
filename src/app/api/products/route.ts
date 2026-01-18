@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     const products = await prisma.product.findMany({
       where: whereClause,
-      take: 100, // Limit for performance
+      take: 50, // Reduced from 100 for better performance
       include: {
         variants: true,
         store: true,

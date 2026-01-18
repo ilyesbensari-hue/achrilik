@@ -18,6 +18,7 @@ const CATEGORY_ICONS: Record<string, string> = {
     'Hommes': '👔',
     'Enfants': '👶',
     'Accessoires': '👜',
+    'High-Tech': '📱',
 };
 
 interface CategoryListProps {
