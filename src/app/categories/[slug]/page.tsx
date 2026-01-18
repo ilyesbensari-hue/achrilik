@@ -110,8 +110,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                             <button
                                 onClick={() => setSelectedSubcategories([])}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedSubcategories.length === 0
-                                        ? 'bg-gray-900 text-white'
-                                        : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900'
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900'
                                     }`}
                             >
                                 Tous
@@ -127,8 +127,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                         }
                                     }}
                                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedSubcategories.includes(sub.id)
-                                            ? 'bg-gray-900 text-white'
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900'
+                                        ? 'bg-gray-900 text-white'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900'
                                         }`}
                                 >
                                     {sub.name}
@@ -144,7 +144,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 {/* Mobile Filter Button (Fixed Square at bottom right) */}
                 <button
                     onClick={() => setShowMobileFilters(true)}
-                    className="lg:hidden fixed bottom-6 right-6 z-50 bg-[#006233] text-white w-14 h-14 rounded-xl shadow-2xl flex items-center justify-center hover:bg-[#004d28] transition-all active:scale-95 border-2 border-white"
+                    className="lg:hidden fixed bottom-6 right-6 z-[100] bg-[#006233] text-white w-14 h-14 rounded-xl shadow-2xl flex items-center justify-center hover:bg-[#004d28] transition-all active:scale-95 border-2 border-white"
                     aria-label="Filtres"
                 >
                     <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
