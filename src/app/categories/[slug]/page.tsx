@@ -239,36 +239,38 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                     </div>
                                 </div>
 
-                                {/* Wilaya Filter */}
-                                <div className="filter-section open">
-                                    <div className="filter-section-header">
-                                        <h4 className="filter-section-title">WILAYA</h4>
-                                    </div>
-                                    <div className="filter-section-content">
-                                        <div className="space-y-1 max-h-48 overflow-y-auto">
-                                            <label className="checkbox-filter">
-                                                <input
-                                                    type="radio"
-                                                    name="wilaya-mobile"
-                                                    checked={selectedWilaya === ''}
-                                                    onChange={() => setSelectedWilaya('')}
-                                                />
-                                                <span className="checkbox-filter-label">Toutes</span>
-                                            </label>
-                                            {availableWilayas.map((wilaya) => (
-                                                <label key={wilaya} className="checkbox-filter">
+                                {/* Wilaya Filter - Only show if multiple cities */}
+                                {availableWilayas.length > 1 && (
+                                    <div className="filter-section open">
+                                        <div className="filter-section-header">
+                                            <h4 className="filter-section-title">WILAYA</h4>
+                                        </div>
+                                        <div className="filter-section-content">
+                                            <div className="space-y-1 max-h-48 overflow-y-auto">
+                                                <label className="checkbox-filter">
                                                     <input
                                                         type="radio"
                                                         name="wilaya-mobile"
-                                                        checked={selectedWilaya === wilaya}
-                                                        onChange={() => setSelectedWilaya(wilaya)}
+                                                        checked={selectedWilaya === ''}
+                                                        onChange={() => setSelectedWilaya('')}
                                                     />
-                                                    <span className="checkbox-filter-label">{wilaya}</span>
+                                                    <span className="checkbox-filter-label">Toutes</span>
                                                 </label>
-                                            ))}
+                                                {availableWilayas.map((wilaya) => (
+                                                    <label key={wilaya} className="checkbox-filter">
+                                                        <input
+                                                            type="radio"
+                                                            name="wilaya-mobile"
+                                                            checked={selectedWilaya === wilaya}
+                                                            onChange={() => setSelectedWilaya(wilaya)}
+                                                        />
+                                                        <span className="checkbox-filter-label">{wilaya}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             {/* Footer - Sticky Bottom */}
@@ -362,36 +364,38 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                 </div>
                             </div>
 
-                            {/* Wilaya Filter */}
-                            <div className="filter-section open">
-                                <div className="filter-section-header">
-                                    <h4 className="filter-section-title">WILAYA</h4>
-                                </div>
-                                <div className="filter-section-content">
-                                    <div className="space-y-1">
-                                        <label className="checkbox-filter">
-                                            <input
-                                                type="radio"
-                                                name="wilaya"
-                                                checked={selectedWilaya === ''}
-                                                onChange={() => setSelectedWilaya('')}
-                                            />
-                                            <span className="checkbox-filter-label">Toutes</span>
-                                        </label>
-                                        {availableWilayas.map((wilaya) => (
-                                            <label key={wilaya} className="checkbox-filter">
+                            {/* Wilaya Filter - Only show if multiple cities */}
+                            {availableWilayas.length > 1 && (
+                                <div className="filter-section open">
+                                    <div className="filter-section-header">
+                                        <h4 className="filter-section-title">WILAYA</h4>
+                                    </div>
+                                    <div className="filter-section-content">
+                                        <div className="space-y-1">
+                                            <label className="checkbox-filter">
                                                 <input
                                                     type="radio"
                                                     name="wilaya"
-                                                    checked={selectedWilaya === wilaya}
-                                                    onChange={() => setSelectedWilaya(wilaya)}
+                                                    checked={selectedWilaya === ''}
+                                                    onChange={() => setSelectedWilaya('')}
                                                 />
-                                                <span className="checkbox-filter-label">{wilaya}</span>
+                                                <span className="checkbox-filter-label">Toutes</span>
                                             </label>
-                                        ))}
+                                            {availableWilayas.map((wilaya) => (
+                                                <label key={wilaya} className="checkbox-filter">
+                                                    <input
+                                                        type="radio"
+                                                        name="wilaya"
+                                                        checked={selectedWilaya === wilaya}
+                                                        onChange={() => setSelectedWilaya(wilaya)}
+                                                    />
+                                                    <span className="checkbox-filter-label">{wilaya}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Reset Button - Sticky at bottom */}
                             <div className="pt-4 mt-4 border-t border-gray-200">
