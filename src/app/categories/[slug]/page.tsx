@@ -13,6 +13,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const [sortBy, setSortBy] = useState('');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
     const [selectedWilaya, setSelectedWilaya] = useState<string>('');
+    const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     // Prevent body scroll when mobile filters are open
@@ -56,6 +57,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
     // Apply filters and sorting
     const filteredProducts = products
+        .filter((p) => {
+            // Filter by subcategories if any selected
+            if (selectedSubcategories.length > 0) {
+                return selectedSubcategories.includes(p.categoryId);
+            }
+            return true;
+        })
         .filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
         .filter((p) => !selectedWilaya || p.store.city === selectedWilaya)
         .sort((a, b) => {
@@ -95,6 +103,39 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     </nav>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">{category.name}</h1>
                     <p className="text-sm text-gray-600">{products.length} {products.length > 1 ? 'produits' : 'produit'}</p>
+
+                    {/* Subcategory Pills */}
+                    {category.children && category.children.length > 0 && (
+                        <div className="mt-6 flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setSelectedSubcategories([])}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedSubcategories.length === 0
+                                        ? 'bg-gray-900 text-white'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900'
+                                    }`}
+                            >
+                                Tous
+                            </button>
+                            {category.children.map((sub: any) => (
+                                <button
+                                    key={sub.id}
+                                    onClick={() => {
+                                        if (selectedSubcategories.includes(sub.id)) {
+                                            setSelectedSubcategories(selectedSubcategories.filter(id => id !== sub.id));
+                                        } else {
+                                            setSelectedSubcategories([...selectedSubcategories, sub.id]);
+                                        }
+                                    }}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedSubcategories.includes(sub.id)
+                                            ? 'bg-gray-900 text-white'
+                                            : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900'
+                                        }`}
+                                >
+                                    {sub.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -146,7 +187,17 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                             <div className="space-y-1">
                                                 {category.children.map((sub: any) => (
                                                     <label key={sub.id} className="checkbox-filter">
-                                                        <input type="checkbox" />
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedSubcategories.includes(sub.id)}
+                                                            onChange={() => {
+                                                                if (selectedSubcategories.includes(sub.id)) {
+                                                                    setSelectedSubcategories(selectedSubcategories.filter(id => id !== sub.id));
+                                                                } else {
+                                                                    setSelectedSubcategories([...selectedSubcategories, sub.id]);
+                                                                }
+                                                            }}
+                                                        />
                                                         <span className="checkbox-filter-label">{sub.name}</span>
                                                     </label>
                                                 ))}
@@ -259,7 +310,17 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                         <div className="space-y-1">
                                             {category.children.map((sub: any) => (
                                                 <label key={sub.id} className="checkbox-filter">
-                                                    <input type="checkbox" />
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedSubcategories.includes(sub.id)}
+                                                        onChange={() => {
+                                                            if (selectedSubcategories.includes(sub.id)) {
+                                                                setSelectedSubcategories(selectedSubcategories.filter(id => id !== sub.id));
+                                                            } else {
+                                                                setSelectedSubcategories([...selectedSubcategories, sub.id]);
+                                                            }
+                                                        }}
+                                                    />
                                                     <span className="checkbox-filter-label">{sub.name}</span>
                                                 </label>
                                             ))}
@@ -336,6 +397,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                     onClick={() => {
                                         setPriceRange([0, 50000]);
                                         setSelectedWilaya('');
+                                        setSelectedSubcategories([]);
                                     }}
                                     className="w-full py-2.5 text-sm font-semibold text-gray-700 border-2 border-gray-300 rounded hover:border-gray-900 hover:bg-gray-50 transition-all uppercase tracking-wide"
                                 >
