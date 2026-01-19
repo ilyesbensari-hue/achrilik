@@ -51,7 +51,7 @@ export async function GET(request: Request) {
         } else {
             // Fetch orders for a specific user (buyer view)
             orders = await prisma.order.findMany({
-                where: { userId },
+                where: { userId: userId as string },
                 include: {
                     items: {
                         include: {
