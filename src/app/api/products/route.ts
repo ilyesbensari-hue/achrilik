@@ -68,7 +68,11 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json(enrichedProducts);
+    return NextResponse.json(enrichedProducts, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
