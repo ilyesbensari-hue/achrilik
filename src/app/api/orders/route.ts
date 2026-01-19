@@ -1,6 +1,81 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// GET - Fetch orders for a user or store
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get('userId');
+        const storeId = searchParams.get('storeId');
+
+        if (!userId && !storeId) {
+            return NextResponse.json({ error: 'userId or storeId required' }, { status: 400 });
+        }
+
+        let orders;
+
+        if (storeId) {
+            // Fetch orders for a specific store (seller view)
+            orders = await prisma.order.findMany({
+                where: {
+                    items: {
+                        some: {
+                            variant: {
+                                product: {
+                                    storeId
+                                }
+                            }
+                        }
+                    }
+                },
+                include: {
+                    items: {
+                        include: {
+                            variant: {
+                                include: {
+                                    product: true
+                                }
+                            }
+                        }
+                    },
+                    user: {
+                        select: {
+                            name: true,
+                            email: true,
+                            phone: true
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+        } else {
+            // Fetch orders for a specific user (buyer view)
+            orders = await prisma.order.findMany({
+                where: { userId },
+                include: {
+                    items: {
+                        include: {
+                            variant: {
+                                include: {
+                                    product: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+
+        return NextResponse.json(orders);
+
+    } catch (error) {
+        console.error('GET /api/orders error:', error);
+        return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+    }
+}
+
+// POST - Create a new order
 export async function POST(request: Request) {
     try {
         const body = await request.json();
