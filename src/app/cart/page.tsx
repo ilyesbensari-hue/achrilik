@@ -10,6 +10,7 @@ export default function CartPage() {
     const router = useRouter();
     const [cart, setCart] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // Form State
     const [method, setMethod] = useState<'DELIVERY' | 'CLICK_COLLECT'>('DELIVERY');
@@ -62,6 +63,19 @@ export default function CartPage() {
                 }
             }
         }).catch(console.error);
+
+        // Check login status
+        const userId = localStorage.getItem('userId');
+        const userStr = localStorage.getItem('user');
+        let loggedIn = !!userId;
+
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user.id) loggedIn = true;
+            } catch (e) { }
+        }
+        setIsLoggedIn(loggedIn);
     }, []);
 
     const handleCheckout = async (e: React.FormEvent) => {
@@ -218,17 +232,6 @@ export default function CartPage() {
 
                         <button
                             onClick={(e) => {
-                                const userId = localStorage.getItem('userId');
-                                const userStr = localStorage.getItem('user');
-                                let isLoggedIn = !!userId;
-
-                                if (userStr) {
-                                    try {
-                                        const user = JSON.parse(userStr);
-                                        if (user.id) isLoggedIn = true;
-                                    } catch (e) { }
-                                }
-
                                 if (!isLoggedIn) {
                                     alert('Veuillez vous connecter pour commander');
                                     router.push('/login');
@@ -238,7 +241,7 @@ export default function CartPage() {
                             }}
                             className="btn btn-primary w-full py-4 text-lg font-bold shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all"
                         >
-                            SE CONNECTER ET PAYER
+                            {isLoggedIn ? 'PAYER' : 'SE CONNECTER ET PAYER'}
                         </button>
 
                         <p className="text-center text-xs text-gray-500 mt-4">

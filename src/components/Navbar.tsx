@@ -284,6 +284,12 @@ export default function Navbar() {
                                 {/* Mobile Categories */}
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Explorer</h3>
                                 <CategoryList variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
+
+                                {/* Mobile Search */}
+                                <div className="mt-6">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Recherche</h3>
+                                    <SearchBar className="mb-4" />
+                                </div>
                             </div>
                         </div>
                     </div>
