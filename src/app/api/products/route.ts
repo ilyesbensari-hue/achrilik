@@ -6,13 +6,18 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const storeId = searchParams.get('storeId');
     const search = searchParams.get('search');
+    const showAll = searchParams.get('showAll'); // For admin/seller to see all products
 
-    const whereClause: any = {};
+    const whereClause: any = {
+      // By default, only show APPROVED products to regular users
+      status: showAll === 'true' ? undefined : 'APPROVED'
+    };
+
     if (storeId) whereClause.storeId = storeId;
     if (search) {
       whereClause.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } }
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
       ];
     }
 
@@ -90,6 +95,7 @@ export async function POST(request: Request) {
         price: parseFloat(price),
         images: images, // Comma separated string
         storeId,
+        status: 'APPROVED', // Auto-approve products so they appear immediately
         variants: {
           create: variants.map((v: any) => ({
             size: v.size,

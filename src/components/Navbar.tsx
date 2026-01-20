@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import CategoryList from './CategoryList';
+import SearchBar from './SearchBar';
 
 interface User {
     id: string;
@@ -111,18 +112,9 @@ export default function Navbar() {
                     </Link>
                 </div>
 
-                {/* Search Bar - Hidden on mobile if needed, or adjusted */}
-                <div className="hidden md:flex flex-1 max-w-2xl mx-8 relative group">
-                    <input
-                        type="text"
-                        placeholder="Rechercher des produits, des marques..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-full py-2.5 pl-5 pr-12 text-sm focus:ring-2 focus:ring-[#cce8dd] focus:border-[#006233] transition-all outline-none group-hover:bg-white group-hover:shadow-sm placeholder-gray-400"
-                    />
-                    <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-[#006233] text-white rounded-full hover:bg-[#004d28] transition-colors shadow-sm">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
+                {/* Search Bar - Visible on Desktop */}
+                <div className="hidden md:flex flex-1 max-w-2xl mx-8">
+                    <SearchBar />
                 </div>
 
 
@@ -292,35 +284,6 @@ export default function Navbar() {
                                 {/* Mobile Categories */}
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Explorer</h3>
                                 <CategoryList variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
-                            </div>
-
-                            {/* Mobile Search */}
-                            <div>
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Recherche</h3>
-                                <form
-                                    onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const form = e.target as HTMLFormElement;
-                                        const search = (form.elements.namedItem('search') as HTMLInputElement).value;
-                                        if (search.trim()) {
-                                            setMobileMenuOpen(false);
-                                            window.location.href = `/?search=${encodeURIComponent(search)}`;
-                                        }
-                                    }}
-                                    className="relative"
-                                >
-                                    <input
-                                        type="text"
-                                        name="search"
-                                        placeholder="Rechercher..."
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl pl-4 pr-10 py-3 text-sm focus:ring-2 focus:ring-[#cce8dd] outline-none transition-all"
-                                    />
-                                    <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-white rounded-lg shadow-sm">
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </button>
-                                </form>
                             </div>
                         </div>
                     </div>

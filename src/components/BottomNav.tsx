@@ -45,11 +45,11 @@ export default function BottomNav() {
             ),
         },
         {
-            href: '/search',
-            label: 'Recherche',
+            href: '/categories',
+            label: 'Catégories',
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
             ),
         },
@@ -96,8 +96,8 @@ export default function BottomNav() {
                         key={item.href}
                         href={item.href}
                         className={`flex flex-col items-center justify-center min-w-[60px] py-1 px-2 rounded-lg transition-all ${isActive(item.href)
-                                ? 'text-[#006233]'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-[#006233]'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         <div className="relative">
