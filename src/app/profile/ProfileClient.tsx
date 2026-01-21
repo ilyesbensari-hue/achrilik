@@ -230,11 +230,22 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
 
                             {!isEditing && (
                                 <button
-                                    onClick={() => {
-                                        localStorage.removeItem('user');
-                                        localStorage.removeItem('userId');
-                                        localStorage.removeItem('userRole');
-                                        window.location.href = '/';
+                                    onClick={async () => {
+                                        try {
+                                            // Call logout API to clear HttpOnly cookie
+                                            await fetch('/api/auth/logout', { method: 'POST' });
+                                            // Clear localStorage
+                                            localStorage.removeItem('user');
+                                            localStorage.removeItem('userId');
+                                            localStorage.removeItem('userRole');
+                                            // Redirect to home
+                                            window.location.href = '/';
+                                        } catch (error) {
+                                            console.error('Logout error:', error);
+                                            // Fallback: still clear localStorage and redirect
+                                            localStorage.removeItem('user');
+                                            window.location.href = '/';
+                                        }
                                     }}
                                     className="btn w-full bg-red-50 text-red-600 hover:bg-red-100"
                                 >
