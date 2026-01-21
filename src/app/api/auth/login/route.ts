@@ -34,14 +34,17 @@ export async function POST(request: Request) {
             role: user.role
         });
 
-        // 4. Set Cookie MANUALLY (workaround for Next.js 15+ Vercel bug)
+        // 4. Set Cookie with explicit Domain for Edge Runtime compatibility
         const isProduction = process.env.NODE_ENV === 'production';
+        const domain = isProduction ? '.achrilik.com' : undefined; // Leading dot allows subdomains
+
         const cookieHeader = [
             `auth_token=${token}`,
             'HttpOnly',
             isProduction ? 'Secure' : '',
             'SameSite=Lax',
             'Path=/',
+            domain ? `Domain=${domain}` : '',
             `Max-Age=${60 * 60 * 24 * 7}` // 7 days
         ].filter(Boolean).join('; ');
 
