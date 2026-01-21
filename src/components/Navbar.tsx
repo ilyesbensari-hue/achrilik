@@ -86,35 +86,35 @@ export default function Navbar() {
             : 'bg-white border-b'
             }`}>
             <div className="container flex items-center justify-between h-16 px-4 gap-4">
-                {/* Logo - Left */}
-                <Link href="/" className="flex-shrink-0">
-                    <Image
-                        src="/achrilik-logo.png"
-                        alt="Achrilik Logo"
-                        width={120}
-                        height={40}
-                        className="h-8 md:h-10 w-auto object-contain"
-                        priority
-                    />
-                </Link>
+                {/* Hamburger Menu - Left */}
+                <button
+                    onClick={() => setMobileMenuOpen(true)}
+                    className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                    aria-label="Menu"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
 
                 {/* Search Bar - Center (visible on both mobile and desktop) */}
                 <div className="flex-1 max-w-md md:max-w-2xl mx-4">
                     <SearchBar />
                 </div>
 
-                {/* Right Side: Hamburger Menu + Actions */}
+                {/* Right Side: Logo + Actions */}
                 <div className="flex items-center gap-2 md:gap-4">
-                    {/* Hamburger Menu Button */}
-                    <button
-                        onClick={() => setMobileMenuOpen(true)}
-                        className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label="Menu"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+                    {/* Logo - Right */}
+                    <Link href="/" className="flex-shrink-0">
+                        <Image
+                            src="/achrilik-logo.png"
+                            alt="Achrilik Logo"
+                            width={120}
+                            height={40}
+                            className="h-8 md:h-10 w-auto object-contain"
+                            priority
+                        />
+                    </Link>
 
                     {/* Account - Hidden on Mobile */}
                     {user ? (
