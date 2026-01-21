@@ -156,6 +156,15 @@ export default function Navbar() {
                                             >
                                                 👋 {user.name} <span className="text-xs text-gray-400 ml-1">(Accéder au profil)</span>
                                             </Link>
+                                            {user.role === 'ADMIN' && (
+                                                <Link
+                                                    href="/admin"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="block px-3 py-2 text-base font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors"
+                                                >
+                                                    👑 Dashboard Admin
+                                                </Link>
+                                            )}
                                             <button
                                                 onClick={handleLogout}
                                                 className="w-full text-left p-3 rounded-xl bg-gray-50 text-red-600 font-medium hover:bg-red-50 transition-colors"
