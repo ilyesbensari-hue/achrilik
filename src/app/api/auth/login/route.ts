@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth-token';
@@ -33,9 +34,9 @@ export async function POST(request: Request) {
             role: user.role
         });
 
-        // 4. Set Cookie
-        const response = NextResponse.json({ success: true, user: { name: user.name, email: user.email, role: user.role } });
-        response.cookies.set('auth_token', token, {
+        // 4. Set Cookie using cookies() API (Next.js 15+ compatible)
+        const cookieStore = await cookies();
+        cookieStore.set('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -43,7 +44,14 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24 * 7 // 7 days
         });
 
-        return response;
+        return NextResponse.json({
+            success: true,
+            user: {
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
 
     } catch (error) {
         console.error('Login error:', error);
