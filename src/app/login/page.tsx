@@ -1,3 +1,4 @@
+```typescript
 "use client";
 
 import { useState, Suspense } from 'react';
@@ -11,6 +12,8 @@ function LoginForm() {
     const { refresh } = useAuth();
 
     const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -31,7 +34,13 @@ function LoginForm() {
             });
 
             if (res.ok) {
+                // Success
+                const data = await res.json(); // Assuming data contains user info
+                localStorage.setItem('user', JSON.stringify(data.user));
+                // Trigger storage event to update Navbar
+                window.dispatchEvent(new Event('storage'));
                 await refresh(); // Refresh user context
+                // Redirect to callback URL or home
                 router.push(callbackUrl);
                 router.refresh();
             } else {
