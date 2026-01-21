@@ -57,16 +57,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Link
                         href="/admin"
                         className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${pathname === '/admin' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
                     >
                         <span>📊</span>
                         <span>Dashboard</span>
                     </Link>
                     <Link
                         href="/admin/users"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${pathname === '/admin/users' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
                     >
                         <span>👥</span>
-                        <span>Utilisateurs</span>
+                        Utilisateurs
+                    </Link>
+                    <Link
+                        href="/admin/orders"
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${pathname === '/admin/orders' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+                            }`}
+                    >
+                        <span>🛒</span>
+                        Commandes
                     </Link>
                     <Link
                         href="/admin/products"
