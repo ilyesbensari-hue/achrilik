@@ -7,10 +7,18 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const city = searchParams.get('city');
         const clickCollect = searchParams.get('clickCollect');
+        const search = searchParams.get('search');
 
         const whereClause: any = {};
         if (city) whereClause.city = city;
         if (clickCollect === 'true') whereClause.clickCollect = true;
+
+        if (search) {
+            whereClause.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } }
+            ];
+        }
 
         const stores = await prisma.store.findMany({
             where: whereClause,
