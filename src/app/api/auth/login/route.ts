@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth-token';
@@ -34,17 +34,18 @@ export async function POST(request: Request) {
             role: user.role
         });
 
-        // 4. Set Cookie using cookies() API (Next.js 15+ compatible)
-        const cookieStore = await cookies();
-        cookieStore.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24 * 7 // 7 days
-        });
+        // 4. Set Cookie MANUALLY (workaround for Next.js 15+ Vercel bug)
+        const isProduction = process.env.NODE_ENV === 'production';
+        const cookieHeader = [
+            `auth_token=${token}`,
+            'HttpOnly',
+            isProduction ? 'Secure' : '',
+            'SameSite=Lax',
+            'Path=/',
+            `Max-Age=${60 * 60 * 24 * 7}` // 7 days
+        ].filter(Boolean).join('; ');
 
-        return NextResponse.json({
+        const response = NextResponse.json({
             success: true,
             user: {
                 name: user.name,
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
                 role: user.role
             }
         });
+
+        response.headers.set('Set-Cookie', cookieHeader);
+
+        return response;
 
     } catch (error) {
         console.error('Login error:', error);
