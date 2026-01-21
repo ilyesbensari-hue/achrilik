@@ -6,6 +6,15 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('auth_token')?.value;
     const { pathname } = request.nextUrl;
 
+    // DEBUG: Log all cookies received by middleware
+    console.log('[MIDDLEWARE DEBUG]', {
+        pathname,
+        hasToken: !!token,
+        tokenLength: token?.length || 0,
+        allCookies: Array.from(request.cookies.getAll()).map(c => c.name),
+        headers: Object.fromEntries(request.headers.entries())
+    });
+
     // Define protected routes
     const isProtected =
         pathname.startsWith('/admin') ||
@@ -20,6 +29,7 @@ export async function middleware(request: NextRequest) {
 
     // 2. Start verifying token
     if (!token) {
+        console.log('[MIDDLEWARE] No token found, redirecting to login');
         // Redirect to login if no token
         return NextResponse.redirect(new URL(`/login?callbackUrl=${pathname}`, request.url));
     }
@@ -28,8 +38,11 @@ export async function middleware(request: NextRequest) {
 
     // 3. If token invalid, redirect
     if (!payload) {
+        console.log('[MIDDLEWARE] Token invalid, redirecting to login');
         return NextResponse.redirect(new URL(`/login?callbackUrl=${pathname}`, request.url));
     }
+
+    console.log('[MIDDLEWARE] Token valid, allowing access', { user: payload.email });
 
     // 4. Role Protection (Admin)
     if (pathname.startsWith('/admin') && payload.role !== 'ADMIN') {
