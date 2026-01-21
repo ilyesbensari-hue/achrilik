@@ -38,6 +38,9 @@ model Store {
   phone        String?   // Contact phone number
   hours        String?   // Opening hours (JSON format)
   clickCollect Boolean   @default(true) // Click & Collect available
+  verified     Boolean   @default(false) // Vendeur certifié ✓
+  verifiedAt   DateTime? // Date de certification
+  verifiedBy   String?   // Admin ID qui a vérifié
   createdAt    DateTime  @default(now())
 }
 

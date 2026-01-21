@@ -14,6 +14,7 @@ interface User {
     store: {
         id: string;
         name: string;
+        verified: boolean;
         _count: {
             products: number;
         };
@@ -81,6 +82,26 @@ export default function AdminUsers() {
         } catch (error) {
             console.error('Error deleting user:', error);
             alert('Erreur lors de la suppression');
+        }
+    };
+
+    const toggleVerification = async (storeId: string, currentStatus: boolean) => {
+        const action = currentStatus ? 'retirer la certification' : 'certifier';
+        if (!confirm(`Voulez-vous ${action} ce vendeur ?`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/stores/${storeId}/verify`, {
+                method: 'POST'
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                alert(data.verified ? '✅ Vendeur certifié !' : 'Certification retirée');
+                fetchUsers();
+            }
+        } catch (error) {
+            console.error('Error toggling verification:', error);
+            alert('Erreur lors de la certification');
         }
     };
 
@@ -179,9 +200,18 @@ export default function AdminUsers() {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-900">
                                         {user.store ? (
-                                            <div>
-                                                <p>{user.store.name}</p>
-                                                <p className="text-xs text-gray-500">{user.store._count.products} produits</p>
+                                            <div className="flex items-center gap-2">
+                                                <div>
+                                                    <p className="flex items-center gap-1">
+                                                        {user.store.name}
+                                                        {user.store.verified && (
+                                                            <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded-full text-xs" title="Vendeur Certifié">
+                                                                ✓
+                                                            </span>
+                                                        )}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">{user.store._count.products} produits</p>
+                                                </div>
                                             </div>
                                         ) : (
                                             <span className="text-gray-400">-</span>
@@ -189,23 +219,36 @@ export default function AdminUsers() {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-900">{user._count.orders}</td>
                                     <td className="px-6 py-4">
-                                        <div className="flex gap-2">
-                                            <select
-                                                onChange={(e) => changeUserRole(user.id, e.target.value)}
-                                                className="text-sm border border-gray-300 rounded px-2 py-1"
-                                                defaultValue=""
-                                            >
-                                                <option value="" disabled>Changer rôle</option>
-                                                <option value="BUYER">BUYER</option>
-                                                <option value="SELLER">SELLER</option>
-                                                <option value="ADMIN">ADMIN</option>
-                                            </select>
-                                            <button
-                                                onClick={() => deleteUser(user.id)}
-                                                className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                            >
-                                                Supprimer
-                                            </button>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex gap-2">
+                                                <select
+                                                    onChange={(e) => changeUserRole(user.id, e.target.value)}
+                                                    className="text-sm border border-gray-300 rounded px-2 py-1"
+                                                    defaultValue=""
+                                                >
+                                                    <option value="" disabled>Changer rôle</option>
+                                                    <option value="BUYER">BUYER</option>
+                                                    <option value="SELLER">SELLER</option>
+                                                    <option value="ADMIN">ADMIN</option>
+                                                </select>
+                                                <button
+                                                    onClick={() => deleteUser(user.id)}
+                                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                >
+                                                    Supprimer
+                                                </button>
+                                            </div>
+                                            {user.store && (
+                                                <button
+                                                    onClick={() => toggleVerification(user.store!.id, user.store!.verified)}
+                                                    className={`text-sm font-medium px-3 py-1 rounded ${user.store.verified
+                                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                        }`}
+                                                >
+                                                    {user.store.verified ? '✓ Certifié' : '✓ Certifier'}
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
