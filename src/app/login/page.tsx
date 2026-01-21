@@ -1,81 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useActionState } from 'react';
+import { authenticate } from '@/app/lib/actions';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-
-    // Redirect if already logged in
-    useEffect(() => {
-        const user = localStorage.getItem('user');
-        if (user) {
-            try {
-                const userData = JSON.parse(user);
-                if (userData.role === 'SELLER') {
-                    router.push('/sell');
-                } else {
-                    router.push('/');
-                }
-            } catch (e) {
-                // Invalid user data, clear it
-                localStorage.removeItem('user');
-            }
-        }
-    }, [router]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ email, password }),
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            const data = await res.json();
-
-            if (data.id) {
-                // Store as single user object
-                const user = {
-                    id: data.id,
-                    email: data.email || email,
-                    name: data.name,
-                    role: data.role
-                };
-                localStorage.setItem('user', JSON.stringify(user));
-
-                // Clear old keys if they exist
-                localStorage.removeItem('userId');
-                localStorage.removeItem('userRole');
-                localStorage.removeItem('userName');
-
-                // Trigger storage event for other components
-                window.dispatchEvent(new Event('storage'));
-
-                // Redirect based on role
-                if (data.role === 'SELLER') {
-                    router.push('/sell');
-                } else {
-                    router.push('/');
-                }
-            } else {
-                alert(data.error || 'Erreur de connexion');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erreur de connexion');
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined);
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 p-4">
@@ -90,7 +23,8 @@ export default function LoginPage() {
                         </p>
                     </div>
 
-                    <form className="space-y-5" onSubmit={handleSubmit}>
+                    <form action={formAction} className="space-y-5">
+                        <input type="hidden" name="redirectTo" value={callbackUrl} />
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                                 Adresse Email
@@ -102,8 +36,6 @@ export default function LoginPage() {
                                 required
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
                                 placeholder="votre@email.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
 
@@ -118,17 +50,21 @@ export default function LoginPage() {
                                 required
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
                                 placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
 
+                        {errorMessage && (
+                            <div className="flex bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                                <p>{errorMessage}</p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
-                            disabled={loading}
+                            aria-disabled={isPending}
                             className="bg-[#006233] hover:bg-[#004d28] w-full py-3 px-4 rounded-lg text-white font-medium transition-colors shadow-sm mt-4 disabled:opacity-50"
                         >
-                            {loading ? 'Connexion...' : 'Se connecter'}
+                            {isPending ? 'Connexion en cours...' : 'Se connecter'}
                         </button>
                     </form>
 

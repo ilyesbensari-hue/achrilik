@@ -5,55 +5,28 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
-
-interface User {
-    id: string;
-    email: string;
-    name: string;
-    role: 'BUYER' | 'SELLER';
-}
+import { useSession, signOut } from 'next-auth/react';
+import type { User } from '@/lib/definitions';
 
 export default function Navbar() {
+    const { data: session } = useSession();
+    const user = session?.user as User | undefined; // Cast to our User type if needed, or rely on module augmentation
+
     const [cartCount, setCartCount] = useState(0);
     const [scrolled, setScrolled] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        // Check for user session
-        const userSession = localStorage.getItem('user');
-        if (userSession) {
-            try {
-                setUser(JSON.parse(userSession));
-            } catch (e) {
-                localStorage.removeItem('user');
-            }
-        }
-
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        setCartCount(cart.length);
-
         const handleStorage = () => {
             const c = JSON.parse(localStorage.getItem('cart') || '[]');
             setCartCount(c.length);
-
-            // Check for user changes
-            const u = localStorage.getItem('user');
-            if (u) {
-                try {
-                    setUser(JSON.parse(u));
-                } catch (e) {
-                    setUser(null);
-                }
-            } else {
-                setUser(null);
-            }
         }
-        window.addEventListener('storage', handleStorage);
 
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 10);
-        };
+        // Initial load
+        handleStorage();
+
+        window.addEventListener('storage', handleStorage);
+        const handleScroll = () => setScrolled(window.scrollY > 10);
         window.addEventListener('scroll', handleScroll);
 
         return () => {
@@ -63,19 +36,7 @@ export default function Navbar() {
     }, []);
 
     const handleLogout = () => {
-        // Clear new key
-        localStorage.removeItem('user');
-        // Clear old keys for backwards compatibility
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('userName');
-
-        setUser(null);
-
-        // Trigger storage event for other components
-        window.dispatchEvent(new Event('storage'));
-
-        window.location.href = '/';
+        signOut({ callbackUrl: '/' });
     };
 
 

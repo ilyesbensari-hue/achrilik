@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendOrderConfirmation, sendNewOrderNotification } from '@/lib/mail';
 
 // GET - Fetch orders for a user or store
 export async function GET(request: Request) {
@@ -85,9 +87,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
         }
 
-        // Calculate total
-        // Verify stock for all items first
-        // We use a transaction to ensure atomic operations
         const order = await prisma.$transaction(async (tx) => {
             let total = 0;
 
@@ -106,7 +105,6 @@ export async function POST(request: Request) {
                     throw new Error(`Stock insuffisant pour: ${item.title}`);
                 }
 
-                // Recalculate price from DB to avoid client-side tampering
                 total += variant.product.price * item.quantity;
             }
 
@@ -122,21 +120,24 @@ export async function POST(request: Request) {
                     total,
                     paymentMethod,
                     deliveryType: deliveryMethod,
-                    // Store delivery details in a separate way or just assume they are on User?
-                    // The schema has `address` on User, but Order might need specific shipping address.
-                    // The schema Order model doesn't have shippingAddress fields. 
-                    // We should probably add them or store them in a JSON field if available, 
-                    // but for now let's rely on the fact that User has address or we assume it's standard.
-                    // WAIT: I saw `address`, `phone` in schema for User.
-                    // Let's update User address if provided? Or just assume it's fine.
-                    // The user wanted "Real Checkout". Detailed address history is bonus.
-                    // Let's create the order items linked to it.
                     items: {
                         create: cart.map((item: any) => ({
                             variantId: item.variantId,
                             quantity: item.quantity,
-                            price: item.price // We should ideally use DB price, but for speed using Item price (validated above typically)
+                            price: item.price
                         }))
+                    }
+                },
+                include: {
+                    user: true, // For Buyer Email
+                    items: {
+                        include: {
+                            variant: {
+                                include: {
+                                    product: true // For Store ID
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -153,6 +154,33 @@ export async function POST(request: Request) {
 
             return newOrder;
         });
+
+        // ==========================================
+        //         EMAIL NOTIFICATIONS
+        // ==========================================
+
+        // 1. Send Email to Buyer
+        if (order.user && order.user.email) {
+            await sendOrderConfirmation(order.user.email, order);
+        }
+
+        // 2. Send Email to Sellers
+        // Extract unique store IDs involved in this order
+        const storeIds = Array.from(new Set(order.items.map((item: any) => item.variant.product.storeId)));
+
+        if (storeIds.length > 0) {
+            const stores = await prisma.store.findMany({
+                where: { id: { in: storeIds as string[] } },
+                include: { owner: true }
+            });
+
+            for (const store of stores) {
+                if (store.owner && store.owner.email) {
+                    // Send notification to each seller involved
+                    await sendNewOrderNotification(store.owner.email, order);
+                }
+            }
+        }
 
         return NextResponse.json({ success: true, orderId: order.id });
 

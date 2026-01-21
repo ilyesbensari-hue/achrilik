@@ -1,25 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false, // true for 465, false for other ports
+    port: parseInt(process.env.SMTP_PORT || '465'),
+    secure: process.env.SMTP_PORT === '465', // true for 465, false for others
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
 });
 
+const SENDER_EMAIL = '"Achrilik" <contact@achrilik.com>';
+
 export async function sendOrderConfirmation(to: string, order: any) {
-    if (!process.env.SMTP_USER) {
-        console.log('⚠️ SMTP_USER not set. Skipping email sending.');
-        console.log(`[Mock Email] To: ${to}, Subject: Confirmation de commande #${order.id}`);
-        return;
-    }
+    if (!process.env.SMTP_USER) return;
 
     try {
-        const info = await transporter.sendMail({
-            from: '"Achrilik Store" <no-reply@achrilik.com>',
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
             to: to,
             subject: `Confirmation de votre commande #${order.id.slice(0, 8)}`,
             html: `
@@ -40,22 +39,17 @@ export async function sendOrderConfirmation(to: string, order: any) {
                 </div>
             `,
         });
-        console.log("Message sent: %s", info.messageId);
     } catch (error) {
         console.error("Error sending order confirmation email:", error);
     }
 }
 
 export async function sendNewOrderNotification(to: string, order: any) {
-    if (!process.env.SMTP_USER) {
-        console.log('⚠️ SMTP_USER not set. Skipping email sending.');
-        console.log(`[Mock Email] To: ${to}, Subject: Nouvelle vente ! #${order.id}`);
-        return;
-    }
+    if (!process.env.SMTP_USER) return;
 
     try {
-        const info = await transporter.sendMail({
-            from: '"Achrilik System" <system@achrilik.com>',
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
             to: to,
             subject: `💰 Nouvelle vente ! Commande #${order.id.slice(0, 8)}`,
             html: `
@@ -71,12 +65,33 @@ export async function sendNewOrderNotification(to: string, order: any) {
                     </div>
 
                     <p>Connectez-vous à votre tableau de bord vendeur pour traiter cette commande.</p>
-                    <a href="${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/profile" style="background: #006233; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Gérer ma commande</a>
+                    <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile" style="background: #006233; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Gérer ma commande</a>
                 </div>
             `,
         });
-        console.log("Message sent: %s", info.messageId);
     } catch (error) {
         console.error("Error sending seller notification email:", error);
+    }
+}
+
+export async function sendWelcomeEmail(to: string, name: string) {
+    if (!process.env.SMTP_USER) return;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: to,
+            subject: 'Bienvenue sur Achrilik !',
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h1 style="color: #006233;">Bienvenue ${name} !</h1>
+                    <p>Nous sommes ravis de vous compter parmi nous.</p>
+                    <p>Toute l'équipe d'Achrilik vous souhaite de bons achats.</p>
+                    <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}" style="background: #006233; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Commencer mes achats</a>
+                </div>
+            `,
+        });
+    } catch (error) {
+        console.error("Error sending welcome email:", error);
     }
 }

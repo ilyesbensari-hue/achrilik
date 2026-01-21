@@ -1,66 +1,11 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useActionState } from 'react';
+import { register } from '@/app/lib/actions';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function RegisterPage() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({
-                    email,
-                    password,
-                    userType: 'BUYER', // All new accounts are buyers
-                    isRegister: true,
-                    name
-                }),
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            const data = await res.json();
-
-            if (data.id) {
-                // Store user session
-                const user = {
-                    id: data.id,
-                    email: data.email,
-                    name: data.name,
-                    role: data.role || 'BUYER' // Use role from server
-                };
-                localStorage.setItem('user', JSON.stringify(user));
-
-                // Clear old keys
-                localStorage.removeItem('userId');
-                localStorage.removeItem('userRole');
-                localStorage.removeItem('userName');
-
-                // Trigger storage event
-                window.dispatchEvent(new Event('storage'));
-
-                // All new users go to homepage
-                router.push('/');
-            } else {
-                alert(data.error || 'Erreur lors de l\'inscription');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erreur de connexion');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [errorMessage, formAction, isPending] = useActionState(register, undefined);
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 p-4">
@@ -78,7 +23,6 @@ export default function RegisterPage() {
                         </p>
                     </div>
                     <div className="relative h-64 w-full">
-                        {/* Placeholder for illustration if needed, or just text */}
                         <div className="absolute inset-0 flex items-center justify-center text-green-200 opacity-20 text-9xl">
                             🛍️
                         </div>
@@ -93,41 +37,45 @@ export default function RegisterPage() {
                         <p className="text-xs text-gray-400 mt-1">Vous voulez vendre ? <Link href="/why-sell" className="text-[#006233] hover:underline font-medium">En savoir plus</Link></p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form action={formAction} className="space-y-4">
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                             <input
+                                name="email"
                                 type="email"
                                 required
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
                                 placeholder="votre@email.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
                             <input
+                                name="password"
                                 type="password"
                                 required
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
                                 placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
 
+                        {errorMessage && (
+                            <div className="flex bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                                <p>{errorMessage}</p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
-                            disabled={loading}
-                            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors shadow-sm mt-6 ${loading
+                            aria-disabled={isPending}
+                            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors shadow-sm mt-6 ${isPending
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-[#006233] hover:bg-[#004d28]'
                                 }`}
                         >
-                            {loading ? 'Création...' : 'Créer mon compte'}
+                            {isPending ? 'Création...' : 'Créer mon compte'}
                         </button>
                     </form>
 

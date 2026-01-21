@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   description: "Vente de vêtements en ligne en Algérie. Click & Collect, Paiement à la livraison.",
 };
 
+import { Providers } from "@/app/providers";
+
+// ... (imports)
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,12 +27,14 @@ export default function RootLayout({
     <html lang="fr">
       <body className={inter.className}>
         <PHProvider>
-          <Navbar />
-          <DeliveryBanner />
-          <div className="pb-[120px] md:pb-0">
-            {children}
-          </div>
-          <BottomNav />
+          <Providers>
+            <Navbar />
+            <DeliveryBanner />
+            <div className="pb-[120px] md:pb-0">
+              {children}
+            </div>
+            <BottomNav />
+          </Providers>
         </PHProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
