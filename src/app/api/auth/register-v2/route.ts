@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth-token';
@@ -16,7 +15,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' }, { status: 400 });
         }
         if (!phone || !PHONE_REGEX.test(phone)) {
-            return NextResponse.json({ error: 'Numéro de téléphone invalide (Doit commencer par 05, 06 ou 07 et contenir 10 chiffres).' }, { status: 400 });
+            return NextResponse.json({ error: 'N número de téléphone invalide (Doit commencer par 05, 06 ou 07 et contenir 10 chiffres).' }, { status: 400 });
         }
 
         // 2. Check Exists
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
         // 4. Send Email (Async, don't block)
         sendWelcomeEmail(email, user.name || 'Client').catch(console.error);
 
-        // 5. Auto Login (Token) using cookies() API (Next.js 15+ compatible)
+        // 5. Auto Login - Manual Set-Cookie (workaround for Next.js 15+ Vercel bug)
         const token = await signToken({
             id: user.id,
             email: user.email,
@@ -48,16 +47,22 @@ export async function POST(request: Request) {
             role: user.role
         });
 
-        const cookieStore = await cookies();
-        cookieStore.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 60 * 60 * 24 * 7
-        });
+        const response = NextResponse.json({ success: true });
 
-        return NextResponse.json({ success: true });
+        // Construct Set-Cookie header manually
+        const isProduction = process.env.NODE_ENV === 'production';
+        const cookieHeader = [
+            `auth_token=${token}`,
+            'HttpOnly',
+            isProduction ? 'Secure' : '',
+            'SameSite=Lax',
+            'Path=/',
+            `Max-Age=${60 * 60 * 24 * 7}` // 7 days
+        ].filter(Boolean).join('; ');
+
+        response.headers.set('Set-Cookie', cookieHeader);
+
+        return response;
 
     } catch (error) {
         console.error('Register error:', error);
