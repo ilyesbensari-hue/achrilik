@@ -155,11 +155,11 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
           <div className="flex gap-4 overflow-x-auto pb-6 pt-2 snap-x hide-scrollbar justify-start lg:justify-center mb-8">
             {[
               { name: 'Top Nouveautés', img: '🔥', bg: 'bg-red-100', link: '/search?q=nouveau' },
-              { name: 'Femmes', img: '👗', bg: 'bg-pink-100', link: '/categories/femmes' },
-              { name: 'Hommes', img: '👔', bg: 'bg-blue-100', link: '/categories/hommes' },
-              { name: 'Enfants', img: '👶', bg: 'bg-yellow-100', link: '/categories/enfants' },
+              { name: 'Femmes', img: '👗', bg: 'bg-pink-100', link: '/categories/femme' },
+              { name: 'Hommes', img: '👔', bg: 'bg-blue-100', link: '/categories/homme' },
+              { name: 'Enfants', img: '👶', bg: 'bg-yellow-100', link: '/categories/enfant' },
               { name: 'Accessoires', img: '👓', bg: 'bg-orange-100', link: '/categories/accessoires' },
-              { name: 'High-Tech', img: '📱', bg: 'bg-gray-100', link: '/categories/electroniques' },
+              { name: 'High-Tech', img: '📱', bg: 'bg-gray-100', link: '/categories/electronique' },
               { name: 'Promos', img: '🏷️', bg: 'bg-green-100', link: '/search?q=promo' },
             ].map((item, i) => (
               <Link
