@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface User {
     id: string;
@@ -15,6 +15,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         // Vérifier que l'utilisateur est admin
@@ -56,8 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <nav className="space-y-2">
                     <Link
                         href="/admin"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${pathname === '/admin' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
                     >
                         <span>📊</span>
@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </Link>
                     <Link
                         href="/admin/users"
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${pathname === '/admin/users' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/users' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
                     >
                         <span>👥</span>
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </Link>
                     <Link
                         href="/admin/orders"
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${pathname === '/admin/orders' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-100'
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/orders' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
                     >
                         <span>🛒</span>
