@@ -5,12 +5,10 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
-import { useSession, signOut } from 'next-auth/react';
-import type { User } from '@/lib/definitions';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
-    const { data: session } = useSession();
-    const user = session?.user as User | undefined; // Cast to our User type if needed, or rely on module augmentation
+    const { user, logout } = useAuth();
 
     const [cartCount, setCartCount] = useState(0);
     const [scrolled, setScrolled] = useState(false);
@@ -35,8 +33,8 @@ export default function Navbar() {
         };
     }, []);
 
-    const handleLogout = () => {
-        signOut({ callbackUrl: '/' });
+    const handleLogout = async () => {
+        await logout();
     };
 
 

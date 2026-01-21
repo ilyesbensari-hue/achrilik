@@ -1,14 +1,49 @@
 "use client";
 
-import { useActionState, Suspense } from 'react';
-import { authenticate } from '@/app/lib/actions';
-import { useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 function LoginForm() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const { refresh } = useAuth();
+
     const callbackUrl = searchParams.get('callbackUrl') || '/';
-    const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError('');
+        setIsLoading(true);
+
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get('email');
+        const password = formData.get('password');
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (res.ok) {
+                await refresh(); // Refresh user context
+                router.push(callbackUrl);
+                router.refresh();
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Erreur de connexion');
+            }
+        } catch (err) {
+            setError('Erreur de connexion serveur');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="card bg-white p-8 shadow-xl">
@@ -21,8 +56,7 @@ function LoginForm() {
                 </p>
             </div>
 
-            <form action={formAction} className="space-y-5">
-                <input type="hidden" name="redirectTo" value={callbackUrl} />
+            <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                         Adresse Email
@@ -51,18 +85,18 @@ function LoginForm() {
                     />
                 </div>
 
-                {errorMessage && (
+                {error && (
                     <div className="flex bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                        <p>{errorMessage}</p>
+                        <p>{error}</p>
                     </div>
                 )}
 
                 <button
                     type="submit"
-                    aria-disabled={isPending}
+                    disabled={isLoading}
                     className="bg-[#006233] hover:bg-[#004d28] w-full py-3 px-4 rounded-lg text-white font-medium transition-colors shadow-sm mt-4 disabled:opacity-50"
                 >
-                    {isPending ? 'Connexion en cours...' : 'Se connecter'}
+                    {isLoading ? 'Connexion en cours...' : 'Se connecter'}
                 </button>
             </form>
 
