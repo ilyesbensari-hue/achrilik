@@ -65,6 +65,18 @@ model Product {
   variants        Variant[]
   status          String     @default("PENDING") // PENDING, APPROVED, REJECTED
   rejectionReason String?
+  
+  // New Attributes
+  material        String?    // e.g., "Coton", "Polyester", "Cuir"
+  fit             String?    // e.g., "Slim", "Regular", "Oversize" (for clothes)
+  dimensions      String?    // e.g., "10x20x5 cm" (for objects/accessories)
+  warranty        String?    // e.g., "12 mois", "Garantie constructeur"
+  technicalSpecs  String?    // JSON or long text for electronics specific specs
+
+  // Promotions
+  discountPrice   Float?     // If set, this is the active promo price
+  promotionLabel  String?    // e.g., "Solde", "Promo d'été"
+
   createdAt       DateTime   @default(now())
   reviews         Review[]
   wishlists       Wishlist[]

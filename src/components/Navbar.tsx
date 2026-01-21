@@ -85,13 +85,30 @@ export default function Navbar() {
             ? 'bg-white/95 backdrop-blur-md shadow-md'
             : 'bg-white border-b'
             }`}>
-            <div className="container flex items-center justify-between h-16 px-4">
-                {/* Mobile Left: Hamburger + Logo (Logo hidden on mobile now) */}
-                <div className="flex items-center gap-3">
-                    {/* Mobile Menu Button */}
+            <div className="container flex items-center justify-between h-16 px-4 gap-4">
+                {/* Logo - Left */}
+                <Link href="/" className="flex-shrink-0">
+                    <Image
+                        src="/achrilik-logo.png"
+                        alt="Achrilik Logo"
+                        width={120}
+                        height={40}
+                        className="h-8 md:h-10 w-auto object-contain"
+                        priority
+                    />
+                </Link>
+
+                {/* Search Bar - Center (visible on both mobile and desktop) */}
+                <div className="flex-1 max-w-md md:max-w-2xl mx-4">
+                    <SearchBar />
+                </div>
+
+                {/* Right Side: Hamburger Menu + Actions */}
+                <div className="flex items-center gap-2 md:gap-4">
+                    {/* Hamburger Menu Button */}
                     <button
                         onClick={() => setMobileMenuOpen(true)}
-                        className="lg:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                         aria-label="Menu"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,51 +116,9 @@ export default function Navbar() {
                         </svg>
                     </button>
 
-                    {/* Desktop Logo (Visible only on Desktop) */}
-                    <Link href="/" className="hidden lg:block flex-shrink-0">
-                        <Image
-                            src="/achrilik-logo.png"
-                            alt="Achrilik Logo"
-                            width={120}
-                            height={40}
-                            className="h-10 w-auto object-contain"
-                            priority
-                        />
-                    </Link>
-                </div>
-
-                {/* Search Bar - Visible on Desktop */}
-                <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-                    <SearchBar />
-                </div>
-
-
-
-                {/* Mobile Right: Logo (Mobile) / User + Cart (Desktop) */}
-                <div className="flex items-center gap-2 md:gap-4">
-                    {/* Mobile Logo (Replaces Profile/Cart on Mobile) */}
-                    <Link href="/" className="lg:hidden block">
-                        <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center shadow-sm hover:bg-gray-100 transition-colors">
-                            <Image
-                                src="/achrilik-logo.png"
-                                alt="Achrilik"
-                                width={40}
-                                height={40}
-                                className="w-auto h-4 object-contain opacity-90"
-                            />
-                        </div>
-                    </Link>
-
-                    {/* Search - Hidden on mobile, often toggleable - Replaced with existing search button */}
-                    <button className="p-2 text-gray-700 hover:text-[#006233] transition-colors hidden"> {/* Hidden as desktop search is already present */}
-                        {/* <Search size={22} strokeWidth={2} /> */}
-                    </button>
-
                     {/* Account - Hidden on Mobile */}
-                    {/* status === 'loading' is not defined, using user state */}
                     {user ? (
                         <Link href="/profile" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative group">
-                            {/* Replaced User icon with existing SVG */}
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -170,10 +145,8 @@ export default function Navbar() {
                         </Link>
                     )}
 
-
                     {/* Cart - Hidden on Mobile */}
                     <Link href="/cart" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
-                        {/* Replaced ShoppingBag icon with existing SVG */}
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
@@ -284,12 +257,6 @@ export default function Navbar() {
                                 {/* Mobile Categories */}
                                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Explorer</h3>
                                 <CategoryList variant="mobile" onNavigate={() => setMobileMenuOpen(false)} />
-
-                                {/* Mobile Search */}
-                                <div className="mt-6">
-                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">Recherche</h3>
-                                    <SearchBar className="mb-4" />
-                                </div>
                             </div>
                         </div>
                     </div>

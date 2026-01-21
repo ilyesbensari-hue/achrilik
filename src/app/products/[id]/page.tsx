@@ -141,7 +141,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
                         {/* Title & Price */}
                         <div>
-                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 mb-3">{product.title}</h1>
+                            <div className="flex justify-between items-start gap-4">
+                                <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-3 leading-tight">{product.title}</h1>
+                                {product.promotionLabel && (
+                                    <span className="px-3 py-1 bg-red-100 text-red-600 font-bold text-xs uppercase tracking-wider rounded-md animate-pulse">
+                                        {product.promotionLabel}
+                                    </span>
+                                )}
+                            </div>
 
                             {/* Product Rating Stars */}
                             {product.reviews && product.reviews.length > 0 && (
@@ -158,19 +165,87 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 </div>
                             )}
 
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-black text-indigo-600">{product.price.toLocaleString()} DA</span>
+                            <div className="flex flex-col gap-1 mt-4">
+                                <div className="flex items-baseline gap-3">
+                                    {product.discountPrice ? (
+                                        <>
+                                            <span className="text-4xl font-black text-red-600">{product.discountPrice.toLocaleString()} DA</span>
+                                            <span className="text-xl text-gray-400 line-through decoration-2 decoration-gray-300">
+                                                {product.price.toLocaleString()} DA
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span className="text-4xl font-black text-indigo-600">{product.price.toLocaleString()} DA</span>
+                                    )}
+                                </div>
                                 {product.category && (
-                                    <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-full">
+                                    <span className="self-start px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-100">
                                         {product.category.name}
                                     </span>
                                 )}
                             </div>
                         </div>
 
+                        {/* Warranty Badge */}
+                        {product.warranty && (
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg border border-green-100 text-sm font-medium">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Garantie: {product.warranty}
+                            </div>
+                        )}
+
+                        {/* Product Specifications Table */}
+                        <div className="border border-gray-100 rounded-xl overflow-hidden">
+                            <h3 className="bg-gray-50 px-4 py-3 font-semibold text-gray-900 border-b border-gray-100 flex items-center gap-2">
+                                <span>📋</span> Caractéristiques
+                            </h3>
+                            <div className="divide-y divide-gray-50 text-sm">
+                                {product.material && (
+                                    <div className="grid grid-cols-3 px-4 py-3">
+                                        <span className="text-gray-500">Matière</span>
+                                        <span className="col-span-2 font-medium text-gray-900">{product.material}</span>
+                                    </div>
+                                )}
+                                {product.fit && (
+                                    <div className="grid grid-cols-3 px-4 py-3 bg-white">
+                                        <span className="text-gray-500">Coupe</span>
+                                        <span className="col-span-2 font-medium text-gray-900">{product.fit}</span>
+                                    </div>
+                                )}
+                                {product.dimensions && (
+                                    <div className="grid grid-cols-3 px-4 py-3">
+                                        <span className="text-gray-500">Dimensions</span>
+                                        <span className="col-span-2 font-medium text-gray-900">{product.dimensions}</span>
+                                    </div>
+                                )}
+                                {/* Status default fallback */}
+                                {(!product.material && !product.fit && !product.dimensions) && (
+                                    <div className="px-4 py-3 text-gray-400 italic">Aucune caractéristique spécifique renseignée.</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Technical Specs (Electronics) */}
+                        {product.category?.slug.includes('electronique') && product.technicalSpecs && (
+                            <div className="bg-gray-900 text-white rounded-xl p-6">
+                                <h3 className="font-bold mb-4 flex items-center gap-2">
+                                    <span>⚡</span> Spécifications Techniques
+                                </h3>
+                                <pre className="font-mono text-sm whitespace-pre-wrap text-gray-300">
+                                    {product.technicalSpecs}
+                                </pre>
+                            </div>
+                        )}
+
+
                         {/* Description */}
-                        <div className="prose prose-sm text-gray-600 border-t border-b py-6">
-                            <p>{product.description}</p>
+                        <div>
+                            <h3 className="font-semibold text-gray-900 mb-2">Description détaillée</h3>
+                            <div className="prose prose-sm text-gray-600">
+                                <p>{product.description}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
