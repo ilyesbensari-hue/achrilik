@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 export async function GET(request: Request) {
     try {
         // Verify admin authentication
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const token = cookieStore.get('auth_token')?.value;
 
         if (!token) {

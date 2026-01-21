@@ -7,11 +7,14 @@ const prisma = new PrismaClient();
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        // Await params for Next.js 15+
+        const { id: storeId } = await params;
+
         // Verify admin authentication
-        const cookieStore = cookies();
+        const cookieStore = await cookies();
         const token = cookieStore.get('auth_token')?.value;
 
         if (!token) {
@@ -31,8 +34,6 @@ export async function POST(
         if (!admin || admin.role !== 'ADMIN') {
             return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
         }
-
-        const storeId = params.id;
 
         // Get current store
         const store = await prisma.store.findUnique({
