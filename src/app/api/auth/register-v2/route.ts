@@ -49,14 +49,17 @@ export async function POST(request: Request) {
 
         const response = NextResponse.json({ success: true });
 
-        // Construct Set-Cookie header manually
+        // Construct Set-Cookie header with explicit Domain for Edge Runtime compatibility
         const isProduction = process.env.NODE_ENV === 'production';
+        const domain = isProduction ? '.achrilik.com' : undefined; // Leading dot allows subdomains
+
         const cookieHeader = [
             `auth_token=${token}`,
             'HttpOnly',
             isProduction ? 'Secure' : '',
             'SameSite=Lax',
             'Path=/',
+            domain ? `Domain=${domain}` : '',
             `Max-Age=${60 * 60 * 24 * 7}` // 7 days
         ].filter(Boolean).join('; ');
 
