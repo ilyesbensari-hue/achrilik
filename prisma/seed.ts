@@ -451,7 +451,7 @@ async function main() {
                 ...data,
                 storeId: store.id,
                 Variant: {
-                    create: variants.map(v => ({ ...v, id: crypto.randomBytes(16).toString('hex') })),
+                    create: variants.map(v => ({ ...v, id: randomBytes(16).toString('hex') })),
                 },
             },
         });
