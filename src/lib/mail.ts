@@ -194,3 +194,61 @@ export async function sendPasswordResetEmail(to: string, resetToken: string, use
         console.error("Error sending password reset email:", error);
     }
 }
+
+// Send delivery person notification
+export async function sendDeliveryPersonNotification(to: string, order: any, deliveryPersonName: string) {
+    if (!process.env.SMTP_USER) return;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: to,
+            subject: `Nouvelle livraison à effectuer #${order.id.slice(0, 8)}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h1 style="color: #006233;">Nouvelle Livraison</h1>
+                    <p>Bonjour ${deliveryPersonName},</p>
+                    <p>Une nouvelle livraison vous a été assignée.</p>
+                    
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #006233;">
+                        <h3>Commande #${order.id.slice(0, 8)}</h3>
+                        <p><strong>Montant à collecter:</strong> ${order.total} DA ${order.paymentMethod === 'CASH' ? '💵 (Espèces)' : ''}</p>
+                        <p><strong>Nb articles:</strong> ${order.items?.length || 1}</p>
+                        ${order.trackingNumber ? `<p><strong>Tracking:</strong> ${order.trackingNumber}</p>` : ''}
+                    </div>
+
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h4 style="margin-top: 0;">📍 Adresse Départ (Récupération)</h4>
+                        <p style="margin: 5px 0;"><strong>${order.storeName || 'Vendeur'}</strong></p>
+                        <p style="margin: 5px 0;">${order.storeAddress || 'Adresse non fournie'}</p>
+                        <p style="margin: 5px 0;">${order.storeCity || ''}</p>
+                    </div>
+
+                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h4 style="margin-top: 0;">🏠 Adresse Livraison (Client)</h4>
+                        <p style="margin: 5px 0;"><strong>${order.shippingName || order.user?.name || 'Client'}</strong></p>
+                        <p style="margin: 5px 0;">${order.shippingAddress || 'Adresse non fournie'}</p>
+                        <p style="margin: 5px 0;">${order.shippingCity || ''}</p>
+                        ${order.shippingPhone ? `<p style="margin: 5px 0;">📞 ${order.shippingPhone}</p>` : ''}
+                    </div>
+
+                    ${order.notes ? `
+                    <div style="background: #e8f5f0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h4 style="margin-top: 0;">📝 Notes</h4>
+                        <p>${order.notes}</p>
+                    </div>
+                    ` : ''}
+
+                    <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                        Merci de confirmer la récupération et la livraison dans l'application.
+                    </p>
+                    
+                    <br>
+                    <p>Bonne livraison,<br>L'équipe Achrilik</p>
+                </div>
+            `,
+        });
+    } catch (error) {
+        console.error("Error sending delivery person notification:", error);
+    }
+}

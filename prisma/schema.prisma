@@ -149,10 +149,20 @@ model Order {
   estimatedDelivery  DateTime? // Expected delivery date
   notes              String?   // Admin/seller notes
   
+  // Payment Tracking (Cash on Delivery)
+  amountReceived     Float?    // Amount actually received
+  isPaid             Boolean   @default(false) // Payment confirmed
+  paidAt             DateTime? // When payment was received
+  
+  // Delivery Person
+  deliveryPersonName  String?  // Livreur assigné
+  deliveryPersonPhone String?  // Contact livreur
+  
   @@index([userId])
   @@index([status])
   @@index([createdAt])
   @@index([storeId])
+  @@index([isPaid])
 }
 
 model OrderItem {
