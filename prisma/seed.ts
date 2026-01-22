@@ -24,6 +24,7 @@ async function main() {
         where: { ownerId: seller.id },
         update: {},
         create: {
+            id: randomBytes(16).toString('hex'), // Generate ID
             name: 'Fashion Oran',
             description: 'Votre boutique de mode à Oran',
             ownerId: seller.id,
