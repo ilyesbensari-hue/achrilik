@@ -206,24 +206,29 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
 
                             {/* CTA for BUYERS to become sellers */}
                             {user.role === 'BUYER' && !isEditing && (
-                                <div className="space-y-2 w-full pt-2 border-t mt-2">
-                                    <Link
-                                        href="/become-seller"
-                                        className="btn w-full bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 flex items-center justify-center gap-2 shadow-lg"
-                                    >
-                                        <span>🚀</span> Devenir Vendeur
-                                    </Link>
-                                    <p className="text-xs text-gray-500 text-center px-2">
-                                        Créez votre boutique en 2 minutes • 0% commission
-                                    </p>
+                                <div className="w-full pt-4 border-t mt-4">
+                                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-xl border border-green-100">
+                                        <p className="text-sm text-gray-700 mb-2">
+                                            Vous souhaitez devenir vendeur ?
+                                        </p>
+                                        <Link
+                                            href="/become-seller"
+                                            className="text-green-600 font-medium hover:underline flex items-center gap-1 text-sm"
+                                        >
+                                            Créer ma boutique
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </Link>
+                                    </div>
                                 </div>
                             )}
 
                             {/* Dashboard link for SELLERS */}
-                            {user.role === 'SELLER' && !isEditing && (
-                                <div className="space-y-2 w-full pt-2 border-t mt-2">
-                                    <Link href="/sell" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
-                                        <span>📊</span> Mon Dashboard Vendeur
+                            {user.role === 'SELLER' && !isEditing && store && (
+                                <div className="w-full pt-2 border-t mt-2">
+                                    <Link href="/seller/dashboard" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
+                                        <span>🏪</span> Ma boutique en ligne
                                     </Link>
                                 </div>
                             )}
