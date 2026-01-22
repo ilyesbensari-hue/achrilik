@@ -153,6 +153,13 @@ export async function GET(request: Request) {
                 })
             );
 
+            // Compter les boutiques (stores/vendors)
+            const [totalStores, pendingStores, verifiedStores] = await Promise.all([
+                prisma.store.count(),
+                prisma.store.count({ where: { verified: false } }),
+                prisma.store.count({ where: { verified: true } })
+            ]);
+
             return NextResponse.json({
                 users: {
                     total: totalUsers,
@@ -166,6 +173,11 @@ export async function GET(request: Request) {
                     total: totalProducts,
                     pending: pendingProducts,
                     approved: approvedProducts
+                },
+                stores: {
+                    total: totalStores,
+                    pending: pendingStores,
+                    verified: verifiedStores
                 },
                 orders: {
                     total: totalOrders,

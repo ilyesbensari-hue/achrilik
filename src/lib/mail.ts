@@ -20,23 +20,103 @@ export async function sendOrderConfirmation(to: string, order: any) {
         await transporter.sendMail({
             from: SENDER_EMAIL,
             to: to,
-            subject: `Confirmation de votre commande #${order.id.slice(0, 8)}`,
+            subject: `✅ Confirmation de commande #${order.id.slice(0, 8)} - Achrilik`,
             html: `
-                <div style="font-family: Arial, sans-serif; color: #333;">
-                    <h1 style="color: #006233;">Merci pour votre commande !</h1>
-                    <p>Bonjour,</p>
-                    <p>Votre commande <strong>#${order.id.slice(0, 8)}</strong> a bien été enregistrée.</p>
-                    
-                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <h3>Récapitulatif</h3>
-                        <p><strong>Total:</strong> ${order.total} DA</p>
-                        <p><strong>Mode de livraison:</strong> ${order.deliveryType === 'CLICK_COLLECT' ? 'Click & Collect' : 'Livraison à domicile'}</p>
-                    </div>
-
-                    <p>Vous recevrez un autre email dès que votre commande sera traitée par le vendeur.</p>
-                    <br>
-                    <p>Cordialement,<br>L'équipe Achrilik</p>
-                </div>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <!-- Main Container -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #006233 0%, #00844a 100%); padding: 40px 30px; text-align: center;">
+                                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">✅ Commande Confirmée !</h1>
+                                            <p style="color: #e6f7f0; margin: 10px 0 0 0; font-size: 16px;">Achrilik - Mode & Tendance</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td style="padding: 40px 30px;">
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Bonjour,</p>
+                                            
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                                                Nous avons bien reçu votre commande <strong style="color: #006233;">#${order.id.slice(0, 8)}</strong>. 
+                                                Merci pour votre confiance !
+                                            </p>
+                                            
+                                            <!-- Order Summary Box -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #f9fafb; border: 2px solid #006233; border-radius: 10px; padding: 20px; margin: 30px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #006233; margin: 0 0 20px 0; font-size: 20px;">📦 Récapitulatif</h2>
+                                                        
+                                                        <table role="presentation" cellpadding="8" cellspacing="0" width="100%" style="border-collapse: collapse;">
+                                                            <tr>
+                                                                <td style="color: #666; font-size: 14px; padding: 8px 0;">Total</td>
+                                                                <td align="right" style="color: #006233; font-size: 20px; font-weight: bold; padding: 8px 0;">${order.total?.toLocaleString() || 0} DA</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="color: #666; font-size: 14px; padding: 8px 0; border-top: 1px solid #e5e7eb;">Mode de livraison</td>
+                                                                <td align="right" style="color: #333; font-size: 14px; font-weight: 600; padding: 8px 0; border-top: 1px solid #e5e7eb;">
+                                                                    ${order.deliveryType === 'CLICK_COLLECT' ? '🏪 Click & Collect' : '🚚 Livraison à domicile'}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="color: #666; font-size: 14px; padding: 8px 0; border-top: 1px solid #e5e7eb;">Paiement</td>
+                                                                <td align="right" style="color: #333; font-size: 14px; font-weight: 600; padding: 8px 0; border-top: 1px solid #e5e7eb;">
+                                                                    ${order.paymentMethod === 'CASH_ON_DELIVERY' ? '💵 À la livraison' : '💳 En ligne'}
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Next Steps -->
+                                            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 30px 0;">
+                                                <p style="color: #92400e; margin: 0; font-size: 14px; font-weight: 600;">📬 Prochaines étapes</p>
+                                                <p style="color: #78350f; margin: 10px 0 0 0; font-size: 14px; line-height: 1.5;">
+                                                    Vous recevrez un email dès que le vendeur aura traité votre commande. Vous pourrez suivre l'état de livraison dans votre espace client.
+                                                </p>
+                                            </div>
+                                            
+                                            <!-- CTA Button -->
+                                            <div style="text-align: center; margin: 35px 0;">
+                                                <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile" 
+                                                   style="display: inline-block; background: #006233; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,98,51,0.2);">
+                                                    Voir ma commande
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                                            <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;">Merci de faire vos achats sur Achrilik !</p>
+                                            <p style="color: #999; font-size: 12px; margin: 0;">
+                                                Des questions ? Contactez-nous à <a href="mailto:contact@achrilik.com" style="color: #006233; text-decoration: none;">contact@achrilik.com</a>
+                                            </p>
+                                            <p style="color: #ccc; font-size: 11px; margin: 15px 0 0 0;">
+                                                © ${new Date().getFullYear()} Achrilik - Marketplace Mode Algérie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
             `,
         });
     } catch (error) {
@@ -250,5 +330,139 @@ export async function sendDeliveryPersonNotification(to: string, order: any, del
         });
     } catch (error) {
         console.error("Error sending delivery person notification:", error);
+    }
+}
+
+// Send vendor verification email
+export async function sendVendorVerificationEmail(to: string, storeName: string, ownerName: string, verified: boolean) {
+    if (!process.env.SMTP_USER) return;
+
+    if (!verified) {
+        // Don't send email on unverification
+        return;
+    }
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: to,
+            subject: '🎉 Votre boutique est maintenant certifiée - Achrilik',
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); padding: 50px 30px; text-align: center;">
+                                            <div style="font-size: 60px; margin-bottom: 15px;">🎉</div>
+                                            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: bold;">Félicitations !</h1>
+                                            <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 18px;">Votre boutique est certifiée</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td style="padding: 40px 30px;">
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Bonjour ${ownerName},</p>
+                                            
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                                                Nous sommes ravis de vous informer que votre boutique <strong style="color: #006233;">${storeName}</strong> 
+                                                vient d'être <strong>officiellement certifiée</strong> sur Achrilik !
+                                            </p>
+                                            
+                                            <!-- Certification Badge -->
+                                            <div style="text-align: center; margin: 40px 0;">
+                                                <div style="display: inline-block; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 3px solid #2563eb; border-radius: 50%; width: 120px; height: 120px; line-height: 120px; box-shadow: 0 8px 16px rgba(37,99,235,0.2);">
+                                                    <span style="font-size: 60px; vertical-align: middle;">✓</span>
+                                                </div>
+                                                <p style="color: #2563eb; font-size: 18px; font-weight: bold; margin: 15px 0 0 0;">Badge Vendeur Certifié</p>
+                                            </div>
+                                            
+                                            <!-- Benefits Section -->
+                                            <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 10px; padding: 25px; margin: 30px 0;">
+                                                <h2 style="color: #065f46; margin: 0 0 20px 0; font-size: 20px;">✨ Avantages de la certification</h2>
+                                                
+                                                <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                                    <tr>
+                                                        <td style="padding: 10px 0;">
+                                                            <span style="color: #10b981; font-size: 20px; margin-right: 10px;">✓</span>
+                                                            <span style="color: #064e3b; font-size: 15px; font-weight: 600;">Badge visible sur votre profil</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="padding: 10px 0;">
+                                                            <span style="color: #10b981; font-size: 20px; margin-right: 10px;">✓</span>
+                                                            <span style="color: #064e3b; font-size: 15px; font-weight: 600;">Confiance accrue des clients</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="padding: 10px 0;">
+                                                            <span style="color: #10b981; font-size: 20px; margin-right: 10px;">✓</span>
+                                                            <span style="color: #064e3b; font-size: 15px; font-weight: 600;">Meilleur référencement sur la plateforme</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="padding: 10px 0;">
+                                                            <span style="color: #10b981; font-size: 20px; margin-right: 10px;">✓</span>
+                                                            <span style="color: #064e3b; font-size: 15px; font-weight: 600;">Priorité dans les résultats de recherche</span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            
+                                            <!-- Next Steps -->
+                                            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 30px 0;">
+                                                <p style="color: #92400e; margin: 0; font-size: 14px; font-weight: 600;">🚀 Prochaines étapes</p>
+                                                <p style="color: #78350f; margin: 10px 0 0 0; font-size: 14px; line-height: 1.5;">
+                                                    Continuez à proposer des produits de qualité et à offrir un excellent service client. 
+                                                    Votre badge de certification sera automatiquement affiché sur tous vos produits et votre profil vendeur.
+                                                </p>
+                                            </div>
+                                            
+                                            <!-- CTA Button -->
+                                            <div style="text-align: center; margin: 35px 0;">
+                                                <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile" 
+                                                   style="display: inline-block; background: #006233; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0,98,51,0.2);">
+                                                    Accéder à mon tableau de bord
+                                                </a>
+                                            </div>
+                                            
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0;">
+                                                Nous sommes fiers de vous avoir parmi nos vendeurs certifiés. Continuez sur cette lancée !
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                                            <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;">Merci de faire partie de la communauté Achrilik !</p>
+                                            <p style="color: #999; font-size: 12px; margin: 0;">
+                                                Des questions ? Contactez-nous à <a href="mailto:contact@achrilik.com" style="color: #006233; text-decoration: none;">contact@achrilik.com</a>
+                                            </p>
+                                            <p style="color: #ccc; font-size: 11px; margin: 15px 0 0 0;">
+                                                © ${new Date().getFullYear()} Achrilik - Marketplace Mode Algérie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            `,
+        });
+    } catch (error) {
+        console.error("Error sending vendor verification email:", error);
     }
 }

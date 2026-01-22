@@ -72,6 +72,17 @@ export async function POST(
             },
         });
 
+        // Send verification email to vendor
+        if (newVerifiedStatus) {
+            const { sendVendorVerificationEmail } = await import('@/lib/mail');
+            await sendVendorVerificationEmail(
+                store.owner.email,
+                store.name,
+                store.owner.name || 'Vendeur',
+                true
+            );
+        }
+
         return NextResponse.json({
             success: true,
             verified: updatedStore.verified,

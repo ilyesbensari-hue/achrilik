@@ -47,7 +47,15 @@ export async function POST(request: Request) {
             role: user.role
         });
 
-        const response = NextResponse.json({ success: true });
+        const response = NextResponse.json({
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
 
         // Construct Set-Cookie header with explicit Domain for Edge Runtime compatibility
         const isProduction = process.env.NODE_ENV === 'production';

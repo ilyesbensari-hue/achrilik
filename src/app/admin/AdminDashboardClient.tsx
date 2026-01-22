@@ -15,6 +15,11 @@ interface Stats {
         pending: number;
         approved: number;
     };
+    stores: {
+        total: number;
+        pending: number;
+        verified: number;
+    };
     orders: {
         total: number;
         today: number;
@@ -138,6 +143,31 @@ export default function AdminDashboard() {
                             Panier moyen: {Math.round(stats.revenue.averageOrderValue).toLocaleString()} DA
                         </p>
                     </div>
+                </div>
+
+                {/* Vendeurs/Stores - NEW */}
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-medium text-gray-600">Vendeurs</h3>
+                        <span className="text-2xl">🏪</span>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">{stats.stores?.total || 0}</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                        {stats.stores?.verified || 0} certifiés
+                    </p>
+                    {stats.stores?.pending > 0 && (
+                        <div className="mt-4 p-2 bg-yellow-50 rounded-lg">
+                            <p className="text-xs text-yellow-800 font-medium">
+                                ⏳ {stats.stores.pending} en attente de validation
+                            </p>
+                            <a
+                                href="/admin/vendors"
+                                className="text-xs text-yellow-700 hover:underline mt-1 inline-block font-semibold"
+                            >
+                                Gérer les demandes →
+                            </a>
+                        </div>
+                    )}
                 </div>
             </div>
 

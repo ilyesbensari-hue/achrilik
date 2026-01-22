@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
 }
 
@@ -8,239 +8,224 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  password  String
-  name      String?
-  role      String     @default("BUYER") // BUYER, SELLER, ADMIN
-  store     Store?
-  orders    Order[]
-  address   String?
-  phone     String?
-  createdAt DateTime   @default(now())
-  reviews   Review[]
-  wishlist  Wishlist[]
-  adminLogs AdminLog[]
-  passwordResetTokens PasswordResetToken[]
-}
+model AdminLog {
+  id         String   @id
+  adminId    String
+  action     String
+  targetType String
+  targetId   String?
+  productId  String?
+  details    String?
+  createdAt  DateTime @default(now())
+  User       User     @relation(fields: [adminId], references: [id])
+  Product    Product? @relation(fields: [productId], references: [id])
 
-model Store {
-  id           String    @id @default(cuid())
-  name         String
-  description  String?
-  ownerId      String    @unique
-  owner        User      @relation(fields: [ownerId], references: [id])
-  products     Product[]
-  orders       Order[]   // Orders fulfilled by this store
-  latitude     Float?    // For geolocation
-  longitude    Float?
-  address      String?
-  city         String?
-  phone        String?   // Contact phone number
-  hours        String?   // Opening hours (JSON format)
-  clickCollect Boolean   @default(true) // Click & Collect available
-  verified     Boolean   @default(false) // Vendeur certifié ✓
-  verifiedAt   DateTime? // Date de certification
-  verifiedBy   String?   // Admin ID qui a vérifié
-  createdAt    DateTime  @default(now())
+  @@index([action])
+  @@index([adminId])
+  @@index([createdAt])
+  @@index([targetType])
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String
-  slug      String    @unique
-  parentId  String?
-  parent    Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryToCategory")
-  products  Product[]
-  createdAt DateTime  @default(now())
+  id             String     @id
+  name           String
+  slug           String     @unique
+  parentId       String?
+  createdAt      DateTime   @default(now())
+  Category       Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  other_Category Category[] @relation("CategoryToCategory")
+  Product        Product[]
+}
+
+model EmailTemplate {
+  id          String   @id
+  name        String   @unique
+  subject     String
+  htmlContent String
+  variables   String?
+  enabled     Boolean  @default(true)
+  updatedAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id                  String      @id
+  userId              String
+  status              String      @default("PENDING")
+  total               Float
+  paymentMethod       String
+  deliveryType        String
+  createdAt           DateTime    @default(now())
+  estimatedDelivery   DateTime?
+  notes               String?
+  shippingAddress     String?
+  shippingCity        String?
+  shippingName        String?
+  shippingPhone       String?
+  storeAddress        String?
+  storeCity           String?
+  storeId             String?
+  storeName           String?
+  trackingNumber      String?
+  amountReceived      Float?
+  deliveryPersonName  String?
+  deliveryPersonPhone String?
+  isPaid              Boolean     @default(false)
+  paidAt              DateTime?
+  Store               Store?      @relation(fields: [storeId], references: [id])
+  User                User        @relation(fields: [userId], references: [id])
+  OrderItem           OrderItem[]
+
+  @@index([createdAt])
+  @@index([isPaid])
+  @@index([status])
+  @@index([storeId])
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String  @id
+  orderId   String
+  variantId String
+  quantity  Int
+  price     Float
+  Order     Order   @relation(fields: [orderId], references: [id])
+  Variant   Variant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+}
+
+model PasswordResetToken {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([token])
+  @@index([userId])
 }
 
 model Product {
-  id              String     @id @default(cuid())
+  id              String     @id
   title           String
   description     String
   price           Int
   images          String
   categoryId      String?
-  category        Category?  @relation(fields: [categoryId], references: [id])
   storeId         String
-  store           Store      @relation(fields: [storeId], references: [id])
-  variants        Variant[]
-  status          String     @default("PENDING") // PENDING, APPROVED, REJECTED
+  status          String     @default("PENDING")
   rejectionReason String?
-  
-  // New Attributes
-  material        String?    // e.g., "Coton", "Polyester", "Cuir"
-  fit             String?    // e.g., "Slim", "Regular", "Oversize" (for clothes)
-  dimensions      String?    // e.g., "10x20x5 cm" (for objects/accessories)
-  warranty        String?    // e.g., "12 mois", "Garantie constructeur"
-  technicalSpecs  String?    // JSON or long text for electronics specific specs
-
-  // Promotions
-  discountPrice   Float?     // If set, this is the active promo price
-  promotionLabel  String?    // e.g., "Solde", "Promo d'été"
-
   createdAt       DateTime   @default(now())
-  reviews         Review[]
-  wishlists       Wishlist[]
-  adminLogs       AdminLog[]
-  
-  @@index([storeId])
+  dimensions      String?
+  discountPrice   Float?
+  fit             String?
+  material        String?
+  promotionLabel  String?
+  technicalSpecs  String?
+  warranty        String?
+  AdminLog        AdminLog[]
+  Category        Category?  @relation(fields: [categoryId], references: [id])
+  Store           Store      @relation(fields: [storeId], references: [id])
+  Review          Review[]
+  Variant         Variant[]
+  Wishlist        Wishlist[]
+
   @@index([categoryId])
   @@index([createdAt])
   @@index([status])
+  @@index([storeId])
 }
 
 model Review {
-  id        String   @id @default(cuid())
+  id        String   @id
   rating    Int
   comment   String?
   images    String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
-  
+  Product   Product  @relation(fields: [productId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
+
   @@index([productId])
   @@index([userId])
 }
 
-model Variant {
-  id        String      @id @default(cuid())
-  productId String
-  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size      String
-  color     String
-  stock     Int
-  orderItems OrderItem[]
-  
-  @@index([productId])
-}
-
-model Order {
-  id            String      @id @default(cuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  status        String      @default("PENDING") // PENDING, CONFIRMED, READY, DELIVERED, CANCELLED
-  total         Float
-  paymentMethod String      // CASH_ON_DELIVERY, STORE_PAYMENT, ONLINE
-  deliveryType  String      // DELIVERY, CLICK_COLLECT
-  items         OrderItem[]
-  createdAt     DateTime    @default(now())
-  
-  // Shipping Information (Customer)
-  shippingAddress    String?   // Client delivery address
-  shippingCity       String?   // Client city
-  shippingPhone      String?   // Client phone for delivery
-  shippingName       String?   // Recipient name
-  
-  // Store Information (Seller/Departure)
-  storeId            String?   // Which store fulfilled this order
-  store              Store?    @relation(fields: [storeId], references: [id])
-  storeAddress       String?   // Store pickup/departure address
-  storeCity          String?   // Store city
-  storeName          String?   // Store name for reference
-  
-  // Tracking
-  trackingNumber     String?   // For delivery orders
-  estimatedDelivery  DateTime? // Expected delivery date
-  notes              String?   // Admin/seller notes
-  
-  // Payment Tracking (Cash on Delivery)
-  amountReceived     Float?    // Amount actually received
-  isPaid             Boolean   @default(false) // Payment confirmed
-  paidAt             DateTime? // When payment was received
-  
-  // Delivery Person
-  deliveryPersonName  String?  // Livreur assigné
-  deliveryPersonPhone String?  // Contact livreur
-  
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([storeId])
-  @@index([isPaid])
-}
-
-model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
-  variantId String
-  variant   Variant @relation(fields: [variantId], references: [id])
-  quantity  Int
-  price     Float
-  
-  @@index([orderId])
-  @@index([variantId])
-}
-
-model Wishlist {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  
-  @@unique([userId, productId])
-  @@index([userId])
-  @@index([productId])
-}
-
-model AdminLog {
-  id         String   @id @default(cuid())
-  adminId    String
-  admin      User     @relation(fields: [adminId], references: [id])
-  action     String   // APPROVE_PRODUCT, REJECT_PRODUCT, DELETE_USER, UPDATE_SETTINGS, etc.
-  targetType String   // PRODUCT, USER, ORDER, SETTINGS, etc.
-  targetId   String?  // ID of the affected entity
-  productId  String?
-  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  details    String?  // JSON string with additional details
-  createdAt  DateTime @default(now())
-  
-  @@index([adminId])
-  @@index([action])
-  @@index([createdAt])
-  @@index([targetType])
-}
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  
-  @@index([token])
-  @@index([userId])
-  @@index([expiresAt])
+model Store {
+  id           String    @id
+  name         String
+  description  String?
+  ownerId      String    @unique
+  latitude     Float?
+  longitude    Float?
+  address      String?
+  city         String?
+  phone        String?
+  hours        String?
+  clickCollect Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  verified     Boolean   @default(false)
+  verifiedAt   DateTime?
+  verifiedBy   String?
+  Order        Order[]
+  Product      Product[]
+  User         User      @relation(fields: [ownerId], references: [id])
 }
 
 model SystemSettings {
-  id          String   @id @default(cuid())
+  id          String   @id
   key         String   @unique
-  value       String   // JSON string for complex values
+  value       String
   description String?
-  category    String   @default("GENERAL") // GENERAL, EMAIL, PAYMENT, SHIPPING
-  updatedAt   DateTime @updatedAt
+  category    String   @default("GENERAL")
+  updatedAt   DateTime
   createdAt   DateTime @default(now())
-  
+
   @@index([category])
 }
 
-model EmailTemplate {
-  id          String   @id @default(cuid())
-  name        String   @unique // welcome, order_confirmation, product_approved, etc.
-  subject     String
-  htmlContent String   @db.Text
-  variables   String?  // JSON array of available variables
-  enabled     Boolean  @default(true)
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
+model User {
+  id                 String               @id
+  email              String               @unique
+  password           String
+  name               String?
+  role               String               @default("BUYER")
+  address            String?
+  phone              String?
+  createdAt          DateTime             @default(now())
+  AdminLog           AdminLog[]
+  Order              Order[]
+  PasswordResetToken PasswordResetToken[]
+  Review             Review[]
+  Store              Store?
+  Wishlist           Wishlist[]
+}
+
+model Variant {
+  id        String      @id
+  productId String
+  size      String
+  color     String
+  stock     Int
+  OrderItem OrderItem[]
+  Product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model Wishlist {
+  id        String   @id
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
 }
