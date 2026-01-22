@@ -10,6 +10,7 @@ interface Product {
     id: string;
     title: string;
     price: number;
+    discountPrice?: number | null;
     description?: string;
     images: string;
     store: {
@@ -116,6 +117,15 @@ export default function ProductGrid({ products, title }: ProductGridProps) {
                                 </div>
                             )}
 
+                            {/* Promo Badge */}
+                            {product.discountPrice && product.discountPrice < product.price && (
+                                <div className="absolute top-2 left-2 z-10">
+                                    <span className="bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold shadow-lg">
+                                        -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                                    </span>
+                                </div>
+                            )}
+
                             {/* Wishlist Button */}
                             <div className="absolute top-2 right-2 z-10">
                                 <WishlistButton productId={product.id} size="sm" />
@@ -127,7 +137,18 @@ export default function ProductGrid({ products, title }: ProductGridProps) {
                             <span className="product-brand">{product.store.city || 'Oran'}</span>
                             <h3 className="product-title">{product.title}</h3>
                             <div className="product-price">
-                                {product.price.toLocaleString()} DA
+                                {product.discountPrice && product.discountPrice < product.price ? (
+                                    <>
+                                        <span className="line-through text-gray-400 text-sm mr-2">
+                                            {product.price.toLocaleString()} DA
+                                        </span>
+                                        <span className="text-red-600 font-bold">
+                                            {product.discountPrice.toLocaleString()} DA
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>{product.price.toLocaleString()} DA</>
+                                )}
                             </div>
                         </div>
                     </Link>
