@@ -84,13 +84,21 @@ function LoginForm() {
                         Mot de passe
                     </label>
                     <input
-                        id="password"
-                        name="password"
                         type="password"
+                        placeholder="Mot de passe"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
                         required
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
-                        placeholder="••••••••"
                     />
+                    <div className="text-right">
+                        <Link
+                            href="/forgot-password"
+                            className="text-sm text-[#006233] hover:underline"
+                        >
+                            Mot de passe oublié ?
+                        </Link>
+                    </div>
                 </div>
 
                 {error && (

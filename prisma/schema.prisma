@@ -22,6 +22,7 @@ model User {
   reviews   Review[]
   wishlist  Wishlist[]
   adminLogs AdminLog[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Store {
@@ -196,6 +197,19 @@ model AdminLog {
   @@index([action])
   @@index([createdAt])
   @@index([targetType])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model SystemSettings {
