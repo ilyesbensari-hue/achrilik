@@ -31,6 +31,7 @@ model Store {
   ownerId      String    @unique
   owner        User      @relation(fields: [ownerId], references: [id])
   products     Product[]
+  orders       Order[]   // Orders fulfilled by this store
   latitude     Float?    // For geolocation
   longitude    Float?
   address      String?
@@ -129,9 +130,28 @@ model Order {
   items         OrderItem[]
   createdAt     DateTime    @default(now())
   
+  // Shipping Information (Customer)
+  shippingAddress    String?   // Client delivery address
+  shippingCity       String?   // Client city
+  shippingPhone      String?   // Client phone for delivery
+  shippingName       String?   // Recipient name
+  
+  // Store Information (Seller/Departure)
+  storeId            String?   // Which store fulfilled this order
+  store              Store?    @relation(fields: [storeId], references: [id])
+  storeAddress       String?   // Store pickup/departure address
+  storeCity          String?   // Store city
+  storeName          String?   // Store name for reference
+  
+  // Tracking
+  trackingNumber     String?   // For delivery orders
+  estimatedDelivery  DateTime? // Expected delivery date
+  notes              String?   // Admin/seller notes
+  
   @@index([userId])
   @@index([status])
   @@index([createdAt])
+  @@index([storeId])
 }
 
 model OrderItem {
