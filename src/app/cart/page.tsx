@@ -44,7 +44,7 @@ export default function CartPage() {
                 if (store) {
                     if (store.clickCollect === false) {
                         hasOnline = true;
-                        onlineItems.push(item.id || item.productId); // Ensure unique ID usage
+                        onlineItems.push(item.id || item.productId);
                     } else {
                         hasPhysical = true;
                     }
@@ -64,18 +64,29 @@ export default function CartPage() {
             }
         }).catch(console.error);
 
-        // Check login status
-        const userId = localStorage.getItem('userId');
-        const userStr = localStorage.getItem('user');
-        let loggedIn = !!userId;
+        // Check login status - extracted to function for reusability
+        const checkAuth = () => {
+            const userId = localStorage.getItem('userId');
+            const userStr = localStorage.getItem('user');
+            let loggedIn = !!userId;
 
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                if (user.id) loggedIn = true;
-            } catch (e) { }
-        }
-        setIsLoggedIn(loggedIn);
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (user.id) loggedIn = true;
+                } catch (e) { }
+            }
+            setIsLoggedIn(loggedIn);
+        };
+
+        checkAuth();
+
+        // Re-check auth when storage changes (e.g., after login)
+        window.addEventListener('storage', checkAuth);
+
+        return () => {
+            window.removeEventListener('storage', checkAuth);
+        };
     }, []);
 
     const handleCheckout = async (e: React.FormEvent) => {
