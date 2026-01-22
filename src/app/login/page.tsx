@@ -84,6 +84,8 @@ function LoginForm() {
                         Mot de passe
                     </label>
                     <input
+                        id="password"
+                        name="password"
                         type="password"
                         placeholder="Mot de passe"
                         value={password}
