@@ -105,6 +105,35 @@ export default function AdminUsers() {
         }
     };
 
+    const resetPassword = async (userId: string, userName: string) => {
+        const newPassword = prompt(`Nouveau mot de passe pour ${userName} (min 8 caractères):`);
+        if (!newPassword) return;
+
+        if (newPassword.length < 8) {
+            alert('Le mot de passe doit contenir au moins 8 caractères');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newPassword })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert(`✅ Mot de passe réinitialisé!\n\nNouveau mot de passe: ${newPassword}\n\nCommuniquez-le à l'utilisateur.`);
+            } else {
+                alert(data.error || 'Erreur lors de la réinitialisation');
+            }
+        } catch (error) {
+            console.error('Error resetting password:', error);
+            alert('Erreur lors de la réinitialisation');
+        }
+    };
+
     return (
         <div>
             <div className="flex justify-between items-center mb-8">
@@ -233,17 +262,23 @@ export default function AdminUsers() {
                                                 </select>
                                                 <button
                                                     onClick={() => deleteUser(user.id)}
-                                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                    className="text-sm px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
                                                 >
-                                                    Supprimer
+                                                    🗑️ Supprimer
+                                                </button>
+                                                <button
+                                                    onClick={() => resetPassword(user.id, user.name || user.email)}
+                                                    className="text-sm px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                                                >
+                                                    🔑 Reset MDP
                                                 </button>
                                             </div>
                                             {user.store && (
                                                 <button
                                                     onClick={() => toggleVerification(user.store!.id, user.store!.verified)}
                                                     className={`text-sm font-medium px-3 py-1 rounded ${user.store.verified
-                                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                                                         }`}
                                                 >
                                                     {user.store.verified ? '✓ Certifié' : '✓ Certifier'}

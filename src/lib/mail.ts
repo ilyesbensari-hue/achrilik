@@ -95,3 +95,102 @@ export async function sendWelcomeEmail(to: string, name: string) {
         console.error("Error sending welcome email:", error);
     }
 }
+
+// Send order status update email
+export async function sendOrderStatusUpdate(to: string, order: any, oldStatus: string, newStatus: string) {
+    if (!process.env.SMTP_USER) return;
+
+    const statusMessages: Record<string, string> = {
+        CONFIRMED: 'Votre commande a été confirmée par le vendeur.',
+        READY: 'Votre commande est prête !',
+        DELIVERED: 'Votre commande a été livrée. Merci pour votre achat !',
+        CANCELLED: 'Votre commande a malheureusement été annulée.'
+    };
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: to,
+            subject: `Mise à jour de votre commande #${order.id.slice(0, 8)}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h1 style="color: #006233;">Mise à jour de commande</h1>
+                    <p>Bonjour,</p>
+                    <p>${statusMessages[newStatus] || `Statut mis à jour: ${newStatus}`}</p>
+                    
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h3>Commande #${order.id.slice(0, 8)}</h3>
+                        <p><strong>Nouveau statut:</strong> ${newStatus}</p>
+                        <p><strong>Total:</strong> ${order.total} DA</p>
+                        ${order.trackingNumber ? `<p><strong>Numéro de suivi:</strong> ${order.trackingNumber}</p>` : ''}
+                    </div>
+
+                    ${newStatus === 'READY' && order.deliveryType === 'CLICK_COLLECT' ?
+                    '<p style="color: #006233; font-weight: bold;">📦 Votre commande est prête pour le retrait !</p>' : ''}
+                    
+                    ${newStatus === 'DELIVERED' ?
+                    '<p>Nous espérons que votre commande vous satisfait. N\'hésitez pas à laisser un avis !</p>' : ''}
+
+                    <br>
+                    <a href=\"${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile\" 
+                       style="background: #006233; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                        Voir ma commande
+                    </a>
+                    
+                    <br><br>
+                    <p>Cordialement,<br>L'équipe Achrilik</p>
+                </div>
+            `,
+        });
+    } catch (error) {
+        console.error("Error sending status update email:", error);
+    }
+}
+
+// Send password reset email
+export async function sendPasswordResetEmail(to: string, resetToken: string, userName: string) {
+    if (!process.env.SMTP_USER) return;
+
+    const resetLink = `${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/reset-password/${resetToken}`;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: to,
+            subject: 'Réinitialisation de votre mot de passe - Achrilik',
+            html: `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h1 style="color: #006233;">Réinitialisation de mot de passe</h1>
+                    <p>Bonjour ${userName},</p>
+                    <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffc107; margin: 20px 0;">
+                        <p><strong>⚠️ Ce lien est valide pendant 1 heure seulement.</strong></p>
+                    </div>
+
+                    <p>Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe:</p>
+                    
+                    <a href="${resetLink}" 
+                       style="display: inline-block; background: #006233; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0;">
+                        Réinitialiser mon mot de passe
+                    </a>
+
+                    <p style="color: #666; font-size: 14px;">
+                        Ou copiez ce lien dans votre navigateur:<br>
+                        <span style="word-break: break-all;">${resetLink}</span>
+                    </p>
+                    
+                    <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                        Si vous n'avez pas demandé cette réinitialisation, ignorez cet email. 
+                        Votre mot de passe actuel reste inchangé.
+                    </p>
+                    
+                    <br>
+                    <p>Cordialement,<br>L'équipe Achrilik</p>
+                </div>
+            `,
+        });
+    } catch (error) {
+        console.error("Error sending password reset email:", error);
+    }
+}

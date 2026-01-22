@@ -153,3 +153,58 @@ export async function PATCH(
         );
     }
 }
+
+// DELETE - Delete an order (admin only)
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        // Verify admin authentication
+        const cookieStore = await cookies();
+        const token = cookieStore.get('auth_token')?.value;
+
+        if (!token) {
+            return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+        }
+
+        const payload = await verifyToken(token);
+        if (!payload) {
+            return NextResponse.json({ error: 'Token invalide' }, { status: 401 });
+        }
+
+        const admin = await prisma.user.findUnique({
+            where: { id: payload.userId as string },
+        });
+
+        if (!admin || admin.role !== 'ADMIN') {
+            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+        }
+
+        const { id } = await params;
+
+        // Delete order (will cascade delete order items)
+        await prisma.order.delete({
+            where: { id }
+        });
+
+        // Log admin action
+        await prisma.adminLog.create({
+            data: {
+                adminId: admin.id,
+                action: 'DELETE_ORDER',
+                targetType: 'ORDER',
+                targetId: id,
+                details: `Deleted order ${id}`,
+            },
+        });
+
+        return NextResponse.json({ success: true, message: 'Commande supprimée' });
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        return NextResponse.json(
+            { error: 'Erreur serveur' },
+            { status: 500 }
+        );
+    }
+}
