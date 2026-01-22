@@ -79,41 +79,59 @@ export default function CartPage() {
             setIsLoggedIn(loggedIn);
         };
 
+        // Initial check
         checkAuth();
 
-        // Re-check auth when storage changes (e.g., after login)
+        // Listen for storage changes (cross-tab)
         window.addEventListener('storage', checkAuth);
+
+        // Listen for focus (when user comes back to tab)
+        window.addEventListener('focus', checkAuth);
 
         return () => {
             window.removeEventListener('storage', checkAuth);
+            window.removeEventListener('focus', checkAuth);
         };
     }, []);
 
-    const handleCheckout = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCheckout = async (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
 
-        if (cart.length === 0) return alert('Panier vide');
-        if (method === 'CLICK_COLLECT' && !selectedStore) return alert('Veuillez sélectionner un magasin sur la carte');
-
-        // Logic to get user ID from new 'user' object or legacy 'userId'
-        let userId = localStorage.getItem('userId');
+        // STRICT RE-CHECK of auth status right before action
+        const userId = localStorage.getItem('userId');
         const userStr = localStorage.getItem('user');
-        let role = localStorage.getItem('userRole'); // Fallback
+
+        let currentUserId = userId;
+        let isActuallyLoggedIn = !!userId;
 
         if (userStr) {
             try {
                 const userObj = JSON.parse(userStr);
-                if (userObj.id) userId = userObj.id;
-                if (userObj.role) role = userObj.role;
-            } catch (e) {
-                console.error("Error parsing user data", e);
-            }
+                if (userObj.id) {
+                    currentUserId = userObj.id;
+                    isActuallyLoggedIn = true;
+                }
+            } catch (e) { }
         }
 
-        if (!userId) {
+        // Update state to match reality
+        setIsLoggedIn(isActuallyLoggedIn);
+
+        if (!isActuallyLoggedIn) {
             alert('Veuillez vous connecter pour commander');
             router.push('/login');
             return;
+        }
+
+        if (cart.length === 0) return alert('Panier vide');
+        if (method === 'CLICK_COLLECT' && !selectedStore) return alert('Veuillez sélectionner un magasin sur la carte');
+
+        let role = localStorage.getItem('userRole');
+        if (userStr) {
+            try {
+                const userObj = JSON.parse(userStr);
+                if (userObj.role) role = userObj.role;
+            } catch (e) { }
         }
 
         if (role === 'SELLER') {
@@ -131,10 +149,10 @@ export default function CartPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId,
+                    userId: currentUserId,
                     items: cart,
                     total,
-                    paymentMethod: method === 'CLICK_COLLECT' ? 'STORE_PAYMENT' : payment, // Override if needed
+                    paymentMethod: method === 'CLICK_COLLECT' ? 'STORE_PAYMENT' : payment,
                     deliveryType: method
                 })
             });
@@ -242,14 +260,7 @@ export default function CartPage() {
                         </div>
 
                         <button
-                            onClick={(e) => {
-                                if (!isLoggedIn) {
-                                    alert('Veuillez vous connecter pour commander');
-                                    router.push('/login');
-                                    return;
-                                }
-                                router.push('/checkout');
-                            }}
+                            onClick={handleCheckout}
                             className="btn btn-primary w-full py-4 text-lg font-bold shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all"
                         >
                             {isLoggedIn ? 'PAYER' : 'SE CONNECTER ET PAYER'}

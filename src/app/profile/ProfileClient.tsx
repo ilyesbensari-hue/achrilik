@@ -212,7 +212,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                             Vous souhaitez devenir vendeur ?
                                         </p>
                                         <Link
-                                            href="/become-seller"
+                                            href="/why-sell"
                                             className="text-green-600 font-medium hover:underline flex items-center gap-1 text-sm"
                                         >
                                             Créer ma boutique
