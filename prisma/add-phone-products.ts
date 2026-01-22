@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -203,10 +204,14 @@ async function main() {
         const { variants, ...data } = productData;
         await prisma.product.create({
             data: {
+                id: randomBytes(16).toString('hex'), // Generate ID
                 ...data,
                 storeId: store.id,
-                variants: {
-                    create: variants,
+                Variant: {
+                    create: variants.map(v => ({
+                        ...v,
+                        id: randomBytes(16).toString('hex')
+                    })),
                 },
             },
         });

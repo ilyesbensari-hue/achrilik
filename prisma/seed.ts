@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client'
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,7 @@ async function main() {
         where: { email: 'demo@achrilik.com' },
         update: {},
         create: {
+            id: randomBytes(16).toString('hex'), // Generate ID
             email: 'demo@achrilik.com',
             password: 'demo123',
             name: 'Fashion DZ Store',

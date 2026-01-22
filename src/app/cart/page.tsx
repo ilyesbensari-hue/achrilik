@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const MapPicker = dynamic(() => import('@/components/Map'), { ssr: false });
 
 export default function CartPage() {
     const router = useRouter();
+    const { user, isLoading } = useAuth(); // Use AuthContext
     const [cart, setCart] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // Form State
     const [method, setMethod] = useState<'DELIVERY' | 'CLICK_COLLECT'>('DELIVERY');
@@ -64,77 +65,23 @@ export default function CartPage() {
             }
         }).catch(console.error);
 
-        // Check login status - extracted to function for reusability
-        const checkAuth = () => {
-            const userId = localStorage.getItem('userId');
-            const userStr = localStorage.getItem('user');
-            let loggedIn = !!userId;
-
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    if (user.id) loggedIn = true;
-                } catch (e) { }
-            }
-            setIsLoggedIn(loggedIn);
-        };
-
-        // Initial check
-        checkAuth();
-
-        // Listen for storage changes (cross-tab)
-        window.addEventListener('storage', checkAuth);
-
-        // Listen for focus (when user comes back to tab)
-        window.addEventListener('focus', checkAuth);
-
-        return () => {
-            window.removeEventListener('storage', checkAuth);
-            window.removeEventListener('focus', checkAuth);
-        };
+        // Auth check is now handled by useAuth() hook
     }, []);
 
     const handleCheckout = async (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
 
-        // STRICT RE-CHECK of auth status right before action
-        const userId = localStorage.getItem('userId');
-        const userStr = localStorage.getItem('user');
-
-        let currentUserId = userId;
-        let isActuallyLoggedIn = !!userId;
-
-        if (userStr) {
-            try {
-                const userObj = JSON.parse(userStr);
-                if (userObj.id) {
-                    currentUserId = userObj.id;
-                    isActuallyLoggedIn = true;
-                }
-            } catch (e) { }
-        }
-
-        // Update state to match reality
-        setIsLoggedIn(isActuallyLoggedIn);
-
-        if (!isActuallyLoggedIn) {
+        // Check auth using context
+        if (!user) {
             alert('Veuillez vous connecter pour commander');
-            router.push('/login');
+            router.push('/login?callbackUrl=/cart');
             return;
         }
 
         if (cart.length === 0) return alert('Panier vide');
         if (method === 'CLICK_COLLECT' && !selectedStore) return alert('Veuillez sélectionner un magasin sur la carte');
 
-        let role = localStorage.getItem('userRole');
-        if (userStr) {
-            try {
-                const userObj = JSON.parse(userStr);
-                if (userObj.role) role = userObj.role;
-            } catch (e) { }
-        }
-
-        if (role === 'SELLER') {
+        if (user.role === 'SELLER') {
             alert("Les comptes vendeurs ne peuvent pas effectuer d'achats. Veuillez créer un compte client pour passer commande.");
             return;
         }
@@ -149,7 +96,7 @@ export default function CartPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: currentUserId,
+                    userId: user.id,
                     items: cart,
                     total,
                     paymentMethod: method === 'CLICK_COLLECT' ? 'STORE_PAYMENT' : payment,
@@ -179,6 +126,10 @@ export default function CartPage() {
         window.dispatchEvent(new Event('storage'));
         setTotal(newCart.reduce((sum, item) => sum + (item.price * item.quantity), 0));
     };
+
+    if (isLoading) {
+        return <div className="container py-10 text-center">Chargement...</div>;
+    }
 
     return (
         <div className="container py-10">
@@ -263,7 +214,7 @@ export default function CartPage() {
                             onClick={handleCheckout}
                             className="btn btn-primary w-full py-4 text-lg font-bold shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all"
                         >
-                            {isLoggedIn ? 'PAYER' : 'SE CONNECTER ET PAYER'}
+                            {user ? 'PAYER' : 'SE CONNECTER ET PAYER'}
                         </button>
 
                         <p className="text-center text-xs text-gray-500 mt-4">

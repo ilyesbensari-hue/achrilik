@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -41,6 +42,7 @@ async function main() {
         // Créer la nouvelle sous-catégorie
         await prisma.category.create({
             data: {
+                id: randomBytes(16).toString('hex'), // Generate ID
                 name: cat.name,
                 slug: cat.slug,
                 parentId: accessoires.id,
