@@ -40,66 +40,66 @@ async function main() {
 
     // Main categories
     const femmes = await prisma.category.create({
-        data: { name: 'Femmes', slug: 'femmes' },
+        data: { id: '2df58580b3220060478c799130a79385', name: 'Femmes', slug: 'femmes' },
     });
 
     const hommes = await prisma.category.create({
-        data: { name: 'Hommes', slug: 'hommes' },
+        data: { id: '2236254c40f7cc46c09a36e15c5b3470', name: 'Hommes', slug: 'hommes' },
     });
 
     const enfants = await prisma.category.create({
-        data: { name: 'Enfants', slug: 'enfants' },
+        data: { id: '90acab43a8ed837520b26e4e0de93d1a', name: 'Enfants', slug: 'enfants' },
     });
 
     const accessoires = await prisma.category.create({
-        data: { name: 'Accessoires', slug: 'accessoires' },
+        data: { id: '80860795df35ab15bf5a67f5bb8d798a', name: 'Accessoires', slug: 'accessoires' },
     });
 
     // Subcategories - Femmes
     const robes = await prisma.category.create({
-        data: { name: 'Robes', slug: 'robes', parentId: femmes.id },
+        data: { id: '37ecd460d09cf6394350457c47d5c0ec', name: 'Robes', slug: 'robes', parentId: femmes.id },
     });
 
     const hauts = await prisma.category.create({
-        data: { name: 'Hauts & Chemisiers', slug: 'hauts-chemisiers', parentId: femmes.id },
+        data: { id: '0d52ed374d68f063e62c953263378b3b', name: 'Hauts & Chemisiers', slug: 'hauts-chemisiers', parentId: femmes.id },
     });
 
     const pantalonsFemmes = await prisma.category.create({
-        data: { name: 'Pantalons & Jeans', slug: 'pantalons-jeans-femmes', parentId: femmes.id },
+        data: { id: 'c8daadeea0cf0f13b1e5c7419509c045', name: 'Pantalons & Jeans', slug: 'pantalons-jeans-femmes', parentId: femmes.id },
     });
 
     const pullsFemmes = await prisma.category.create({
-        data: { name: 'Pulls & Cardigans', slug: 'pulls-cardigans-femmes', parentId: femmes.id },
+        data: { id: '60321ad8a2488d5da2c30b43cab529e2', name: 'Pulls & Cardigans', slug: 'pulls-cardigans-femmes', parentId: femmes.id },
     });
 
     // Subcategories - Hommes
     const tshirts = await prisma.category.create({
-        data: { name: 'T-shirts & Polos', slug: 'tshirts-polos', parentId: hommes.id },
+        data: { id: '37e2ff0ea9b6d1df9d010bf65f890b9d', name: 'T-shirts & Polos', slug: 'tshirts-polos', parentId: hommes.id },
     });
 
     const chemises = await prisma.category.create({
-        data: { name: 'Chemises', slug: 'chemises', parentId: hommes.id },
+        data: { id: '8495304da52ed07823f2e11a4705e36c', name: 'Chemises', slug: 'chemises', parentId: hommes.id },
     });
 
     const pantalonsHommes = await prisma.category.create({
-        data: { name: 'Pantalons & Jeans', slug: 'pantalons-jeans-hommes', parentId: hommes.id },
+        data: { id: '5f06f4f2f5e98aef4d465ac0f961c0c7', name: 'Pantalons & Jeans', slug: 'pantalons-jeans-hommes', parentId: hommes.id },
     });
 
     const pullsHommes = await prisma.category.create({
-        data: { name: 'Pulls & Sweats', slug: 'pulls-sweats-hommes', parentId: hommes.id },
+        data: { id: 'aea26cd6b2395224b7a055f5c3ca08bc', name: 'Pulls & Sweats', slug: 'pulls-sweats-hommes', parentId: hommes.id },
     });
 
     // Subcategories - Accessoires
     const sacs = await prisma.category.create({
-        data: { name: 'Sacs à Main', slug: 'sacs-main', parentId: accessoires.id },
+        data: { id: 'e17a32be0a85e9f84bf81bd9b90d654b', name: 'Sacs à Main', slug: 'sacs-main', parentId: accessoires.id },
     });
 
     const chaussures = await prisma.category.create({
-        data: { name: 'Chaussures', slug: 'chaussures', parentId: accessoires.id },
+        data: { id: '482ef94586a996d9804db434abc5d527', name: 'Chaussures', slug: 'chaussures', parentId: accessoires.id },
     });
 
     const montres = await prisma.category.create({
-        data: { name: 'Montres', slug: 'montres', parentId: accessoires.id },
+        data: { id: 'cb0bf5e9c37af83c752a26d279c69dd4', name: 'Montres', slug: 'montres', parentId: accessoires.id },
     });
 
     // Sample products
@@ -447,10 +447,11 @@ async function main() {
         const { variants, ...data } = productData;
         await prisma.product.create({
             data: {
+                id: 'eb34155e3afff42d264763c543698d0a',
                 ...data,
                 storeId: store.id,
-                variants: {
-                    create: variants,
+                Variant: {
+                    create: variants.map(v => ({ ...v, id: crypto.randomBytes(16).toString('hex') })),
                 },
             },
         });
