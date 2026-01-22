@@ -43,7 +43,8 @@ function SearchResults() {
             const productsData = await productsRes.json();
             const storesData = await storesRes.json();
 
-            setProducts(productsData.products || []);
+            // API returns array directly, not {products: []}
+            setProducts(Array.isArray(productsData) ? productsData : []);
             setStores(Array.isArray(storesData) ? storesData : []);
 
         } catch (error) {
