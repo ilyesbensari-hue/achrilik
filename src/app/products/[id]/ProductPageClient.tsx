@@ -76,7 +76,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             return;
         }
 
-        const variant = product.variants.find((v: any) => v.size === selectedSize && v.color === selectedColor);
+        const variant = product.Variant.find((v: any) => v.size === selectedSize && v.color === selectedColor);
         if (!variant) {
             showToastNotification('Combinaison indisponible', 'error');
             return;
@@ -94,7 +94,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             size: selectedSize,
             color: selectedColor,
             image: images[0],
-            storeId: product.storeId,
+            storeId: product.StoreId,
             quantity
         };
 
@@ -185,7 +185,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                             <div className="flex gap-3 flex-wrap">
                                 {sizes.map((size) => {
                                     // Check if this size is available with selected color
-                                    const isAvailable = !selectedColor || product.variants.some((v: any) => v.size === size && v.color === selectedColor && v.stock > 0);
+                                    const isAvailable = !selectedColor || product.Variant.some((v: any) => v.size === size && v.color === selectedColor && v.stock > 0);
 
                                     return (
                                         <button
@@ -223,7 +223,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                             <div className="flex gap-3 flex-wrap">
                                 {colors.map((color) => {
                                     // Check if this color is available with selected size
-                                    const isAvailable = !selectedSize || product.variants.some((v: any) => v.size === selectedSize && v.color === color && v.stock > 0);
+                                    const isAvailable = !selectedSize || product.Variant.some((v: any) => v.size === selectedSize && v.color === color && v.stock > 0);
 
                                     return (
                                         <button

@@ -43,7 +43,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     const categoryIds = [cat.id, ...cat.children.map((c: any) => c.id)];
                     const allProducts = Array.isArray(productsData) ? productsData : [];
                     const filtered = allProducts.filter((p: any) =>
-                        categoryIds.includes(p.categoryId)
+                        categoryIds.includes(p.CategoryId)
                     );
                     setProducts(filtered);
                 }
@@ -53,24 +53,24 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     }, [slug]);
 
     // Get unique wilayas from products
-    const availableWilayas = Array.from(new Set(products.map((p) => p.store.city))).sort();
+    const availableWilayas = Array.from(new Set(products.map((p) => p.Store.city))).sort();
 
     // Apply filters and sorting
     const filteredProducts = products
         .filter((p) => {
             // Filter by subcategories if any selected
             if (selectedSubcategories.length > 0) {
-                return selectedSubcategories.includes(p.categoryId);
+                return selectedSubcategories.includes(p.CategoryId);
             }
             return true;
         })
         .filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
-        .filter((p) => !selectedWilaya || p.store.city === selectedWilaya)
+        .filter((p) => !selectedWilaya || p.Store.city === selectedWilaya)
         .sort((a, b) => {
             if (sortBy === 'price-asc') return a.price - b.price;
             if (sortBy === 'price-desc') return b.price - a.price;
             if (sortBy === 'name') return a.title.localeCompare(b.title);
-            if (sortBy === 'wilaya') return a.store.city.localeCompare(b.store.city);
+            if (sortBy === 'wilaya') return a.Store.city.localeCompare(b.Store.city);
             return 0;
         });
 

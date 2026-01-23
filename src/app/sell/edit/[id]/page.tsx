@@ -35,8 +35,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 setDescription(product.description);
                 setPrice(product.price.toString());
                 setImages(product.images.split(',').filter(Boolean));
-                setVariants(product.variants || []);
-                setStoreId(product.storeId);
+                setVariants(product.Variant || []);
+                setStoreId(product.StoreId);
                 setLoading(false);
             })
             .catch(() => {

@@ -302,7 +302,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     <div className="space-y-4">
                                         {sellerOrders.map(order => {
                                             // Filter items for THIS store
-                                            const storeItems = order.items.filter((item: any) => item.variant.product.storeId === store?.id);
+                                            const storeItems = order.items.filter((item: any) => item.Variant.Product.StoreId === store?.id);
                                             if (storeItems.length === 0) return null;
 
                                             return (
@@ -321,7 +321,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                                                 </span>
                                                             </div>
                                                             <p className="text-sm text-gray-500 mt-1">
-                                                                Client: <span className="text-gray-900 font-medium">{order.user.name}</span> • {new Date(order.createdAt).toLocaleDateString()}
+                                                                Client: <span className="text-gray-900 font-medium">{order.User.name}</span> • {new Date(order.createdAt).toLocaleDateString()}
                                                             </p>
                                                         </div>
                                                         <div className="text-left md:text-right">
@@ -336,7 +336,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                                     <div className="bg-gray-50 p-3 rounded-lg mb-4 text-sm space-y-2">
                                                         {storeItems.map((item: any) => (
                                                             <div key={item.id} className="flex justify-between">
-                                                                <span><span className="font-bold">{item.quantity}x</span> {item.variant.product.title} <span className="text-gray-400">({item.variant.size})</span></span>
+                                                                <span><span className="font-bold">{item.quantity}x</span> {item.Variant.Product.title} <span className="text-gray-400">({item.Variant.size})</span></span>
                                                                 <span>{item.price} DA</span>
                                                             </div>
                                                         ))}

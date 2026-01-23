@@ -42,7 +42,7 @@ export default function WishlistPage() {
             const response = await fetch(`/api/wishlist?userId=${uid}`);
             const data = await response.json();
             if (data.success) {
-                setProducts(data.products);
+                setProducts(data.Products);
             }
         } catch (error) {
             console.error('Error fetching wishlist:', error);
@@ -55,13 +55,13 @@ export default function WishlistPage() {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
         // Find first available variant
-        const variant = product.variants?.[0];
+        const variant = product.Variant?.[0];
         if (!variant) {
             alert('Ce produit n\'a pas de variante disponible');
             return;
         }
 
-        const existingItem = cart.find((item: any) => item.variantId === variant.id);
+        const existingItem = cart.find((item: any) => item.VariantId === variant.id);
 
         if (existingItem) {
             existingItem.quantity += 1;
@@ -75,9 +75,9 @@ export default function WishlistPage() {
                 size: variant.size,
                 color: variant.color,
                 quantity: 1,
-                storeId: product.storeId,
-                storeName: product.store.name,
-                clickCollect: product.store.clickCollect
+                storeId: product.StoreId,
+                storeName: product.Store.name,
+                clickCollect: product.Store.clickCollect
             });
         }
 
@@ -139,8 +139,8 @@ export default function WishlistPage() {
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
                             {products.map((product) => {
                                 const images = product.images.split(',');
-                                const avgRating = product.reviews?.length > 0
-                                    ? product.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / product.reviews.length
+                                const avgRating = product.Review?.length > 0
+                                    ? product.Review.reduce((acc: number, r: any) => acc + r.rating, 0) / product.Review.length
                                     : 0;
 
                                 return (
@@ -192,7 +192,7 @@ export default function WishlistPage() {
                                                                     </svg>
                                                                 ))}
                                                             </div>
-                                                            <span className="text-xs text-gray-500">({product.reviews.length})</span>
+                                                            <span className="text-xs text-gray-500">({product.Review.length})</span>
                                                         </>
                                                     )}
                                                 </div>
@@ -202,7 +202,7 @@ export default function WishlistPage() {
                                                 </p>
 
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    {product.store.name} • {product.store.city}
+                                                    {product.Store.name} • {product.Store.city}
                                                 </p>
                                             </div>
                                         </Link>

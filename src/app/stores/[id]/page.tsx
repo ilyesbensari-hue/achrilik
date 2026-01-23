@@ -73,12 +73,12 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
 
     // Calculate Store Stats
     const calculateStats = () => {
-        if (!store?.products) return { avgRating: 0, totalReviews: 0, allReviews: [] };
+        if (!store?.Products) return { avgRating: 0, totalReviews: 0, allReviews: [] };
 
         const allReviews: Review[] = [];
-        store.products.forEach(p => {
-            if (p.reviews) {
-                allReviews.push(...p.reviews);
+        store.Products.forEach(p => {
+            if (p.Review) {
+                allReviews.push(...p.Review);
             }
         });
 
@@ -229,13 +229,13 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="lg:col-span-2 space-y-8">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-black text-gray-900">
-                            La Collection <span className="text-[#006233]">({store.products?.length || 0})</span>
+                            La Collection <span className="text-[#006233]">({store.Products?.length || 0})</span>
                         </h2>
                     </div>
 
-                    {store.products && store.products.length > 0 ? (
+                    {store.Products && store.Products.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {store.products.map(product => {
+                            {store.Products.map(product => {
                                 const imageUrl = product.images?.split(',')[0] || '';
                                 return (
                                     <Link
@@ -254,10 +254,10 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                                                 <div className="flex items-center justify-center h-full text-gray-400">Pas d'image</div>
                                             )}
                                             {/* Quick Rating on Card */}
-                                            {product.reviews && product.reviews.length > 0 && (
+                                            {product.Review && product.Review.length > 0 && (
                                                 <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md text-white px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1">
                                                     <span className="text-yellow-400">★</span>
-                                                    {(product.reviews.reduce((a, b) => a + b.rating, 0) / product.reviews.length).toFixed(1)}
+                                                    {(product.Review.reduce((a, b) => a + b.rating, 0) / product.Review.length).toFixed(1)}
                                                 </div>
                                             )}
                                         </div>
@@ -302,9 +302,9 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                                         )}
                                         <div className="flex items-center gap-2">
                                             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 text-[10px] font-bold flex items-center justify-center uppercase">
-                                                {review.user.name.charAt(0)}
+                                                {review.User.name.charAt(0)}
                                             </div>
-                                            <span className="text-xs font-medium text-gray-900">{review.user.name}</span>
+                                            <span className="text-xs font-medium text-gray-900">{review.User.name}</span>
                                         </div>
                                     </div>
                                 ))}

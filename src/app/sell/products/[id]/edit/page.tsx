@@ -51,9 +51,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setTitle(data.title);
                 setDescription(data.description);
                 setPrice(data.price.toString());
-                setCategoryId(data.categoryId || '');
+                setCategoryId(data.CategoryId || '');
                 setImages(data.images.split(','));
-                setVariants(data.variants.map((v: any) => ({
+                setVariants(data.Variant.map((v: any) => ({
                     size: v.size,
                     color: v.color,
                     stock: v.stock
@@ -71,11 +71,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     };
 
     const addVariant = () => {
-        setVariants([...variants, { size: vSize, color: vColor, stock: vStock }]);
+        setVariants([...Variant, { size: vSize, color: vColor, stock: vStock }]);
     };
 
     const removeVariant = (index: number) => {
-        const newVariants = [...variants];
+        const newVariants = [...Variant];
         newVariants.splice(index, 1);
         setVariants(newVariants);
     };

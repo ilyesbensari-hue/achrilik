@@ -128,7 +128,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
 
             if (res.ok) {
                 const data = await res.json();
-                setStore(data.store);
+                setStore(data.Store);
                 setIsEditing(false);
                 alert('Boutique ' + (isEditing ? 'mise à jour' : 'créée') + ' avec succès!');
                 fetchStore(initialUser.id); // Refresh data
@@ -294,7 +294,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-green-600">{store?.products?.length || 0}</div>
+                        <div className="text-2xl font-bold text-green-600">{store?.Products?.length || 0}</div>
                         <div className="text-sm text-gray-600">Produits en ligne</div>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -303,7 +303,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                     </div>
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                         <div className="text-2xl font-bold text-purple-600">
-                            {store?.products?.reduce((sum, p) => sum + (p.variants?.length || 0), 0) || 0}
+                            {store?.Products?.reduce((sum, p) => sum + (p.Variant?.length || 0), 0) || 0}
                         </div>
                         <div className="text-sm text-gray-600">Variantes totales</div>
                     </div>
@@ -344,9 +344,9 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
 
             {/* Product List */}
             <h2 className="text-2xl font-bold mb-4">Mes Produits</h2>
-            {store?.products && store.products.length > 0 ? (
+            {store?.Products && store.Products.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {store.products.map(product => {
+                    {store.Products.map(product => {
                         const imageUrl = product.images?.split(',')[0] || '';
                         return (
                             <div key={product.id} className="card p-0 overflow-hidden group">
@@ -379,7 +379,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                                 <div className="p-4">
                                     <h3 className="font-bold truncate">{product.title}</h3>
                                     <p className="text-primary font-bold">{product.price} DA</p>
-                                    <p className="text-sm text-gray-500">{product.variants?.length || 0} variante(s)</p>
+                                    <p className="text-sm text-gray-500">{product.Variant?.length || 0} variante(s)</p>
                                 </div>
                             </div>
                         );
