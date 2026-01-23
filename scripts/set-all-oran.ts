@@ -26,14 +26,14 @@ async function setAllStoresOran() {
                 name: true,
                 city: true,
                 _count: {
-                    select: { products: true }
+                    select: { Product: true }
                 }
             }
         });
 
         console.log('\n📊 Boutiques après mise à jour:');
         stores.forEach(store => {
-            console.log(`  - ${store.name}: ${store.city} (${store._count.products} produits)`);
+            console.log(`  - ${store.name}: ${store.city} (${store._count.Product} produits)`);
         });
 
     } catch (error) {

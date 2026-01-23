@@ -36,6 +36,7 @@ export async function POST(request: Request) {
         // Create reset token
         await prisma.passwordResetToken.create({
             data: {
+                id: crypto.randomBytes(16).toString('hex'),
                 userId: user.id,
                 token,
                 expiresAt

@@ -1,5 +1,6 @@
 
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -28,27 +29,58 @@ async function main() {
     // 2. Create High-Tech Category
     const highTech = await prisma.category.upsert({
         where: { slug: 'high-tech' },
-        update: {},
-        create: { name: 'High-Tech', slug: 'high-tech' },
+        update: {
+            name: 'High-Tech',
+        },
+        create: {
+            id: randomBytes(16).toString('hex'),
+            name: 'High-Tech',
+            slug: 'high-tech'
+        },
     });
+
 
     // 3. Create Subcategories
     const phoneAccessories = await prisma.category.upsert({
         where: { slug: 'accessoires-telephones' },
-        update: {},
-        create: { name: 'Accessoires Téléphones', slug: 'accessoires-telephones', parentId: highTech.id },
+        update: {
+            name: 'Accessoires Téléphones',
+            parentId: highTech.id,
+        },
+        create: {
+            id: randomBytes(16).toString('hex'),
+            name: 'Accessoires Téléphones',
+            slug: 'accessoires-telephones',
+            parentId: highTech.id
+        },
     });
 
     const smartWatches = await prisma.category.upsert({
         where: { slug: 'montres-connectees' },
-        update: {},
-        create: { name: 'Montres Connectées', slug: 'montres-connectees', parentId: highTech.id },
+        update: {
+            name: 'Montres Connectées',
+            parentId: highTech.id,
+        },
+        create: {
+            id: randomBytes(16).toString('hex'),
+            name: 'Montres Connectées',
+            slug: 'montres-connectees',
+            parentId: highTech.id
+        },
     });
 
     const audio = await prisma.category.upsert({
         where: { slug: 'audio' },
-        update: {},
-        create: { name: 'Audio & Son', slug: 'audio', parentId: highTech.id },
+        update: {
+            name: 'Audio & Son',
+            parentId: highTech.id,
+        },
+        create: {
+            id: randomBytes(16).toString('hex'),
+            name: 'Audio & Son',
+            slug: 'audio',
+            parentId: highTech.id
+        },
     });
 
     // 4. Create Products
@@ -151,10 +183,11 @@ async function main() {
         if (!existing) {
             await prisma.product.create({
                 data: {
+                    id: randomBytes(16).toString('hex'),
                     ...data,
                     storeId: store.id,
-                    variants: {
-                        create: variants,
+                    Variant: {
+                        create: variants.map(v => ({ ...v, id: randomBytes(16).toString('hex') })),
                     },
                 },
             });

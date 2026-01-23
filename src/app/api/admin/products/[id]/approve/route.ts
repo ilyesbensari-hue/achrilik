@@ -27,9 +27,9 @@ export async function POST(
                 rejectionReason: null
             },
             include: {
-                store: {
+                Store: {
                     include: {
-                        owner: true
+                        User: true
                     }
                 }
             }
@@ -44,17 +44,17 @@ export async function POST(
             productId: product.id,
             details: {
                 productTitle: product.title,
-                sellerId: product.store.ownerId
+                sellerId: product.Store.ownerId
             }
         });
 
         // Send email notification to seller
-        if (product.store.owner.email) {
+        if (product.Store.User.email) {
             await sendTemplateEmail(
-                product.store.owner.email,
+                product.Store.User.email,
                 'product_approved',
                 {
-                    sellerName: product.store.owner.name || 'Vendeur',
+                    sellerName: product.Store.User.name || 'Vendeur',
                     productTitle: product.title,
                     productUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/products/${product.id}`
                 }

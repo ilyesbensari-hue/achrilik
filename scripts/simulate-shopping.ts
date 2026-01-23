@@ -1,4 +1,5 @@
 import { prisma } from '../src/lib/prisma';
+import { randomBytes } from 'crypto';
 
 async function main() {
     console.log('🛒 Starting multi-store shopping simulation...\n');
@@ -20,6 +21,7 @@ async function main() {
     for (let i = 0; i < storeData.length; i++) {
         const seller = await prisma.user.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 email: `seller${i + 1}@achrilik.com`,
                 password: 'seller123',
                 name: `Vendeur ${i + 1}`,
@@ -30,7 +32,7 @@ async function main() {
 
         const store = await prisma.store.create({
             data: {
-                name: storeData[i].name,
+                id: randomBytes(16).toString('hex'), name: storeData[i].name,
                 description: `Votre boutique de mode à ${storeData[i].city}`,
                 ownerId: seller.id,
                 city: storeData[i].city,
@@ -75,6 +77,7 @@ async function main() {
 
             await prisma.product.create({
                 data: {
+                    id: randomBytes(16).toString('hex'),
                     title: `${template.title} - ${store.city}`,
                     description: template.desc,
                     price: template.price + Math.floor(Math.random() * 2000),
@@ -82,11 +85,11 @@ async function main() {
                     storeId: store.id,
                     categoryId: category.id,
                     status: 'APPROVED',
-                    variants: {
+                    Variant: {
                         create: [
-                            { size: sizes[0], color: colors[Math.floor(Math.random() * colors.length)], stock: Math.floor(Math.random() * 15) + 5 },
-                            { size: sizes[1], color: colors[Math.floor(Math.random() * colors.length)], stock: Math.floor(Math.random() * 15) + 5 },
-                            { size: sizes[2], color: colors[Math.floor(Math.random() * colors.length)], stock: Math.floor(Math.random() * 15) + 5 },
+                            { id: randomBytes(16).toString('hex'), size: sizes[0], color: colors[Math.floor(Math.random() * colors.length)], stock: Math.floor(Math.random() * 15) + 5 },
+                            { id: randomBytes(16).toString('hex'), size: sizes[1], color: colors[Math.floor(Math.random() * colors.length)], stock: Math.floor(Math.random() * 15) + 5 },
+                            { id: randomBytes(16).toString('hex'), size: sizes[2], color: colors[Math.floor(Math.random() * colors.length)], stock: Math.floor(Math.random() * 15) + 5 },
                         ]
                     }
                 },
@@ -101,6 +104,7 @@ async function main() {
     for (let i = 0; i < 3; i++) {
         const buyer = await prisma.user.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 email: `buyer${i + 1}@achrilik.com`,
                 password: 'buyer123',
                 name: `Acheteur ${i + 1}`,
@@ -115,7 +119,7 @@ async function main() {
     console.log('\n🛍️ Simulating shopping cart...');
 
     const allProducts = await prisma.product.findMany({
-        include: { variants: true, store: true }
+        include: { Variant: true, Store: true }
     });
 
     console.log(`Found ${allProducts.length} products from ${stores.length} stores\n`);

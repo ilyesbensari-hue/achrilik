@@ -27,9 +27,9 @@ export async function POST(
                 rejectionReason: reason
             },
             include: {
-                store: {
+                Store: {
                     include: {
-                        owner: true
+                        User: true
                     }
                 }
             }
@@ -44,18 +44,18 @@ export async function POST(
             productId: product.id,
             details: {
                 productTitle: product.title,
-                sellerId: product.store.ownerId,
+                sellerId: product.Store.ownerId,
                 rejectionReason: reason
             }
         });
 
         // Send email notification to seller
-        if (product.store.owner.email) {
+        if (product.Store.User.email) {
             await sendTemplateEmail(
-                product.store.owner.email,
+                product.Store.User.email,
                 'product_rejected',
                 {
-                    sellerName: product.store.owner.name || 'Vendeur',
+                    sellerName: product.Store.User.name || 'Vendeur',
                     productTitle: product.title,
                     rejectionReason: reason,
                     dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/sell`

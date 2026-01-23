@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -7,7 +8,7 @@ async function reorganizeCategories() {
 
     // 1. Get existing products and their categories
     const existingProducts = await prisma.product.findMany({
-        include: { category: true }
+        include: { Category: true }
     });
 
     console.log(`📊 Found ${existingProducts.length} existing products`);
@@ -21,103 +22,103 @@ async function reorganizeCategories() {
 
     // === VÊTEMENTS ===
     const vetements = await prisma.category.create({
-        data: { name: 'Vêtements', slug: 'vetements' }
+        data: { id: randomBytes(16).toString('hex'), name: 'Vêtements', slug: 'vetements' }
     });
     console.log('✅ Created: Vêtements');
 
     // Vêtements > Homme
     const homme = await prisma.category.create({
-        data: { name: 'Homme', slug: 'homme', parentId: vetements.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Homme', slug: 'homme', parentId: vetements.id }
     });
 
     const chemisesHomme = await prisma.category.create({
-        data: { name: 'Chemises Homme', slug: 'chemises-homme', parentId: homme.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Chemises Homme', slug: 'chemises-homme', parentId: homme.id }
     });
 
     const tshirtsHomme = await prisma.category.create({
-        data: { name: 'T-shirts Homme', slug: 'tshirts-homme', parentId: homme.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'T-shirts Homme', slug: 'tshirts-homme', parentId: homme.id }
     });
 
     await prisma.category.createMany({
         data: [
-            { name: 'Pantalons Homme', slug: 'pantalons-homme', parentId: homme.id },
-            { name: 'Pulls Homme', slug: 'pulls-homme', parentId: homme.id },
-            { name: 'Vestes Homme', slug: 'vestes-homme', parentId: homme.id },
+            { id: randomBytes(16).toString('hex'), name: 'Pantalons Homme', slug: 'pantalons-homme', parentId: homme.id },
+            { id: randomBytes(16).toString('hex'), name: 'Pulls Homme', slug: 'pulls-homme', parentId: homme.id },
+            { id: randomBytes(16).toString('hex'), name: 'Vestes Homme', slug: 'vestes-homme', parentId: homme.id },
         ]
     });
     console.log('  ├─ Homme (5 subcategories)');
 
     // Vêtements > Femme
     const femme = await prisma.category.create({
-        data: { name: 'Femme', slug: 'femme', parentId: vetements.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Femme', slug: 'femme', parentId: vetements.id }
     });
 
     const robes = await prisma.category.create({
-        data: { name: 'Robes', slug: 'robes', parentId: femme.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Robes', slug: 'robes', parentId: femme.id }
     });
 
     const chemisesFemme = await prisma.category.create({
-        data: { name: 'Chemises Femme', slug: 'chemises-femme', parentId: femme.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Chemises Femme', slug: 'chemises-femme', parentId: femme.id }
     });
 
     await prisma.category.createMany({
         data: [
-            { name: 'T-shirts Femme', slug: 'tshirts-femme', parentId: femme.id },
-            { name: 'Pantalons Femme', slug: 'pantalons-femme', parentId: femme.id },
-            { name: 'Jupes', slug: 'jupes', parentId: femme.id },
-            { name: 'Pulls Femme', slug: 'pulls-femme', parentId: femme.id },
+            { id: randomBytes(16).toString('hex'), name: 'T-shirts Femme', slug: 'tshirts-femme', parentId: femme.id },
+            { id: randomBytes(16).toString('hex'), name: 'Pantalons Femme', slug: 'pantalons-femme', parentId: femme.id },
+            { id: randomBytes(16).toString('hex'), name: 'Jupes', slug: 'jupes', parentId: femme.id },
+            { id: randomBytes(16).toString('hex'), name: 'Pulls Femme', slug: 'pulls-femme', parentId: femme.id },
         ]
     });
     console.log('  ├─ Femme (6 subcategories)');
 
     // Vêtements > Enfant
     const enfant = await prisma.category.create({
-        data: { name: 'Enfant', slug: 'enfant', parentId: vetements.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Enfant', slug: 'enfant', parentId: vetements.id }
     });
 
     await prisma.category.createMany({
         data: [
-            { name: 'T-shirts Enfant', slug: 'tshirts-enfant', parentId: enfant.id },
-            { name: 'Pantalons Enfant', slug: 'pantalons-enfant', parentId: enfant.id },
-            { name: 'Robes Enfant', slug: 'robes-enfant', parentId: enfant.id },
+            { id: randomBytes(16).toString('hex'), name: 'T-shirts Enfant', slug: 'tshirts-enfant', parentId: enfant.id },
+            { id: randomBytes(16).toString('hex'), name: 'Pantalons Enfant', slug: 'pantalons-enfant', parentId: enfant.id },
+            { id: randomBytes(16).toString('hex'), name: 'Robes Enfant', slug: 'robes-enfant', parentId: enfant.id },
         ]
     });
     console.log('  └─ Enfant (3 subcategories)\n');
 
     // === ACCESSOIRES ===
     const accessoires = await prisma.category.create({
-        data: { name: 'Accessoires', slug: 'accessoires' }
+        data: { id: randomBytes(16).toString('hex'), name: 'Accessoires', slug: 'accessoires' }
     });
     console.log('✅ Created: Accessoires');
 
     // Accessoires > Électronique
     const electronique = await prisma.category.create({
-        data: { name: 'Électronique', slug: 'electronique', parentId: accessoires.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Électronique', slug: 'electronique', parentId: accessoires.id }
     });
 
     // Électronique > Téléphonie
     const telephonie = await prisma.category.create({
-        data: { name: 'Téléphonie', slug: 'telephonie', parentId: electronique.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Téléphonie', slug: 'telephonie', parentId: electronique.id }
     });
 
     await prisma.category.createMany({
         data: [
-            { name: 'Câbles', slug: 'cables', parentId: telephonie.id },
-            { name: 'Chargeurs', slug: 'chargeurs', parentId: telephonie.id },
-            { name: 'Coques', slug: 'coques', parentId: telephonie.id },
-            { name: 'Écouteurs', slug: 'ecouteurs', parentId: telephonie.id },
+            { id: randomBytes(16).toString('hex'), name: 'Câbles', slug: 'cables', parentId: telephonie.id },
+            { id: randomBytes(16).toString('hex'), name: 'Chargeurs', slug: 'chargeurs', parentId: telephonie.id },
+            { id: randomBytes(16).toString('hex'), name: 'Coques', slug: 'coques', parentId: telephonie.id },
+            { id: randomBytes(16).toString('hex'), name: 'Écouteurs', slug: 'ecouteurs', parentId: telephonie.id },
         ]
     });
 
     // Électronique > Audio
     const audio = await prisma.category.create({
-        data: { name: 'Audio', slug: 'audio', parentId: electronique.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Audio', slug: 'audio', parentId: electronique.id }
     });
 
     await prisma.category.createMany({
         data: [
-            { name: 'Enceintes', slug: 'enceintes', parentId: audio.id },
-            { name: 'Casques', slug: 'casques', parentId: audio.id },
+            { id: randomBytes(16).toString('hex'), name: 'Enceintes', slug: 'enceintes', parentId: audio.id },
+            { id: randomBytes(16).toString('hex'), name: 'Casques', slug: 'casques', parentId: audio.id },
         ]
     });
     console.log('  ├─ Électronique > Téléphonie (4 subcategories)');
@@ -125,15 +126,15 @@ async function reorganizeCategories() {
 
     // Accessoires > Autres
     const montres = await prisma.category.create({
-        data: { name: 'Montres', slug: 'montres', parentId: accessoires.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Montres', slug: 'montres', parentId: accessoires.id }
     });
 
     const sacs = await prisma.category.create({
-        data: { name: 'Sacs', slug: 'sacs', parentId: accessoires.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Sacs', slug: 'sacs', parentId: accessoires.id }
     });
 
     const chaussures = await prisma.category.create({
-        data: { name: 'Chaussures', slug: 'chaussures', parentId: accessoires.id }
+        data: { id: randomBytes(16).toString('hex'), name: 'Chaussures', slug: 'chaussures', parentId: accessoires.id }
     });
     console.log('  ├─ Montres, Sacs, Chaussures\n');
 
@@ -159,7 +160,7 @@ async function reorganizeCategories() {
 
     let reassignedCount = 0;
     for (const product of existingProducts) {
-        const oldCategoryName = product.category?.slug.toLowerCase() || '';
+        const oldCategoryName = product.Category?.slug.toLowerCase() || '';
         const newCategoryId = categoryMapping[oldCategoryName] || tshirtsHomme.id; // Default category
 
         try {

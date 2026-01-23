@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 export async function POST(request: Request) {
     try {
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
             }),
             prisma.store.create({
                 data: {
+                    id: randomBytes(16).toString('hex'),
                     name: storeName,
                     description: storeDescription,
                     city,

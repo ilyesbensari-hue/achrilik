@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendOrderConfirmation, sendNewOrderNotification } from '@/lib/mail';
 
+import { randomBytes } from 'crypto';
+
 // GET - Fetch orders for a user or store
 export async function GET(request: Request) {
     try {
@@ -20,10 +22,10 @@ export async function GET(request: Request) {
             // Fetch orders for a specific store (seller view)
             orders = await prisma.order.findMany({
                 where: {
-                    items: {
+                    OrderItem: {
                         some: {
-                            variant: {
-                                product: {
+                            Variant: {
+                                Product: {
                                     storeId
                                 }
                             }
@@ -31,16 +33,16 @@ export async function GET(request: Request) {
                     }
                 },
                 include: {
-                    items: {
+                    OrderItem: {
                         include: {
-                            variant: {
+                            Variant: {
                                 include: {
-                                    product: true
+                                    Product: true
                                 }
                             }
                         }
                     },
-                    user: {
+                    User: {
                         select: {
                             name: true,
                             email: true,
@@ -55,11 +57,11 @@ export async function GET(request: Request) {
             orders = await prisma.order.findMany({
                 where: { userId: userId as string },
                 include: {
-                    items: {
+                    OrderItem: {
                         include: {
-                            variant: {
+                            Variant: {
                                 include: {
-                                    product: true
+                                    Product: true
                                 }
                             }
                         }
@@ -94,7 +96,7 @@ export async function POST(request: Request) {
             for (const item of cart) {
                 const variant = await tx.variant.findUnique({
                     where: { id: item.variantId },
-                    include: { product: true }
+                    include: { Product: true }
                 });
 
                 if (!variant) {
@@ -105,7 +107,7 @@ export async function POST(request: Request) {
                     throw new Error(`Stock insuffisant pour: ${item.title}`);
                 }
 
-                total += variant.product.price * item.quantity;
+                total += variant.Product.price * item.quantity;
             }
 
             // Add delivery fee
@@ -115,13 +117,15 @@ export async function POST(request: Request) {
             // 2. Create Order
             const newOrder = await tx.order.create({
                 data: {
+                    id: randomBytes(16).toString('hex'),
                     userId,
                     status: 'PENDING',
                     total,
                     paymentMethod,
                     deliveryType: deliveryMethod,
-                    items: {
+                    OrderItem: {
                         create: cart.map((item: any) => ({
+                            id: randomBytes(16).toString('hex'),
                             variantId: item.variantId,
                             quantity: item.quantity,
                             price: item.price
@@ -129,12 +133,12 @@ export async function POST(request: Request) {
                     }
                 },
                 include: {
-                    user: true, // For Buyer Email
-                    items: {
+                    User: true, // For Buyer Email
+                    OrderItem: {
                         include: {
-                            variant: {
+                            Variant: {
                                 include: {
-                                    product: true // For Store ID
+                                    Product: true // For Store ID
                                 }
                             }
                         }
@@ -160,24 +164,24 @@ export async function POST(request: Request) {
         // ==========================================
 
         // 1. Send Email to Buyer
-        if (order.user && order.user.email) {
-            await sendOrderConfirmation(order.user.email, order);
+        if (order.User && order.User.email) {
+            await sendOrderConfirmation(order.User.email, order);
         }
 
         // 2. Send Email to Sellers
         // Extract unique store IDs involved in this order
-        const storeIds = Array.from(new Set(order.items.map((item: any) => item.variant.product.storeId)));
+        const storeIds = Array.from(new Set(order.OrderItem.map((item: any) => item.Variant.Product.storeId)));
 
         if (storeIds.length > 0) {
             const stores = await prisma.store.findMany({
                 where: { id: { in: storeIds as string[] } },
-                include: { owner: true }
+                include: { User: true }
             });
 
             for (const store of stores) {
-                if (store.owner && store.owner.email) {
+                if (store.User && store.User.email) {
                     // Send notification to each seller involved
-                    await sendNewOrderNotification(store.owner.email, order);
+                    await sendNewOrderNotification(store.User.email, order);
                 }
             }
         }

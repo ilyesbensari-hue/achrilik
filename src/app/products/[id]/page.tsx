@@ -26,10 +26,10 @@ async function getProduct(id: string) {
         const product = await prisma.product.findUnique({
             where: { id },
             include: {
-                store: true,
-                category: true,
-                reviews: true,
-                variants: true
+                Store: true,
+                Category: true,
+                Review: true,
+                Variant: true
             }
         });
         return product;
@@ -40,7 +40,7 @@ async function getProduct(id: string) {
 }
 
 async function getRecommendations(currentProduct: any) {
-    if (!currentProduct?.category) return { similar: [], complementary: [] };
+    if (!currentProduct?.Category) return { similar: [], complementary: [] };
 
     // 1. Similar Products (Same Category)
     const similar = await prisma.product.findMany({
@@ -49,12 +49,12 @@ async function getRecommendations(currentProduct: any) {
             id: { not: currentProduct.id }
         },
         take: 4,
-        include: { store: true }
+        include: { Store: true }
     });
 
     // 2. Complementary Products
     let complementary: any[] = [];
-    const currentSlug = currentProduct.category.slug.toLowerCase();
+    const currentSlug = currentProduct.Category.slug.toLowerCase();
 
     // Find target categories logic
     let targetSlugs: string[] = [];
@@ -73,13 +73,13 @@ async function getRecommendations(currentProduct: any) {
     if (targetSlugs.length > 0) {
         complementary = await prisma.product.findMany({
             where: {
-                category: {
+                Category: {
                     slug: { in: targetSlugs }
                 },
                 id: { not: currentProduct.id }
             },
             take: 4,
-            include: { store: true }
+            include: { Store: true }
         });
     }
 
@@ -96,8 +96,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     const { similar, complementary } = await getRecommendations(product);
 
-    const sizes = Array.from(new Set(product.variants?.map((v: any) => v.size) || [])) as string[];
-    const colors = Array.from(new Set(product.variants?.map((v: any) => v.color) || [])) as string[];
+    const sizes = Array.from(new Set(product.Variant?.map((v: any) => v.size) || [])) as string[];
+    const colors = Array.from(new Set(product.Variant?.map((v: any) => v.color) || [])) as string[];
     const images = product.images ? product.images.split(',') : [];
 
     return (
@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <nav className="mb-8 flex items-center gap-2 text-sm text-gray-600">
                     <Link href="/" className="hover:text-indigo-600">Accueil</Link>
                     <span>/</span>
-                    <Link href={`/?category=${product.category?.slug}`} className="hover:text-indigo-600">{product.category?.name}</Link>
+                    <Link href={`/?category=${product.Category?.slug}`} className="hover:text-indigo-600">{product.Category?.name}</Link>
                     <span>/</span>
                     <span className="text-gray-900 font-medium">{product.title}</span>
                 </nav>
@@ -125,16 +125,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     <div className="p-4 lg:p-12 space-y-8">
                         {/* Store Info */}
                         <div className="flex items-center gap-3 text-sm">
-                            <Link href={`/stores/${product.store.id}`} className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                            <Link href={`/stores/${product.Store.id}`} className="flex items-center gap-3 transition-opacity hover:opacity-80">
                                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                                    {product.store.name[0]}
+                                    {product.Store.name[0]}
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <p className="font-semibold text-gray-900 hover:text-indigo-600 underline decoration-dotted">{product.store.name}</p>
+                                        <p className="font-semibold text-gray-900 hover:text-indigo-600 underline decoration-dotted">{product.Store.name}</p>
                                         <SellerRating rating={0} count={0} size="sm" />
                                     </div>
-                                    <p className="text-gray-500">📍 {product.store.city} <span className="text-xs text-indigo-500">(Voir la boutique)</span></p>
+                                    <p className="text-gray-500">📍 {product.Store.city} <span className="text-xs text-indigo-500">(Voir la boutique)</span></p>
                                 </div>
                             </Link>
                         </div>
@@ -151,17 +151,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             </div>
 
                             {/* Product Rating Stars */}
-                            {product.reviews && product.reviews.length > 0 && (
+                            {product.Review && product.Review.length > 0 && (
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="flex text-yellow-400 text-lg">
                                         {(() => {
-                                            const avg = product.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / product.reviews.length;
+                                            const avg = product.Review.reduce((acc: number, r: any) => acc + r.rating, 0) / product.Review.length;
                                             return Array.from({ length: 5 }).map((_, i) => (
                                                 <span key={i}>{i < Math.round(avg) ? '★' : '☆'}</span>
                                             ));
                                         })()}
                                     </div>
-                                    <span className="text-sm text-gray-500 font-medium">({product.reviews.length} avis)</span>
+                                    <span className="text-sm text-gray-500 font-medium">({product.Review.length} avis)</span>
                                 </div>
                             )}
 
@@ -178,9 +178,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                         <span className="text-4xl font-black text-indigo-600">{product.price.toLocaleString()} DA</span>
                                     )}
                                 </div>
-                                {product.category && (
+                                {product.Category && (
                                     <span className="self-start px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-100">
-                                        {product.category.name}
+                                        {product.Category.name}
                                     </span>
                                 )}
                             </div>
@@ -228,7 +228,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                         </div>
 
                         {/* Technical Specs (Electronics) */}
-                        {product.category?.slug.includes('electronique') && product.technicalSpecs && (
+                        {product.Category?.slug.includes('electronique') && product.technicalSpecs && (
                             <div className="bg-gray-900 text-white rounded-xl p-6">
                                 <h3 className="font-bold mb-4 flex items-center gap-2">
                                     <span>⚡</span> Spécifications Techniques

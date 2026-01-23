@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction, AdminActions, TargetTypes } from '@/lib/adminLogger';
+import { randomBytes } from 'crypto';
 
 // GET /api/admin/settings - Get all settings or specific setting
 export async function GET(request: NextRequest) {
@@ -50,8 +51,15 @@ export async function POST(request: NextRequest) {
 
         const setting = await prisma.systemSettings.upsert({
             where: { key },
-            update: { value, category, description },
-            create: { key, value, category: category || 'GENERAL', description }
+            update: { value, category, description, updatedAt: new Date() },
+            create: {
+                id: randomBytes(16).toString('hex'),
+                key,
+                value,
+                category: category || 'GENERAL',
+                description,
+                updatedAt: new Date()
+            }
         });
 
         // Log admin action

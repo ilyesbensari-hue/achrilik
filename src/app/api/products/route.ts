@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 export async function GET(request: Request) {
   try {
@@ -25,10 +26,10 @@ export async function GET(request: Request) {
       where: whereClause,
       take: 50, // Reduced from 100 for better performance
       include: {
-        variants: true,
-        store: true,
-        category: true,
-        reviews: true,
+        Variant: true,
+        Store: true,
+        Category: true,
+        Review: true,
       },
     });
 
@@ -38,13 +39,13 @@ export async function GET(request: Request) {
     // Fetch all reviews for these stores
     const reviewsForStores = await prisma.review.findMany({
       where: {
-        product: {
+        Product: {
           storeId: { in: Array.from(storeIds) }
         }
       },
       select: {
         rating: true,
-        product: {
+        Product: {
           select: { storeId: true }
         }
       }
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
 
     const storeRatingsMap = new Map<string, { total: number; count: number }>();
     reviewsForStores.forEach(r => {
-      const sid = r.product.storeId;
+      const sid = r.Product.storeId;
       const current = storeRatingsMap.get(sid) || { total: 0, count: 0 };
       storeRatingsMap.set(sid, {
         total: current.total + r.rating,
@@ -66,7 +67,7 @@ export async function GET(request: Request) {
       return {
         ...p,
         store: {
-          ...p.store,
+          ...p.Store,
           averageRating: avg,
           reviewCount: stats.count
         }
@@ -90,14 +91,16 @@ export async function POST(request: Request) {
 
     const product = await prisma.product.create({
       data: {
+        id: randomBytes(16).toString('hex'),
         title,
         description,
         price: parseFloat(price),
         images: images, // Comma separated string
         storeId,
         status: 'APPROVED', // Auto-approve products so they appear immediately
-        variants: {
+        Variant: {
           create: variants.map((v: any) => ({
+            id: randomBytes(16).toString('hex'),
             size: v.size,
             color: v.color,
             stock: parseInt(v.stock),
@@ -105,7 +108,7 @@ export async function POST(request: Request) {
         },
       },
       include: {
-        variants: true,
+        Variant: true,
       },
     });
 

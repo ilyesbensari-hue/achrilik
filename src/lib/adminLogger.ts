@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { randomBytes } from 'crypto';
 
 interface LogAdminActionParams {
     adminId: string;
@@ -23,6 +24,7 @@ export async function logAdminAction({
     try {
         await prisma.adminLog.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 adminId,
                 action,
                 targetType,

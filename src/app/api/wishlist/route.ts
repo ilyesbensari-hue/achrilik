@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 // GET /api/wishlist - Get user's wishlist
 export async function GET(req: NextRequest) {
@@ -17,12 +18,12 @@ export async function GET(req: NextRequest) {
         const wishlist = await prisma.wishlist.findMany({
             where: { userId },
             include: {
-                product: {
+                Product: {
                     include: {
-                        store: true,
-                        category: true,
-                        variants: true,
-                        reviews: true,
+                        Store: true,
+                        Category: true,
+                        Variant: true,
+                        Review: true,
                     }
                 }
             },
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
 
         // Transform to match product format
         const products = wishlist.map(w => ({
-            ...w.product,
+            ...w.Product,
             wishlistId: w.id,
             addedAt: w.createdAt
         }));
@@ -73,7 +74,11 @@ export async function POST(req: NextRequest) {
         }
 
         const wishlistItem = await prisma.wishlist.create({
-            data: { userId, productId }
+            data: {
+                id: randomBytes(16).toString('hex'),
+                userId,
+                productId
+            }
         });
 
         return NextResponse.json({

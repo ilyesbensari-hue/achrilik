@@ -23,13 +23,13 @@ export async function POST(request: NextRequest) {
                 title: true,
                 price: true,
                 images: true,
-                category: {
+                Category: {
                     select: {
                         name: true,
                         slug: true,
                     },
                 },
-                store: {
+                Store: {
                     select: {
                         name: true,
                         city: true,
@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
             title: product.title,
             price: product.price,
             image: product.images?.split(',')[0] || '',
-            category: product.category?.name || '',
-            store: product.store?.name || '',
-            city: product.store?.city || '',
+            category: product.Category?.name || '',
+            store: product.Store?.name || '',
+            city: product.Store?.city || '',
         }));
 
         return NextResponse.json({

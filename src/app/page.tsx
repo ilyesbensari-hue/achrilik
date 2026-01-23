@@ -34,14 +34,14 @@ async function getProductsAndStores(search?: string) {
         where,
         take: 50, // Reduced from 100 for better performance
         include: {
-          store: true,
-          variants: true,
-          category: {
+          Store: true,
+          Variant: true,
+          Category: {
             include: {
-              parent: true
+              Category: true
             }
           },
-          reviews: true,
+          Review: true,
         },
         orderBy: { createdAt: 'desc' }
       }),
@@ -49,13 +49,13 @@ async function getProductsAndStores(search?: string) {
         where: storeWhere,
         take: 50, // Limit stores in search results
         include: {
-          products: {
+          Product: {
             include: {
-              reviews: true
+              Review: true
             }
           },
           _count: {
-            select: { products: true }
+            select: { Product: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -71,13 +71,13 @@ async function getProductsAndStores(search?: string) {
     // 3. Fetch reviews for these stores (single optimized query)
     const reviewsForStores = await prisma.review.findMany({
       where: {
-        product: {
+        Product: {
           storeId: { in: Array.from(storeIds) }
         }
       },
       select: {
         rating: true,
-        product: {
+        Product: {
           select: { storeId: true }
         }
       }
@@ -86,7 +86,7 @@ async function getProductsAndStores(search?: string) {
     // 4. Aggregate ratings in memory (fast and efficient)
     const storeRatingsMap = new Map<string, { total: number; count: number }>();
     reviewsForStores.forEach(r => {
-      const sid = r.product.storeId;
+      const sid = r.Product.storeId;
       const current = storeRatingsMap.get(sid) || { total: 0, count: 0 };
       storeRatingsMap.set(sid, {
         total: current.total + r.rating,
@@ -101,7 +101,7 @@ async function getProductsAndStores(search?: string) {
       return {
         ...p,
         store: {
-          ...p.store,
+          ...p.Store,
           averageRating: avg,
           reviewCount: stats.count
         }
@@ -266,7 +266,7 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
                             )}
                             <div className="flex items-center gap-2 text-[#006233] font-medium mt-3">
                               <span>📦</span>
-                              <span>{store._count.products} produit{store._count.products > 1 ? 's' : ''}</span>
+                              <span>{store._count.Product} produit{store._count.Product > 1 ? 's' : ''}</span>
                             </div>
                           </div>
                         </Link>

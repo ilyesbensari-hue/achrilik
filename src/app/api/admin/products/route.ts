@@ -29,9 +29,9 @@ export async function GET(request: NextRequest) {
             prisma.product.findMany({
                 where,
                 include: {
-                    store: {
+                    Store: {
                         include: {
-                            owner: {
+                            User: {
                                 select: {
                                     id: true,
                                     name: true,
@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
                             }
                         }
                     },
-                    category: true,
-                    variants: true
+                    Category: true,
+                    Variant: true
                 },
                 orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,

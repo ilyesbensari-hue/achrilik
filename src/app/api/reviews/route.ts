@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 
+import { randomBytes } from 'crypto';
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -21,6 +23,7 @@ export async function POST(request: Request) {
         // Create Review
         const review = await prisma.review.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 userId,
                 productId,
                 rating: parseInt(rating),
@@ -49,7 +52,7 @@ export async function GET(request: Request) {
         const reviews = await prisma.review.findMany({
             where: { productId },
             include: {
-                user: {
+                User: {
                     select: { name: true }
                 }
             },

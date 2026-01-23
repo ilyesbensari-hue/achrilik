@@ -36,16 +36,16 @@ export async function GET(request: Request) {
                     createdAt: true,
                     _count: {
                         select: {
-                            orders: true
+                            Order: true
                         }
                     },
-                    store: {
+                    Store: {
                         select: {
                             id: true,
                             name: true,
                             _count: {
                                 select: {
-                                    products: true
+                                    Product: true
                                 }
                             }
                         }

@@ -34,10 +34,10 @@ export async function GET(req: NextRequest) {
         // Get all orders for this store's products - OPTIMIZED: filter at DB level
         const allOrders = await prisma.order.findMany({
             where: {
-                items: {
+                OrderItem: {
                     some: {
-                        variant: {
-                            product: {
+                        Variant: {
+                            Product: {
                                 storeId: store.id
                             }
                         }
@@ -45,21 +45,21 @@ export async function GET(req: NextRequest) {
                 }
             },
             include: {
-                items: {
+                OrderItem: {
                     where: {
-                        variant: {
-                            product: {
+                        Variant: {
+                            Product: {
                                 storeId: store.id
                             }
                         }
                     },
                     include: {
-                        variant: {
+                        Variant: {
                             select: {
                                 id: true,
                                 size: true,
                                 color: true,
-                                product: {
+                                Product: {
                                     select: {
                                         id: true,
                                         title: true,
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
 
         const calculateRevenue = (orders: typeof storeOrders) => {
             return orders.reduce((sum, order) => {
-                const orderTotal = order.items.reduce((itemSum, item) => itemSum + item.price * item.quantity, 0);
+                const orderTotal = order.OrderItem.reduce((itemSum, item) => itemSum + item.price * item.quantity, 0);
                 return sum + orderTotal;
             }, 0);
         };
@@ -107,8 +107,8 @@ export async function GET(req: NextRequest) {
         const productSales = new Map<string, { product: any; quantity: number; revenue: number }>();
 
         storeOrders.forEach(order => {
-            order.items.forEach(item => {
-                const productId = item.variant.product.id;
+            order.OrderItem.forEach(item => {
+                const productId = item.Variant.Product.id;
                 const existing = productSales.get(productId);
 
                 if (existing) {
@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
                     existing.revenue += item.price * item.quantity;
                 } else {
                     productSales.set(productId, {
-                        product: item.variant.product,
+                        product: item.Variant.Product,
                         quantity: item.quantity,
                         revenue: item.price * item.quantity
                     });
@@ -156,7 +156,7 @@ export async function GET(req: NextRequest) {
         // Get store reviews
         const reviews = await prisma.review.findMany({
             where: {
-                product: {
+                Product: {
                     storeId: store.id
                 }
             }

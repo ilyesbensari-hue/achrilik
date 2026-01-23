@@ -11,12 +11,12 @@ export async function GET(request: NextRequest) {
         // Fetch all products
         const products = await prisma.product.findMany({
             include: {
-                store: {
+                Store: {
                     select: {
                         name: true
                     }
                 },
-                category: {
+                Category: {
                     select: {
                         name: true
                     }
@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
             Titre: product.title,
             Prix: `${product.price} DA`,
             Statut: product.status,
-            Magasin: product.store.name,
-            Catégorie: product.category?.name || 'N/A',
+            Magasin: product.Store.name,
+            Catégorie: product.Category?.name || 'N/A',
             'Date de création': new Date(product.createdAt).toLocaleDateString('fr-FR')
         }));
 

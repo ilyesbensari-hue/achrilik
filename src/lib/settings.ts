@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { randomBytes } from 'crypto';
 
 /**
  * Get a system setting value
@@ -41,8 +42,20 @@ export async function setSetting(
     try {
         await prisma.systemSettings.upsert({
             where: { key },
-            update: { value, category, description },
-            create: { key, value, category, description }
+            update: {
+                value,
+                category,
+                description,
+                updatedAt: new Date()
+            },
+            create: {
+                id: randomBytes(16).toString('hex'),
+                key,
+                value,
+                category,
+                description,
+                updatedAt: new Date()
+            }
         });
     } catch (error) {
         console.error(`Failed to set setting ${key}:`, error);

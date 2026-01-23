@@ -12,12 +12,12 @@ export async function GET(
         const product = await prisma.product.findUnique({
             where: { id },
             include: {
-                store: true,
-                category: true,
-                variants: true,
-                reviews: {
+                Store: true,
+                Category: true,
+                Variant: true,
+                Review: {
                     include: {
-                        user: {
+                        User: {
                             select: {
                                 name: true,
                                 email: true
@@ -39,23 +39,23 @@ export async function GET(
         // Get all orders containing this product
         const orders = await prisma.order.findMany({
             where: {
-                items: {
+                OrderItem: {
                     some: {
-                        variant: {
+                        Variant: {
                             productId: id
                         }
                     }
                 }
             },
             include: {
-                items: {
+                OrderItem: {
                     where: {
-                        variant: {
+                        Variant: {
                             productId: id
                         }
                     },
                     include: {
-                        variant: true
+                        Variant: true
                     }
                 }
             },
@@ -64,17 +64,17 @@ export async function GET(
 
         // Calculate metrics
         const totalSales = orders.reduce((sum, order) => {
-            return sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+            return sum + order.OrderItem.reduce((itemSum, item) => itemSum + item.quantity, 0);
         }, 0);
 
         const totalRevenue = orders.reduce((sum, order) => {
-            return sum + order.items.reduce((itemSum, item) => itemSum + (item.price * item.quantity), 0);
+            return sum + order.OrderItem.reduce((itemSum, item) => itemSum + (item.price * item.quantity), 0);
         }, 0);
 
         // Sales by variant
         const variantSales = new Map<string, { variant: any; quantity: number; revenue: number }>();
         orders.forEach(order => {
-            order.items.forEach(item => {
+            order.OrderItem.forEach(item => {
                 const variantId = item.variantId;
                 const existing = variantSales.get(variantId);
 
@@ -83,7 +83,7 @@ export async function GET(
                     existing.revenue += item.price * item.quantity;
                 } else {
                     variantSales.set(variantId, {
-                        variant: item.variant,
+                        variant: item.Variant,
                         quantity: item.quantity,
                         revenue: item.price * item.quantity
                     });
@@ -114,11 +114,11 @@ export async function GET(
             });
 
             const daySales = dayOrders.reduce((sum, order) => {
-                return sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+                return sum + order.OrderItem.reduce((itemSum, item) => itemSum + item.quantity, 0);
             }, 0);
 
             const dayRevenue = dayOrders.reduce((sum, order) => {
-                return sum + order.items.reduce((itemSum, item) => itemSum + (item.price * item.quantity), 0);
+                return sum + order.OrderItem.reduce((itemSum, item) => itemSum + (item.price * item.quantity), 0);
             }, 0);
 
             return {
@@ -129,8 +129,8 @@ export async function GET(
         }).reverse();
 
         // Calculate average rating
-        const averageRating = product.reviews.length > 0
-            ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+        const averageRating = product.Review.length > 0
+            ? product.Review.reduce((sum, r) => sum + r.rating, 0) / product.Review.length
             : 0;
 
         return NextResponse.json({
@@ -141,22 +141,22 @@ export async function GET(
                     title: product.title,
                     price: product.price,
                     images: product.images.split(','),
-                    category: product.category?.name
+                    category: product.Category?.name
                 },
                 metrics: {
                     totalSales,
                     totalRevenue,
                     averageRating,
-                    reviewCount: product.reviews.length,
-                    totalStock: product.variants.reduce((sum, v) => sum + v.stock, 0)
+                    reviewCount: product.Review.length,
+                    totalStock: product.Variant.reduce((sum, v) => sum + v.stock, 0)
                 },
                 variantPerformance,
                 salesTrend: last30Days,
-                recentReviews: product.reviews.slice(0, 5).map(r => ({
+                recentReviews: product.Review.slice(0, 5).map(r => ({
                     id: r.id,
                     rating: r.rating,
                     comment: r.comment,
-                    userName: r.user.name || r.user.email,
+                    userName: r.User.name || r.User.email,
                     createdAt: r.createdAt
                 }))
             }

@@ -21,7 +21,7 @@ export async function GET() {
                 clickCollect: true,
                 _count: {
                     select: {
-                        products: true
+                        Product: true
                     }
                 }
             }

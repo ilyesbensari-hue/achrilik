@@ -20,7 +20,7 @@ export async function PATCH(
         const order = await prisma.order.update({
             where: { id },
             data: { status },
-            include: { user: true } // Return user to potentially notify (future)
+            include: { User: true } // Return user to potentially notify (future)
         });
 
         return NextResponse.json(order);

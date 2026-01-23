@@ -11,17 +11,17 @@ export async function GET(request: NextRequest) {
         // Fetch all orders
         const orders = await prisma.order.findMany({
             include: {
-                user: {
+                User: {
                     select: {
                         name: true,
                         email: true
                     }
                 },
-                items: {
+                OrderItem: {
                     include: {
-                        variant: {
+                        Variant: {
                             include: {
-                                product: {
+                                Product: {
                                     select: {
                                         title: true
                                     }
@@ -37,12 +37,12 @@ export async function GET(request: NextRequest) {
         // Format data for export
         const exportData = orders.map(order => ({
             ID: order.id,
-            Client: order.user.name || order.user.email,
+            Client: order.User.name || order.User.email,
             Total: `${order.total} DA`,
             Statut: order.status,
             'Mode de livraison': order.deliveryType,
             'Mode de paiement': order.paymentMethod,
-            'Nombre d\'articles': order.items.length,
+            'Nombre d\'articles': order.OrderItem.length,
             'Date de commande': new Date(order.createdAt).toLocaleDateString('fr-FR')
         }));
 

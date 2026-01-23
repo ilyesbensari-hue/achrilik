@@ -13,11 +13,11 @@ export async function GET(
         const store = await prisma.store.findUnique({
             where: { id },
             include: {
-                products: {
+                Product: {
                     include: {
-                        reviews: {
+                        Review: {
                             include: {
-                                user: {
+                                User: {
                                     select: {
                                         name: true,
                                         email: true // Optional, maybe just name
@@ -28,7 +28,7 @@ export async function GET(
                         }
                     }
                 },
-                owner: {
+                User: {
                     select: {
                         name: true,
                         email: true,

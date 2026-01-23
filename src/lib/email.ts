@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { randomBytes } from 'crypto';
 import { prisma } from './prisma';
 import { getSetting } from './settings';
 
@@ -170,7 +171,11 @@ export async function initializeEmailTemplates() {
             await prisma.emailTemplate.upsert({
                 where: { name: template.name },
                 update: {},
-                create: template
+                create: {
+                    ...template,
+                    id: randomBytes(16).toString('hex'),
+                    updatedAt: new Date()
+                }
             });
         } catch (error) {
             console.error(`Failed to create template ${template.name}:`, error);

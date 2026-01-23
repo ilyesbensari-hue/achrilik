@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         const vendors = await prisma.store.findMany({
             where: whereClause,
             include: {
-                owner: {
+                User: {
                     select: {
                         id: true,
                         email: true,
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
                 city: store.city,
                 phone: store.phone,
                 clickCollect: store.clickCollect,
-                owner: store.owner,
+                owner: store.User,
                 productCount: store._count.Product,
                 orderCount: store._count.Order
             }))

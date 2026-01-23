@@ -2,6 +2,7 @@
 // Usage: ts-node scripts/create-admin.ts
 
 import { PrismaClient } from '@prisma/client';
+import { randomBytes } from 'crypto';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -39,13 +40,15 @@ async function createAdmin() {
 
         // Créer l'admin
         const admin = await prisma.user.create({
-            data: {
+        data: {
+            id: randomBytes(16).toString('hex'),
+
                 email,
                 password: hashedPassword,
                 name,
                 role: 'ADMIN'
-            }
-        });
+                    }
+    });
 
         console.log('✅ Compte administrateur créé avec succès!');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

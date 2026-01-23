@@ -31,14 +31,14 @@ export async function GET(request: NextRequest) {
             prisma.adminLog.findMany({
                 where,
                 include: {
-                    admin: {
+                    User: {
                         select: {
                             id: true,
                             name: true,
                             email: true
                         }
                     },
-                    product: {
+                    Product: {
                         select: {
                             id: true,
                             title: true

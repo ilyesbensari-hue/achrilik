@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { verifyToken } from '@/lib/auth-token';
 import { cookies } from 'next/headers';
+import { randomBytes } from 'crypto';
 
 export async function POST(
     request: Request,
@@ -47,6 +48,7 @@ export async function POST(
         // Log admin action
         await prisma.adminLog.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 adminId: admin.id,
                 action: 'RESET_PASSWORD',
                 targetType: 'USER',

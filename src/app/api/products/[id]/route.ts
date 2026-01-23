@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -7,12 +8,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
-        variants: true,
-        store: true,
-        category: true,
-        reviews: {
+        Variant: true,
+        Store: true,
+        Category: true,
+        Review: {
           include: {
-            user: {
+            User: {
               select: {
                 name: true
               }
@@ -30,7 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Calculate store rating efficiently
     const storeReviews = await prisma.review.findMany({
       where: {
-        product: {
+        Product: {
           storeId: product.storeId
         }
       },
@@ -45,7 +46,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const enrichedProduct = {
       ...product,
       store: {
-        ...product.store,
+        ...product.Store,
         averageRating,
         reviewCount: storeReviews.length
       }
@@ -70,13 +71,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       const existingVariants = await tx.variant.findMany({
         where: { productId: id },
         include: {
-          orderItems: true
+          OrderItem: true
         }
       });
 
       // Separate variants into those with and without orders
-      const variantsWithOrders = existingVariants.filter(v => v.orderItems.length > 0);
-      const variantsWithoutOrders = existingVariants.filter(v => v.orderItems.length === 0);
+      const variantsWithOrders = existingVariants.filter(v => v.OrderItem.length > 0);
+      const variantsWithoutOrders = existingVariants.filter(v => v.OrderItem.length === 0);
 
       // Delete only variants that are NOT linked to any orders
       if (variantsWithoutOrders.length > 0) {
@@ -96,8 +97,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           price: parseFloat(price),
           images,
           categoryId: categoryId || null,
-          variants: {
+          Variant: {
             create: variants.map((v: any) => ({
+              id: randomBytes(16).toString('hex'),
               size: v.size,
               color: v.color,
               stock: parseInt(v.stock),
@@ -105,8 +107,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           },
         },
         include: {
-          variants: true,
-          category: true,
+          Variant: true,
+          Category: true,
         },
       });
     });

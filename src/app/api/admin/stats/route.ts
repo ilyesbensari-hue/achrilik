@@ -110,7 +110,7 @@ export async function GET(request: Request) {
                     const variant = await prisma.variant.findUnique({
                         where: { id: item.variantId },
                         include: {
-                            product: {
+                            Product: {
                                 select: {
                                     title: true,
                                     price: true
@@ -120,7 +120,7 @@ export async function GET(request: Request) {
                     });
 
                     return {
-                        productTitle: variant?.product.title || 'Unknown',
+                        productTitle: variant?.Product.title || 'Unknown',
                         orders: item._count.variantId,
                         totalQuantity: item._sum.quantity || 0,
                         totalRevenue: item._sum.price || 0

@@ -10,16 +10,16 @@ export async function GET(req: NextRequest) {
             const products = await prisma.product.findMany({
                 take: 12,
                 include: {
-                    store: true,
-                    category: true,
-                    variants: true,
-                    reviews: true,
+                    Store: true,
+                    Category: true,
+                    Variant: true,
+                    Review: true,
                     _count: {
-                        select: { wishlists: true }
+                        select: { Wishlist: true }
                     }
                 },
                 orderBy: [
-                    { wishlists: { _count: 'desc' } },
+                    { Wishlist: { _count: 'desc' } },
                     { createdAt: 'desc' }
                 ]
             });
@@ -31,9 +31,9 @@ export async function GET(req: NextRequest) {
         const wishlist = await prisma.wishlist.findMany({
             where: { userId },
             include: {
-                product: {
+                Product: {
                     include: {
-                        category: true
+                        Category: true
                     }
                 }
             }
@@ -44,16 +44,16 @@ export async function GET(req: NextRequest) {
             const products = await prisma.product.findMany({
                 take: 12,
                 include: {
-                    store: true,
-                    category: true,
-                    variants: true,
-                    reviews: true,
+                    Store: true,
+                    Category: true,
+                    Variant: true,
+                    Review: true,
                     _count: {
-                        select: { wishlists: true }
+                        select: { Wishlist: true }
                     }
                 },
                 orderBy: [
-                    { wishlists: { _count: 'desc' } },
+                    { Wishlist: { _count: 'desc' } },
                     { createdAt: 'desc' }
                 ]
             });
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
         // Extract category IDs from wishlist
         const categoryIds = new Set(
             wishlist
-                .map(w => w.product.categoryId)
+                .map(w => w.Product.categoryId)
                 .filter((id): id is string => id !== null)
         );
 
@@ -88,26 +88,26 @@ export async function GET(req: NextRequest) {
             },
             take: 20,
             include: {
-                store: true,
-                category: true,
-                variants: true,
-                reviews: true,
+                Store: true,
+                Category: true,
+                Variant: true,
+                Review: true,
                 _count: {
-                    select: { wishlists: true }
+                    select: { Wishlist: true }
                 }
             }
         });
 
         // Score and sort recommendations
         const scoredProducts = recommendations.map(product => {
-            const avgRating = product.reviews.length > 0
-                ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+            const avgRating = product.Review.length > 0
+                ? product.Review.reduce((sum, r) => sum + r.rating, 0) / product.Review.length
                 : 0;
 
             // Scoring: category match (40%), rating (30%), popularity (30%)
             const categoryScore = categoryIds.has(product.categoryId || '') ? 0.4 : 0;
             const ratingScore = (avgRating / 5) * 0.3;
-            const popularityScore = Math.min(product._count.wishlists / 10, 1) * 0.3;
+            const popularityScore = Math.min(product._count.Wishlist / 10, 1) * 0.3;
 
             const totalScore = categoryScore + ratingScore + popularityScore;
 

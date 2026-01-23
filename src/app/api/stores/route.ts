@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { randomBytes } from 'crypto';
 
 
 export async function GET(request: Request) {
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
         const stores = await prisma.store.findMany({
             where: whereClause,
             include: {
-                products: true,
+                Product: true,
             },
         });
         return NextResponse.json(stores);
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
         const store = await prisma.$transaction(async (tx) => {
             const newStore = await tx.store.create({
                 data: {
+                    id: randomBytes(16).toString('hex'),
                     name,
                     description,
                     ownerId,

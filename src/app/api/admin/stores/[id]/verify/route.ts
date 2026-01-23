@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { verifyToken } from '@/lib/auth-token';
 import { cookies } from 'next/headers';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +39,7 @@ export async function POST(
         // Get current store
         const store = await prisma.store.findUnique({
             where: { id: storeId },
-            include: { owner: true }
+            include: { User: true }
         });
 
         if (!store) {
@@ -55,19 +56,20 @@ export async function POST(
                 verifiedAt: newVerifiedStatus ? new Date() : null,
                 verifiedBy: newVerifiedStatus ? admin.id : null,
             },
-            include: { owner: true }
+            include: { User: true }
         });
 
         // Log admin action
         await prisma.adminLog.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 adminId: admin.id,
                 action: newVerifiedStatus ? 'VERIFY_SELLER' : 'UNVERIFY_SELLER',
                 targetType: 'STORE',
                 targetId: storeId,
                 details: JSON.stringify({
                     storeName: store.name,
-                    ownerEmail: store.owner.email,
+                    ownerEmail: store.User.email,
                 }),
             },
         });
@@ -76,9 +78,9 @@ export async function POST(
         if (newVerifiedStatus) {
             const { sendVendorVerificationEmail } = await import('@/lib/mail');
             await sendVendorVerificationEmail(
-                store.owner.email,
+                store.User.email,
                 store.name,
-                store.owner.name || 'Vendeur',
+                store.User.name || 'Vendeur',
                 true
             );
         }

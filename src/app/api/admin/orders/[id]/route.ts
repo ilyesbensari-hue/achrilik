@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { verifyToken } from '@/lib/auth-token';
 import { cookies } from 'next/headers';
+import { randomBytes } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +39,7 @@ export async function GET(
         const order = await prisma.order.findUnique({
             where: { id },
             include: {
-                user: {
+                User: {
                     select: {
                         id: true,
                         name: true,
@@ -47,7 +48,7 @@ export async function GET(
                         address: true,
                     }
                 },
-                store: {
+                Store: {
                     select: {
                         id: true,
                         name: true,
@@ -58,11 +59,11 @@ export async function GET(
                         longitude: true,
                     }
                 },
-                items: {
+                OrderItem: {
                     include: {
-                        variant: {
+                        Variant: {
                             include: {
-                                product: {
+                                Product: {
                                     select: {
                                         id: true,
                                         title: true,
@@ -136,6 +137,7 @@ export async function PATCH(
         // Log admin action
         await prisma.adminLog.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 adminId: admin.id,
                 action: 'UPDATE_ORDER',
                 targetType: 'ORDER',
@@ -191,6 +193,7 @@ export async function DELETE(
         // Log admin action
         await prisma.adminLog.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 adminId: admin.id,
                 action: 'DELETE_ORDER',
                 targetType: 'ORDER',

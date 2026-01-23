@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth-token';
 import { sendWelcomeEmail } from '@/lib/mail';
+import { randomBytes } from 'crypto';
 
 const PHONE_REGEX = /^(0)(5|6|7)[0-9]{8}$/;
 
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 email,
                 password: hashedPassword,
                 name: name || email.split('@')[0],

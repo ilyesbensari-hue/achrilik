@@ -19,7 +19,7 @@ export async function POST(
         // Find valid token
         const resetToken = await prisma.passwordResetToken.findUnique({
             where: { token },
-            include: { user: true }
+            include: { User: true }
         });
 
         if (!resetToken) {
