@@ -11,7 +11,7 @@ interface Review {
     rating: number;
     comment: string | null;
     createdAt: string;
-    user: {
+    User: {
         name: string;
     };
 }
@@ -21,7 +21,7 @@ interface Product {
     title: string;
     price: number;
     images: string;
-    reviews: Review[];
+    Review?: Review[];
 }
 
 interface Store {
@@ -35,7 +35,7 @@ interface Store {
     latitude?: number;
     longitude?: number;
     clickCollect?: boolean;
-    products: Product[];
+    Product?: Product[];
 }
 
 export default function StoreDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -73,10 +73,10 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
 
     // Calculate Store Stats
     const calculateStats = () => {
-        if (!store?.Products) return { avgRating: 0, totalReviews: 0, allReviews: [] };
+        if (!store?.Product) return { avgRating: 0, totalReviews: 0, allReviews: [] };
 
         const allReviews: Review[] = [];
-        store.Products.forEach(p => {
+        store.Product.forEach(p => {
             if (p.Review) {
                 allReviews.push(...p.Review);
             }
@@ -229,13 +229,13 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="lg:col-span-2 space-y-8">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-black text-gray-900">
-                            La Collection <span className="text-[#006233]">({store.Products?.length || 0})</span>
+                            La Collection <span className="text-[#006233]">({store.Product?.length || 0})</span>
                         </h2>
                     </div>
 
-                    {store.Products && store.Products.length > 0 ? (
+                    {store.Product && store.Product.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {store.Products.map(product => {
+                            {store.Product.map(product => {
                                 const imageUrl = product.images?.split(',')[0] || '';
                                 return (
                                     <Link
