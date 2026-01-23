@@ -9,7 +9,7 @@ interface Product {
     title: string;
     price: number;
     images: string;
-    variants: any[];
+    Variant?: any[];
 }
 
 interface Store {
@@ -21,7 +21,7 @@ interface Store {
     phone?: string;
     latitude?: number;
     longitude?: number;
-    products: Product[];
+    Product?: Product[];
 }
 
 interface SellerPageClientProps {
@@ -294,7 +294,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-green-600">{store?.Products?.length || 0}</div>
+                        <div className="text-2xl font-bold text-green-600">{store?.Product?.length || 0}</div>
                         <div className="text-sm text-gray-600">Produits en ligne</div>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -303,7 +303,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                     </div>
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                         <div className="text-2xl font-bold text-purple-600">
-                            {store?.Products?.reduce((sum, p) => sum + (p.Variant?.length || 0), 0) || 0}
+                            {store?.Product?.reduce((sum, p) => sum + (p.Variant?.length || 0), 0) || 0}
                         </div>
                         <div className="text-sm text-gray-600">Variantes totales</div>
                     </div>
@@ -344,9 +344,9 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
 
             {/* Product List */}
             <h2 className="text-2xl font-bold mb-4">Mes Produits</h2>
-            {store?.Products && store.Products.length > 0 ? (
+            {store?.Product && store.Product.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {store.Products.map(product => {
+                    {store.Product.map(product => {
                         const imageUrl = product.images?.split(',')[0] || '';
                         return (
                             <div key={product.id} className="card p-0 overflow-hidden group">
