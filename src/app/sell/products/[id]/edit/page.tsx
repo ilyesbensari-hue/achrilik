@@ -71,11 +71,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     };
 
     const addVariant = () => {
-        setVariants([...Variant, { size: vSize, color: vColor, stock: vStock }]);
+        setVariants([...variants, { size: vSize, color: vColor, stock: vStock }]);
     };
 
     const removeVariant = (index: number) => {
-        const newVariants = [...Variant];
+        const newVariants = [...variants];
         newVariants.splice(index, 1);
         setVariants(newVariants);
     };
