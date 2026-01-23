@@ -1,0 +1,43 @@
+
+> achrilik@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 578ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+[@sentry/nextjs] DEPRECATION WARNING: disableLogger is deprecated and will be removed in a future version. Use webpack.treeshake.removeDebugLogging instead. (Not supported with Turbopack.)
+[@sentry/nextjs] DEPRECATION WARNING: automaticVercelMonitors is deprecated and will be removed in a future version. Use webpack.automaticVercelMonitors instead. (Not supported with Turbopack.)
+[@sentry/nextjs] DEPRECATION WARNING: reactComponentAnnotation is deprecated and will be removed in a future version. Use webpack.reactComponentAnnotation instead. (Not supported with Turbopack.)
+⚠ `images.domains` is deprecated in favor of `images.remotePatterns`. Please update next.config.ts to protect your application from malicious users.
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env
+- Experiments (use with caution):
+  · clientTraceMetadata
+
+  Creating an optimized production build ...
+[@sentry/nextjs] DEPRECATION WARNING: disableLogger is deprecated and will be removed in a future version. Use webpack.treeshake.removeDebugLogging instead. (Not supported with Turbopack.)
+[@sentry/nextjs] DEPRECATION WARNING: automaticVercelMonitors is deprecated and will be removed in a future version. Use webpack.automaticVercelMonitors instead. (Not supported with Turbopack.)
+[@sentry/nextjs] DEPRECATION WARNING: reactComponentAnnotation is deprecated and will be removed in a future version. Use webpack.reactComponentAnnotation instead. (Not supported with Turbopack.)
+✓ Compiled successfully in 10.6s
+  Running next.config.js provided runAfterProductionCompile ...
+✓ Completed runAfterProductionCompile in 471ms
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/stores/page.tsx:186:74
+Type error: 'store.Product.length' is possibly 'undefined'.
+
+[0m [90m 184 |[39m                                         [33m<[39m[33mpath[39m strokeLinecap[33m=[39m[32m"round"[39m strokeLinejoin[33m=[39m[32m"round"[39m strokeWidth[33m=[39m{[35m2[39m} d[33m=[39m[32m"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"[39m [33m/[39m[33m>[39m
+ [90m 185 |[39m                                     [33m<[39m[33m/[39m[33msvg[39m[33m>[39m
+[31m[1m>[22m[39m[90m 186 |[39m                                     {store[33m.[39m[33mProduct[39m[33m?[39m[33m.[39mlength [33m||[39m [35m0[39m} produit{store[33m.[39m[33mProduct[39m[33m?[39m[33m.[39mlength [33m>[39m [35m1[39m [33m?[39m [32m's'[39m [33m:[39m [32m''[39m}
+ [90m     |[39m                                                                          [31m[1m^[22m[39m
+ [90m 187 |[39m                                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 188 |[39m                             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 189 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null

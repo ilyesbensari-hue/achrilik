@@ -94,7 +94,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             size: selectedSize,
             color: selectedColor,
             image: images[0],
-            storeId: product.StoreId,
+            storeId: product.storeId,
             quantity
         };
 
@@ -163,8 +163,8 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                 key={index}
                                 onClick={() => setSelectedImageIndex(index)}
                                 className={`relative min-w-[80px] w-20 h-20 rounded-lg overflow-hidden border-2 transition-all snap-start ${selectedImageIndex === index
-                                        ? 'border-indigo-600 shadow-md ring-2 ring-indigo-200'
-                                        : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'
+                                    ? 'border-indigo-600 shadow-md ring-2 ring-indigo-200'
+                                    : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'
                                     }`}
                             >
                                 <img src={img} alt="" className="w-full h-full object-cover" />
