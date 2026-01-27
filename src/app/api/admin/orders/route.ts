@@ -21,15 +21,20 @@ export async function GET(request: NextRequest) {
                 User: {
                     select: { name: true, email: true, phone: true }
                 },
-                Store: {
-                    select: { id: true, name: true, address: true, city: true }
-                },
                 OrderItem: {
                     include: {
                         Variant: {
                             include: {
                                 Product: {
-                                    select: { title: true, images: true }
+                                    include: {
+                                        Store: {
+                                            include: {
+                                                User: {
+                                                    select: { email: true, phone: true }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -46,39 +51,58 @@ export async function GET(request: NextRequest) {
             stats[o.status] = (stats[o.status] || 0) + 1;
         });
 
-        // Format orders for client
-        const formattedOrders = orders.map(order => ({
-            id: order.id,
-            userId: order.userId,
-            status: order.status,
-            total: order.total,
-            paymentMethod: order.paymentMethod,
-            deliveryType: order.deliveryType,
-            createdAt: order.createdAt,
-            shippingAddress: order.shippingAddress,
-            shippingCity: order.shippingCity,
-            shippingPhone: order.shippingPhone,
-            shippingName: order.shippingName,
-            storeAddress: order.storeAddress,
-            storeCity: order.storeCity,
-            storeName: order.storeName,
-            trackingNumber: order.trackingNumber,
-            notes: order.notes,
-            user: order.User,
-            store: order.Store,
-            items: order.OrderItem.map(item => ({
-                quantity: item.quantity,
-                price: item.price,
-                variant: {
-                    size: item.Variant.size,
-                    color: item.Variant.color,
-                    product: {
-                        title: item.Variant.Product.title,
-                        images: item.Variant.Product.images
+        // Format orders for client with store info from products
+        const formattedOrders = orders.map(order => {
+            // Get unique stores from order items
+            const stores = Array.from(new Set(
+                order.OrderItem.map(item => item.Variant.Product.Store)
+            ));
+
+            // For single-vendor orders, use the store info
+            const primaryStore = stores[0];
+
+            return {
+                id: order.id,
+                userId: order.userId,
+                status: order.status,
+                total: order.total,
+                paymentMethod: order.paymentMethod,
+                deliveryType: order.deliveryType,
+                createdAt: order.createdAt,
+                shippingAddress: order.shippingAddress,
+                shippingCity: order.shippingCity,
+                shippingPhone: order.shippingPhone,
+                shippingName: order.shippingName,
+                storeAddress: order.storeAddress,
+                storeCity: order.storeCity,
+                storeName: order.storeName,
+                trackingNumber: order.trackingNumber,
+                notes: order.notes,
+                user: order.User,
+                store: primaryStore ? {
+                    id: primaryStore.id,
+                    name: primaryStore.name,
+                    address: primaryStore.address,
+                    city: primaryStore.city,
+                    phone: primaryStore.phone,
+                    sellerEmail: primaryStore.User?.email,
+                    sellerPhone: primaryStore.User?.phone
+                } : null,
+                items: order.OrderItem.map(item => ({
+                    quantity: item.quantity,
+                    price: item.price,
+                    variant: {
+                        size: item.Variant.size,
+                        color: item.Variant.color,
+                        product: {
+                            title: item.Variant.Product.title,
+                            images: item.Variant.Product.images,
+                            storeName: item.Variant.Product.Store.name
+                        }
                     }
-                }
-            }))
-        }));
+                }))
+            };
+        });
 
         return NextResponse.json({
             orders: formattedOrders,

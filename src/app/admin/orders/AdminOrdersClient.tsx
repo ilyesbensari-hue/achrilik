@@ -29,6 +29,9 @@ interface Order {
         name: string;
         address?: string | null;
         city?: string | null;
+        phone?: string | null;
+        sellerEmail?: string | null;
+        sellerPhone?: string | null;
     } | null;
     items: Array<{
         quantity: number;
@@ -39,6 +42,7 @@ interface Order {
             product: {
                 title: string;
                 images: string;
+                storeName?: string;
             };
         };
     }>;
@@ -142,6 +146,7 @@ export default function AdminOrdersClient() {
                             <tr>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Boutique</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produits</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adresses</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
@@ -154,13 +159,13 @@ export default function AdminOrdersClient() {
                         <tbody className="divide-y divide-gray-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
                                         Chargement...
                                     </td>
                                 </tr>
                             ) : orders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
                                         Aucune commande trouvée
                                     </td>
                                 </tr>
@@ -175,6 +180,16 @@ export default function AdminOrdersClient() {
                                                 <p className="font-medium text-gray-900">{order.user.name || 'Sans nom'}</p>
                                                 <p className="text-xs text-gray-500">{order.user.email}</p>
                                                 {order.user.phone && <p className="text-xs text-gray-500">📞 {order.user.phone}</p>}
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                {order.store ? (
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">🏪 {order.store.name}</p>
+                                                        <p className="text-xs text-gray-500">{order.store.city}</p>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-gray-400">Multi-vendeurs</p>
+                                                )}
                                             </td>
                                             <td className="px-4 py-4 text-sm text-gray-900">
                                                 {order.items.length} article{order.items.length > 1 ? 's' : ''}
@@ -266,7 +281,7 @@ export default function AdminOrdersClient() {
                                         </tr>
                                         {expandedOrderId === order.id && (
                                             <tr>
-                                                <td colSpan={9} className="px-4 py-4 bg-gray-50">
+                                                <td colSpan={10} className="px-4 py-4 bg-gray-50">
                                                     <div className="space-y-4">
                                                         <h4 className="font-semibold text-gray-900">Détails de la commande</h4>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -284,6 +299,11 @@ export default function AdminOrdersClient() {
                                                                                 />
                                                                                 <div className="flex-1">
                                                                                     <p className="font-medium text-sm">{item.variant.product.title}</p>
+                                                                                    {item.variant.product.storeName && (
+                                                                                        <p className="text-xs text-indigo-600 font-medium">
+                                                                                            🏪 {item.variant.product.storeName}
+                                                                                        </p>
+                                                                                    )}
                                                                                     <p className="text-xs text-gray-500">
                                                                                         Taille: {item.variant.size} | Couleur: {item.variant.color}
                                                                                     </p>
@@ -296,6 +316,23 @@ export default function AdminOrdersClient() {
                                                                     })}
                                                                 </div>
                                                             </div>
+                                                            {order.store && (
+                                                                <div>
+                                                                    <h5 className="font-medium text-gray-700 mb-2">📞 Contact Vendeur</h5>
+                                                                    <div className="p-3 bg-white rounded-lg space-y-1">
+                                                                        <p className="text-sm font-medium text-gray-900">🏪 {order.store.name}</p>
+                                                                        {order.store.sellerEmail && (
+                                                                            <p className="text-xs text-gray-600">📧 {order.store.sellerEmail}</p>
+                                                                        )}
+                                                                        {order.store.sellerPhone && (
+                                                                            <p className="text-xs text-gray-600">📞 {order.store.sellerPhone}</p>
+                                                                        )}
+                                                                        {order.store.address && (
+                                                                            <p className="text-xs text-gray-600">📍 {order.store.address}, {order.store.city}</p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                             {order.notes && (
                                                                 <div>
                                                                     <h5 className="font-medium text-gray-700 mb-2">Notes</h5>
