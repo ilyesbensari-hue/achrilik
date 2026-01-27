@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
+import { signToken } from '@/lib/auth-token';
 
 export async function POST(request: Request) {
     try {
@@ -68,7 +69,29 @@ export async function POST(request: Request) {
             })
         ]);
 
-        return NextResponse.json({
+        // Generate NEW token with SELLER role
+        const token = await signToken({
+            id: updatedUser.id,
+            email: updatedUser.email,
+            name: updatedUser.name,
+            role: updatedUser.role  // Now SELLER
+        });
+
+        // Update cookie to reflect new role
+        const isProduction = process.env.NODE_ENV === 'production';
+        const domain = isProduction ? '.achrilik.com' : undefined;
+
+        const cookieHeader = [
+            `auth_token=${token}`,
+            'HttpOnly',
+            isProduction ? 'Secure' : '',
+            'SameSite=Lax',
+            'Path=/',
+            domain ? `Domain=${domain}` : '',
+            `Max-Age=${60 * 60 * 24 * 7}` // 7 days
+        ].filter(Boolean).join('; ');
+
+        const response = NextResponse.json({
             success: true,
             user: {
                 id: updatedUser.id,
@@ -82,6 +105,11 @@ export async function POST(request: Request) {
                 city: newStore.city
             }
         });
+
+        // Set the updated cookie
+        response.headers.set('Set-Cookie', cookieHeader);
+
+        return response;
 
     } catch (error) {
         console.error('Seller upgrade error:', error);

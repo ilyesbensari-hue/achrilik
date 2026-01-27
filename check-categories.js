@@ -1,0 +1,22 @@
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function main() {
+    const categories = await prisma.category.findMany({
+        include: {
+            other_Category: {
+                select: { name: true }
+            }
+        }
+    });
+    console.log(JSON.stringify(categories, null, 2));
+}
+
+main()
+    .catch(e => {
+        throw e
+    })
+    .finally(async () => {
+        await prisma.$disconnect()
+    })

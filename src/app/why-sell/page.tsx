@@ -253,7 +253,7 @@ export default function WhySellPage() {
                         href={user ? (user.role === 'BUYER' ? '/become-seller' : '/sell') : '/register'}
                         className="inline-block px-10 py-4 bg-white text-green-700 text-lg font-bold rounded-xl hover:bg-gray-100 transition-all shadow-xl hover:-translate-y-1"
                     >
-                        Créer ma boutique gratuitement
+                        {user ? (user.role === 'BUYER' ? 'Créer ma boutique gratuitement' : 'Accéder au dashboard →') : 'Créer ma boutique gratuitement'}
                     </Link>
                 </div>
             </div>

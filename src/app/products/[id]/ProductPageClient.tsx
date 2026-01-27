@@ -10,6 +10,15 @@ interface ProductPageClientProps {
     images: string[];
 }
 
+import Toast from '@/components/Toast';
+
+interface ProductPageClientProps {
+    product: any;
+    sizes: string[];
+    colors: string[];
+    images: string[];
+}
+
 export default function ProductPageClient({ product, sizes, colors, images }: ProductPageClientProps) {
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
@@ -38,14 +47,6 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         setToastType(type);
         setShowToast(true);
     };
-
-    // Auto-dismiss toast
-    useEffect(() => {
-        if (showToast) {
-            const timer = setTimeout(() => setShowToast(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [showToast]);
 
     const handleAddToCart = () => {
         // Check role
@@ -110,19 +111,11 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         <>
             {/* Toast Notification */}
             {showToast && (
-                <div className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-in-right ${toastType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                    }`}>
-                    <span className="text-xl">{toastType === 'success' ? '✅' : '❌'}</span>
-                    <span className="font-semibold">{toastMessage}</span>
-                    <button
-                        onClick={() => setShowToast(false)}
-                        className="ml-2 hover:bg-white/20 rounded-full p-1 transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
+                <Toast
+                    message={toastMessage}
+                    type={toastType}
+                    onClose={() => setShowToast(false)}
+                />
             )}
 
             {/* Images Gallery */}

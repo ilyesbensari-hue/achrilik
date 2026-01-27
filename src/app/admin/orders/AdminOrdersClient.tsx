@@ -244,6 +244,24 @@ export default function AdminOrdersClient() {
                                                 >
                                                     {expandedOrderId === order.id ? '▲ Masquer' : '▼ Détails'}
                                                 </button>
+                                                <button
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (!confirm('Supprimer cette commande définitivement ?')) return;
+                                                        try {
+                                                            const res = await fetch(`/api/admin/orders/${order.id}`, { method: 'DELETE' });
+                                                            if (res.ok) {
+                                                                fetchOrders();
+                                                                alert('Commande supprimée');
+                                                            } else {
+                                                                alert('Erreur lors de la suppression');
+                                                            }
+                                                        } catch (err) { console.error(err); }
+                                                    }}
+                                                    className="ml-4 text-red-600 hover:text-red-800 text-sm font-medium"
+                                                >
+                                                    🗑️
+                                                </button>
                                             </td>
                                         </tr>
                                         {expandedOrderId === order.id && (

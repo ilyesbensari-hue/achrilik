@@ -233,6 +233,15 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                 </div>
                             )}
 
+                            {/* Dashboard link for ADMINS */}
+                            {user.role === 'ADMIN' && !isEditing && (
+                                <div className="w-full pt-2 border-t mt-2">
+                                    <Link href="/admin" className="btn w-full bg-purple-600 text-white hover:bg-purple-700 flex items-center justify-center gap-2">
+                                        <span>👑</span> Dashboard Admin
+                                    </Link>
+                                </div>
+                            )}
+
                             {!isEditing && (
                                 <button
                                     onClick={async () => {
@@ -420,6 +429,31 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                                     )}
                                                 </div>
                                             </div>
+
+                                            {/* Products List */}
+                                            {order.OrderItem && order.OrderItem.length > 0 && (
+                                                <div className="mt-3 bg-gray-50 p-3 rounded-lg space-y-2">
+                                                    <p className="text-xs font-bold text-gray-600 uppercase mb-2">Articles commandés:</p>
+                                                    {order.OrderItem.map((item: any) => (
+                                                        <div key={item.id} className="flex justify-between items-center text-sm">
+                                                            <div className="flex-1">
+                                                                <span className="font-semibold text-gray-900">
+                                                                    {item.quantity}x {item.Variant?.Product?.title || 'Produit'}
+                                                                </span>
+                                                                {item.Variant?.size && (
+                                                                    <span className="text-gray-500 text-xs ml-2">
+                                                                        (Taille: {item.Variant.size})
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-gray-700 font-medium">
+                                                                {item.price * item.quantity} DA
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
                                             <div className="flex justify-between items-center mt-4 pt-4 border-t">
                                                 <span className="font-bold text-lg">{order.total} DA</span>
                                                 <Link href={`/orders/${order.id}`} className="text-green-600 hover:underline text-sm font-medium">

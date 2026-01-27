@@ -6,11 +6,13 @@ import { useEffect, useState } from 'react';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
 import { useAuth } from '@/context/AuthContext';
+import { useWishlistCount } from '@/hooks/useWishlistCount';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
 
     const [cartCount, setCartCount] = useState(0);
+    const wishlistCount = useWishlistCount();
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -103,6 +105,18 @@ export default function Navbar() {
                             Devenir Vendeur
                         </Link>
                     )}
+
+                    {/* Wishlist Link - Desktop */}
+                    <Link href="/wishlist" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        {wishlistCount > 0 && (
+                            <span className="absolute top-0 right-0 w-5 h-5 bg-[#D21034] text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white animate-scale-in">
+                                {wishlistCount}
+                            </span>
+                        )}
+                    </Link>
 
                     {/* Cart - Hidden on Mobile */}
                     <Link href="/cart" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction, AdminActions, TargetTypes } from '@/lib/adminLogger';
 import { sendTemplateEmail } from '@/lib/email';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // POST /api/admin/products/[id]/approve - Approve a product
 export async function POST(
@@ -10,14 +11,8 @@ export async function POST(
 ) {
     const { id } = await params;
     try {
-        const { adminId } = await request.json();
-
-        if (!adminId) {
-            return NextResponse.json(
-                { error: 'Admin ID required' },
-                { status: 400 }
-            );
-        }
+        // Verify admin authentication
+        const admin = await requireAdminApi();
 
         // Update product status
         const product = await prisma.product.update({
@@ -37,7 +32,7 @@ export async function POST(
 
         // Log admin action
         await logAdminAction({
-            adminId,
+            adminId: admin.userId as string,
             action: AdminActions.APPROVE_PRODUCT,
             targetType: TargetTypes.PRODUCT,
             targetId: product.id,
@@ -67,6 +62,9 @@ export async function POST(
         });
     } catch (error) {
         console.error('Error approving product:', error);
+        if (error instanceof Error && error.message === 'Unauthorized') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         return NextResponse.json(
             { error: 'Failed to approve product' },
             { status: 500 }

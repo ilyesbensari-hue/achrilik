@@ -33,23 +33,26 @@ export default function BecomeSellerPage() {
     });
 
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            router.push('/login');
-            return;
-        }
+        // Fetch user from server-side auth instead of localStorage
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.user) {
+                    router.push('/login');
+                    return;
+                }
 
-        try {
-            const parsed = JSON.parse(userData);
-            setUser(parsed);
+                setUser(data.user);
 
-            // Redirect if already a seller
-            if (parsed.role === 'SELLER') {
-                router.push('/sell');
-            }
-        } catch (e) {
-            router.push('/login');
-        }
+                // Redirect if already a seller
+                if (data.user.role === 'SELLER') {
+                    router.push('/sell');
+                }
+            })
+            .catch(() => {
+                // If API fails, redirect to login
+                router.push('/login');
+            });
     }, [router]);
 
     const handleNext = () => {

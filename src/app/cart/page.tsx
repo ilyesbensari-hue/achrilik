@@ -68,10 +68,9 @@ export default function CartPage() {
         // Auth check is now handled by useAuth() hook
     }, []);
 
-    const handleCheckout = async (e?: React.MouseEvent) => {
+    const handleCheckout = (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
 
-        // Check auth using context
         if (!user) {
             alert('Veuillez vous connecter pour commander');
             router.push('/login?callbackUrl=/cart');
@@ -79,43 +78,9 @@ export default function CartPage() {
         }
 
         if (cart.length === 0) return alert('Panier vide');
-        if (method === 'CLICK_COLLECT' && !selectedStore) return alert('Veuillez sélectionner un magasin sur la carte');
 
-        if (user.role === 'SELLER') {
-            alert("Les comptes vendeurs ne peuvent pas effectuer d'achats. Veuillez créer un compte client pour passer commande.");
-            return;
-        }
-
-        if (payment === 'ONLINE') {
-            const confirmed = confirm("Simulation CIB/Edahabia: Paiement accepté par la banque ?");
-            if (!confirmed) return;
-        }
-
-        try {
-            const res = await fetch('/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: user.id,
-                    items: cart,
-                    total,
-                    paymentMethod: method === 'CLICK_COLLECT' ? 'STORE_PAYMENT' : payment,
-                    deliveryType: method
-                })
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                localStorage.setItem('cart', '[]');
-                window.dispatchEvent(new Event('storage'));
-                router.push(`/order-confirmation/${data.id}`);
-            } else {
-                alert('Erreur lors de la commande');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erreur technique');
-        }
+        // Redirect to full checkout page for address/payment details
+        router.push('/checkout');
     };
 
     const removeItem = (index: number) => {

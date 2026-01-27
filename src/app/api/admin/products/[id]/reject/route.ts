@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction, AdminActions, TargetTypes } from '@/lib/adminLogger';
 import { sendTemplateEmail } from '@/lib/email';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // POST /api/admin/products/[id]/reject - Reject a product
 export async function POST(
@@ -10,16 +11,19 @@ export async function POST(
 ) {
     const { id } = await params;
     try {
-        const { adminId, reason } = await request.json();
+        // Authenticate admin
+        const admin = await requireAdminApi();
+        const { reason } = await request.json();
 
-        if (!adminId || !reason) {
+        if (!reason) {
             return NextResponse.json(
-                { error: 'Admin ID and rejection reason required' },
+                { error: 'Rejection reason is required' },
                 { status: 400 }
             );
         }
 
         // Update product status
+
         const product = await prisma.product.update({
             where: { id },
             data: {
@@ -37,7 +41,7 @@ export async function POST(
 
         // Log admin action
         await logAdminAction({
-            adminId,
+            adminId: admin.userId as string, // Use ID from token payload
             action: AdminActions.REJECT_PRODUCT,
             targetType: TargetTypes.PRODUCT,
             targetId: product.id,

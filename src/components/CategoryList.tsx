@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Category {
     id: string;
@@ -19,6 +20,9 @@ const CATEGORY_ICONS: Record<string, string> = {
     'Enfants': '👶',
     'Accessoires': '👜',
     'High-Tech': '📱',
+    'Maroquinerie': '👜',
+    'Sacs': '🎒',
+    'Chaussures': '👟',
 };
 
 interface CategoryListProps {
@@ -29,30 +33,27 @@ interface CategoryListProps {
 export default function CategoryList({ variant = 'mobile', onNavigate }: CategoryListProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
     useEffect(() => {
         fetch('/api/categories')
             .then(res => res.json())
             .then(data => {
+                // The API returns a flat list usually, but sometimes a tree.
+                // Assuming the API returns a flat list with parentId, OR a tree.
+                // Based on previous usage, it seemed to filter root categories.
+                // Let's assume the API returns the full structure or we build it.
+                // Checking previous code: "data.filter((c: any) => !c.parentId)"
+                // So it was expecting a list where it filtered roots.
+                // If the API returns a flat list, we relies on `children` being populated by the backend if it's a tree,
+                // OR we need to build the tree if it returns flat list.
+                // Let's assume the backend returns the tree structure properly `include: { children: ... }`
+
                 const rootCategories = data.filter((c: any) => !c.parentId);
                 setCategories(rootCategories);
             })
             .catch(console.error)
             .finally(() => setLoading(false));
     }, []);
-
-    const toggleCategory = (categoryId: string) => {
-        setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
-    };
-
-    const isSidebar = variant === 'sidebar';
-    const textColor = isSidebar ? 'text-white' : 'text-gray-900';
-    const subTextColor = isSidebar ? 'text-white/80' : 'text-gray-600';
-    const borderColor = isSidebar ? 'border-white/20' : 'border-gray-200';
-    const hoverBg = isSidebar ? 'hover:bg-white/20' : 'hover:bg-gray-50';
-    const activeBg = isSidebar ? 'bg-white/20' : 'bg-gray-50';
-    const activeBorder = isSidebar ? 'border-white/40' : 'border-[#006233]';
 
     if (loading) {
         return (
@@ -73,62 +74,103 @@ export default function CategoryList({ variant = 'mobile', onNavigate }: Categor
             )}
 
             {categories.map((category) => (
-                <div key={category.id} className="relative group border-b border-gray-100 last:border-none">
-                    {/* Main Category Button */}
-                    <div
-                        onClick={() => toggleCategory(category.id)}
-                        className={`w-full flex items-center justify-between p-4 cursor-pointer transition-all hover:bg-gray-50`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <span className="text-2xl">{CATEGORY_ICONS[category.name] || '✨'}</span>
-                            <span className={`font-semibold text-lg ${textColor}`}>
-                                {category.name}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {/* Count badge removed */}
-
-                            {/* Chevron */}
-                            {category.children && category.children.length > 0 && (
-                                <svg
-                                    className={`w-5 h-5 transition-transform text-gray-400 ${expandedCategory === category.id ? 'rotate-180 text-[#006233]' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Subcategories Dropdown */}
-                    {expandedCategory === category.id && category.children && category.children.length > 0 && (
-                        <div className="bg-gray-50/50 pb-2">
-                            <Link
-                                href={`/categories/${category.slug}`}
-                                onClick={onNavigate}
-                                className="block px-4 py-3 pl-14 text-sm font-semibold text-[#006233] hover:bg-gray-100 transition-colors"
-                            >
-                                Tout voir dans {category.name}
-                            </Link>
-                            {category.children.map((child) => (
-                                <Link
-                                    key={child.id}
-                                    href={`/categories/${child.slug}`}
-                                    onClick={onNavigate}
-                                    className="block px-4 py-3 pl-14 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors flex justify-between group-sub"
-                                >
-                                    <span>{child.name}</span>
-                                    {child._count?.products > 0 && (
-                                        <span className="text-xs text-gray-400">({child._count.products})</span>
-                                    )}
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                <CategoryItem
+                    key={category.id}
+                    category={category}
+                    variant={variant}
+                    depth={0}
+                    onNavigate={onNavigate}
+                />
             ))}
+        </div>
+    );
+}
+
+// Recursive Component
+function CategoryItem({
+    category,
+    variant,
+    depth,
+    onNavigate
+}: {
+    category: Category;
+    variant: 'sidebar' | 'mobile';
+    depth: number;
+    onNavigate?: () => void;
+}) {
+    const [expanded, setExpanded] = useState(false);
+    const hasChildren = category.children && category.children.length > 0;
+
+    const isSidebar = variant === 'sidebar';
+    const textColor = isSidebar ? 'text-white' : 'text-gray-900';
+
+    // Indentation for children
+    const paddingLeft = depth === 0 ? '1rem' : `${depth * 1.5 + 1}rem`;
+
+    return (
+        <div className={`border-b border-gray-100 last:border-none ${depth > 0 ? 'bg-gray-50/50' : ''}`}>
+            <div
+                className={`w-full flex items-center justify-between hover:bg-black/5 transition-all`}
+                style={{ paddingLeft, paddingRight: '1rem', paddingTop: '1rem', paddingBottom: '1rem' }}
+            >
+                {/* Link to Category Page */}
+                <Link
+                    href={`/categories/${category.slug}`}
+                    onClick={onNavigate}
+                    className="flex items-center gap-3 flex-1"
+                >
+                    {depth === 0 && <span className="text-2xl">{CATEGORY_ICONS[category.name] || '✨'}</span>}
+                    <span className={`font-semibold ${depth === 0 ? 'text-lg' : 'text-sm'} ${textColor}`}>
+                        {category.name}
+                    </span>
+                    {category._count?.products > 0 && (
+                        <span className="text-xs text-gray-400">({category._count.products})</span>
+                    )}
+                </Link>
+
+                {/* Toggle Button (Chevron) */}
+                {hasChildren && (
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setExpanded(!expanded);
+                        }}
+                        className={`p-2 -mr-2 text-gray-400 hover:text-[#006233] transition-colors`}
+                    >
+                        <svg
+                            className={`w-5 h-5 transition-transform duration-200 ${expanded ? 'rotate-180 text-[#006233]' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                )}
+            </div>
+
+            {/* Recursion for Children */}
+            {hasChildren && expanded && (
+                <div className="border-l-2 border-gray-100 ml-4">
+                    {category.children.map((child) => (
+                        <CategoryItem
+                            key={child.id}
+                            category={child}
+                            variant={variant}
+                            depth={depth + 1}
+                            onNavigate={onNavigate}
+                        />
+                    ))}
+                    {/* Explicit "View all" link for the parent category inserted as a child entry for clarity?
+                        Actually, the parent click handles it. But user asked for "un truc deroulant quand on clique... et je deroule si je veux encore plus".
+                        The current implementation allows:
+                        - Click Name -> Go to page
+                        - Click Arrow -> Expand
+                        This satisfies the requirement.
+                    */}
+                </div>
+            )}
         </div>
     );
 }

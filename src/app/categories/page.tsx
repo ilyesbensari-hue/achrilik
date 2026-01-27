@@ -49,15 +49,20 @@ export default function CategoriesPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {topLevelCategories.map(category => (
-                    <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                        <h2 className="text-xl font-bold text-[#006233] mb-4">{category.name}</h2>
+                    <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow relative">
+                        <Link
+                            href={`/categories/${category.slug}`}
+                            className="cursor-pointer"
+                        >
+                            <h2 className="text-xl font-bold text-[#006233] mb-4 hover:underline">{category.name}</h2>
+                        </Link>
 
                         <div className="space-y-3">
                             {getCategoryChildren(category.id).map(subCategory => (
-                                <div key={subCategory.id}>
+                                <div key={subCategory.id} className="relative z-10">
                                     <Link
                                         href={`/categories/${subCategory.slug}`}
-                                        className="text-gray-700 font-medium hover:text-[#006233] transition-colors block"
+                                        className="text-gray-700 font-medium hover:text-[#006233] transition-colors block cursor-pointer hover:underline"
                                     >
                                         {subCategory.name}
                                     </Link>
@@ -68,7 +73,7 @@ export default function CategoriesPage() {
                                             <Link
                                                 key={subSubCategory.id}
                                                 href={`/categories/${subSubCategory.slug}`}
-                                                className="text-sm text-gray-600 hover:text-[#006233] transition-colors block"
+                                                className="text-sm text-gray-600 hover:text-[#006233] transition-colors block cursor-pointer hover:underline"
                                             >
                                                 • {subSubCategory.name}
                                             </Link>

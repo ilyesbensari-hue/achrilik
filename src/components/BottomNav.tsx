@@ -4,28 +4,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useWishlistCount } from '@/hooks/useWishlistCount';
 
 export default function BottomNav() {
     const pathname = usePathname();
     const [cartCount, setCartCount] = useState(0);
-    const [wishlistCount, setWishlistCount] = useState(0);
+    const wishlistCount = useWishlistCount();
 
     useEffect(() => {
         // Update counts
         const updateCounts = () => {
+            // Cart (Local Storage)
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
             setCartCount(cart.length);
-            setWishlistCount(wishlist.length);
         };
 
         updateCounts();
+
+        // Listeners
         window.addEventListener('storage', updateCounts);
 
         return () => {
             window.removeEventListener('storage', updateCounts);
         };
-    }, []);
+    }, []); // Re-check on nav change too
 
     const isActive = (path: string) => {
         if (path === '/') {

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { verifyToken } from '@/lib/auth-token';
-import { cookies } from 'next/headers';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/server-auth';
 
 /**
  * GET /api/admin/vendors
@@ -12,27 +9,7 @@ const prisma = new PrismaClient();
  */
 export async function GET(request: NextRequest) {
     try {
-        // Verify admin authentication
-        const cookieStore = await cookies();
-        const token = cookieStore.get('auth_token')?.value;
-
-        if (!token) {
-            return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload) {
-            return NextResponse.json({ error: 'Token invalide' }, { status: 401 });
-        }
-
-        // Check if user is admin
-        const admin = await prisma.user.findUnique({
-            where: { id: payload.userId as string },
-        });
-
-        if (!admin || admin.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         // Get filter from query params
         const { searchParams } = new URL(request.url);
@@ -61,8 +38,7 @@ export async function GET(request: NextRequest) {
                 },
                 _count: {
                     select: {
-                        Product: true,
-                        Order: true
+                        Product: true
                     }
                 }
             },
@@ -86,7 +62,6 @@ export async function GET(request: NextRequest) {
                 clickCollect: store.clickCollect,
                 owner: store.User,
                 productCount: store._count.Product,
-                orderCount: store._count.Order
             }))
         });
 
@@ -96,7 +71,5 @@ export async function GET(request: NextRequest) {
             { error: 'Erreur serveur' },
             { status: 500 }
         );
-    } finally {
-        await prisma.$disconnect();
     }
 }

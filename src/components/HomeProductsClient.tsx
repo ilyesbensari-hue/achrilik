@@ -155,72 +155,147 @@ export default function HomeProductsClient({ products }: HomeProductsClientProps
                 </>
             )}
 
-            {/* Product Sections */}
+            {/* Product Sections - Organized by Category */}
+
+            {/* Nouveautés Section */}
             <section className="pb-12">
-                <div className="mb-8">
-                    <h2 className="text-3xl font-black mb-2">🔥 Nouveautés</h2>
-                    <p className="text-gray-600">Les derniers articles ajoutés</p>
+                <div className="mb-6">
+                    <h2 className="text-2xl sm:text-3xl font-black mb-2">🔥 Nouveautés</h2>
+                    <p className="text-sm sm:text-base text-gray-600">Les derniers articles ajoutés</p>
                 </div>
-                <ProductGrid products={filteredProducts.slice(0, 12)} />
+                {/* Mobile: 2 columns, Tablet: 3, Desktop: 4 */}
+                <ProductGrid products={filteredProducts.slice(0, 8)} />
             </section>
 
-            {/* Femmes */}
-            <section className="pb-16 border-t border-gray-100 pt-12">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
+            {/* Vêtements Homme - FIRST */}
+            <section className="pb-10 border-t border-gray-100 pt-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
                     <div>
-                        <h2 className="text-2xl font-bold mb-1">👗 Mode Femme</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1">👔 Vêtements Homme</h2>
+                        <p className="text-xs sm:text-sm text-gray-600">Style masculin</p>
                     </div>
-                    <a href="/categories/femmes" className="text-[#006233] font-semibold hover:underline">
-                        Voir tout →
+                    <a href="/categories/hommes" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                        Voir tout <span>→</span>
                     </a>
                 </div>
                 <ProductGrid
-                    products={filteredProducts.filter(p => p.category?.slug.includes('femmes') || p.category?.parent?.slug.includes('femmes')).slice(0, 4)}
+                    products={filteredProducts.filter(p => {
+                        const slug = p.Category?.slug || '';
+                        const parentSlug = p.Category?.Category?.slug || '';
+                        return slug.includes('homme') || parentSlug.includes('homme');
+                    }).slice(0, 8)}
                 />
             </section>
 
-            {/* Hommes */}
-            <section className="pb-16 border-t border-gray-100 pt-12">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
+            {/* Vêtements Femme - SECOND */}
+            <section className="pb-10 border-t border-gray-100 pt-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
                     <div>
-                        <h2 className="text-2xl font-bold mb-1">👔 Mode Homme</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1">👗 Vêtements Femme</h2>
+                        <p className="text-xs sm:text-sm text-gray-600">Tendances féminines</p>
                     </div>
-                    <a href="/categories/hommes" className="text-[#006233] font-semibold hover:underline">
-                        Voir tout →
+                    <a href="/categories/femmes" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                        Voir tout <span>→</span>
                     </a>
                 </div>
                 <ProductGrid
-                    products={filteredProducts.filter(p => p.category?.slug.includes('hommes') || p.category?.slug.includes('homme') || p.category?.parent?.slug.includes('hommes') || p.category?.parent?.slug.includes('homme')).slice(0, 4)}
+                    products={filteredProducts.filter(p => {
+                        const slug = p.Category?.slug || '';
+                        const parentSlug = p.Category?.Category?.slug || '';
+                        return slug.includes('femme') || parentSlug.includes('femme');
+                    }).slice(0, 8)}
                 />
             </section>
 
-            {/* Enfants */}
-            <section className="pb-16 border-t border-gray-100 pt-12">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
+            {/* Enfants - THIRD */}
+            <section className="pb-10 border-t border-gray-100 pt-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
                     <div>
-                        <h2 className="text-2xl font-bold mb-1">👶 Mode Enfant</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1">👶 Mode Enfant & Bébé</h2>
+                        <p className="text-xs sm:text-sm text-gray-600">Pour les petits</p>
                     </div>
-                    <a href="/categories/enfants" className="text-[#006233] font-semibold hover:underline">
-                        Voir tout →
+                    <a href="/categories/enfants" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                        Voir tout <span>→</span>
                     </a>
                 </div>
                 <ProductGrid
-                    products={filteredProducts.filter(p => p.category?.slug === 'enfants' || p.category?.parent?.slug === 'enfants').slice(0, 4)}
+                    products={filteredProducts.filter(p => {
+                        const slug = p.Category?.slug || '';
+                        const parentSlug = p.Category?.Category?.slug || '';
+                        const name = p.Category?.name || '';
+                        return slug.includes('enfant') || slug.includes('bebe') ||
+                            parentSlug.includes('enfant') || parentSlug.includes('bebe') ||
+                            name.toLowerCase().includes('bébé');
+                    }).slice(0, 8)}
                 />
             </section>
 
-            {/* Accessoires */}
-            <section className="pb-16 border-t border-gray-100 pt-12">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
+            {/* Maroquinerie - FOURTH */}
+            <section className="pb-10 border-t border-gray-100 pt-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
                     <div>
-                        <h2 className="text-2xl font-bold mb-1">👜 Accessoires</h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1">👜 Maroquinerie</h2>
+                        <p className="text-xs sm:text-sm text-gray-600">Sacs & Bagages</p>
                     </div>
-                    <a href="/categories/accessoires" className="text-[#006233] font-semibold hover:underline">
-                        Voir tout →
+                    <a href="/categories/maroquinerie" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                        Voir tout <span>→</span>
                     </a>
                 </div>
                 <ProductGrid
-                    products={filteredProducts.filter(p => p.category?.slug === 'accessoires' || p.category?.parent?.slug === 'accessoires').slice(0, 4)}
+                    products={filteredProducts.filter(p => {
+                        const slug = p.Category?.slug || '';
+                        const parentSlug = p.Category?.Category?.slug || '';
+                        const name = p.Category?.name?.toLowerCase() || '';
+                        return slug.includes('maroquinerie') || slug.includes('sac') ||
+                            parentSlug.includes('maroquinerie') || parentSlug.includes('sac') ||
+                            name.includes('sac') || name.includes('bagag');
+                    }).slice(0, 8)}
+                />
+            </section>
+
+            {/* Accessoires - FIFTH (Updated Icon: Headphone/Phone) */}
+            <section className="pb-10 border-t border-gray-100 pt-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
+                    <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1">🎧 Accessoires</h2>
+                        <p className="text-xs sm:text-sm text-gray-600">Bijoux • Montres • Audio</p>
+                    </div>
+                    <a href="/categories/accessoires" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                        Voir tout <span>→</span>
+                    </a>
+                </div>
+                <ProductGrid
+                    products={filteredProducts.filter(p => {
+                        const slug = p.Category?.slug || '';
+                        const parentSlug = p.Category?.Category?.slug || '';
+                        const name = p.Category?.name?.toLowerCase() || '';
+                        return slug.includes('accessoire') || slug.includes('bijou') || slug.includes('montre') ||
+                            parentSlug.includes('accessoire') || parentSlug.includes('bijou') ||
+                            name.includes('accessoire') || name.includes('bijou') || name.includes('montre');
+                    }).slice(0, 8)}
+                />
+            </section>
+
+            {/* Électronique - SIXTH */}
+            <section className="pb-10 border-t border-gray-100 pt-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
+                    <div>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-1">📱 Électronique</h2>
+                        <p className="text-xs sm:text-sm text-gray-600">High-Tech & Gadgets</p>
+                    </div>
+                    <a href="/categories/electronique" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                        Voir tout <span>→</span>
+                    </a>
+                </div>
+                <ProductGrid
+                    products={filteredProducts.filter(p => {
+                        const slug = p.Category?.slug || '';
+                        const parentSlug = p.Category?.Category?.slug || '';
+                        const name = p.Category?.name?.toLowerCase() || '';
+                        return slug.includes('electronique') || slug.includes('tech') || slug.includes('telephone') ||
+                            parentSlug.includes('electronique') || parentSlug.includes('tech') ||
+                            name.includes('électronique') | name.includes('tech') || name.includes('téléphone');
+                    }).slice(0, 8)}
                 />
             </section>
         </>

@@ -41,11 +41,14 @@ export default function WishlistPage() {
         try {
             const response = await fetch(`/api/wishlist?userId=${uid}`);
             const data = await response.json();
-            if (data.success) {
-                setProducts(data.Products);
+            if (data.success && data.products) {
+                setProducts(data.products);
+            } else {
+                setProducts([]);
             }
         } catch (error) {
             console.error('Error fetching wishlist:', error);
+            setProducts([]);
         } finally {
             setIsLoading(false);
         }

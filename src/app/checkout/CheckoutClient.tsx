@@ -50,8 +50,11 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         try {
             const res = await fetch('/api/orders', {
@@ -69,19 +72,24 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Erreur');
+                console.error('Order failed:', data);
+                throw new Error(data.error || 'Erreur lors de la commande');
             }
 
-            // Success
+            // Success Visual Feedback
+            alert("✅ Commande confirmée avec succès ! Vous allez être redirigé vers vos commandes.");
+
+            // Clear Cart
             localStorage.removeItem('cart');
-            if (confirm('✅ Commande validée ! Voir mes commandes ?')) {
-                window.location.href = '/profile';
-            } else {
-                window.location.href = '/';
-            }
+
+            // Redirect
+            window.location.href = '/profile';
 
         } catch (error: any) {
-            alert(error.message);
+            console.error('Submit error:', error);
+            alert(error.message || "Une erreur est survenue. Veuillez réessayer.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -149,6 +157,36 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 )}
                             </button>
                         </div>
+
+                        {/* Multi-Vendor Warning */}
+                        {!pickupAvailable && cartStoreIds.size > 1 && (
+                            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4 rounded-r-lg animate-fade-in">
+                                <div className="flex items-start gap-3">
+                                    <span className="text-2xl flex-shrink-0">💡</span>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-yellow-900 mb-1">
+                                            Conseil: Économisez sur la livraison !
+                                        </h4>
+                                        <p className="text-sm text-yellow-800 leading-relaxed">
+                                            ⚠️ Votre panier contient des articles de <strong>{cartStoreIds.size} magasins différents</strong>.
+                                            Le retrait en boutique n'est pas disponible pour tous vos articles.
+                                        </p>
+                                        <div className="mt-3 bg-white/50 p-3 rounded-lg border border-yellow-200">
+                                            <p className="text-sm font-semibold text-yellow-900 mb-1">💰 Astuce pour économiser 500 DA :</p>
+                                            <p className="text-xs text-yellow-800">
+                                                Passez <strong>deux commandes séparées</strong> - une pour chaque magasin.
+                                                Vous pourrez ainsi choisir le <strong>Click & Collect GRATUIT</strong> pour les articles éligibles
+                                                et payer la livraison uniquement pour les autres.
+                                            </p>
+                                        </div>
+                                        <p className="text-xs text-yellow-700 mt-2 italic">
+                                            💳 Vous pouvez vider votre panier, commander les articles d'un magasin,
+                                            puis revenir faire une nouvelle commande avec les articles de l'autre magasin.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Delivery Form */}
                         {deliveryMethod === 'DELIVERY' && (
@@ -293,10 +331,10 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
 
                         <button
                             onClick={handleSubmit}
-                            disabled={!formData.name || !formData.phone}
-                            className="w-full btn btn-primary mt-6 py-4 text-lg font-bold shadow-xl shadow-green-100"
+                            disabled={!formData.name || !formData.phone || isSubmitting}
+                            className={`w-full btn btn-primary mt-6 py-4 text-lg font-bold shadow-xl shadow-green-100 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                         >
-                            CONFIRMER LA COMMANDE
+                            {isSubmitting ? 'TRAITEMENT...' : 'CONFIRMER LA COMMANDE'}
                         </button>
                     </div>
                 </div>

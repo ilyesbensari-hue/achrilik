@@ -85,6 +85,8 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { userId, cart, deliveryMethod, paymentMethod, address, phone, name, wilaya, city } = body;
 
+        console.log(`[ORDER] Creating order for user ${userId}, items: ${cart?.length}`);
+
         if (!userId || !cart || cart.length === 0) {
             return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
         }
@@ -123,6 +125,13 @@ export async function POST(request: Request) {
                     total,
                     paymentMethod,
                     deliveryType: deliveryMethod,
+
+                    // Shipping Info
+                    shippingName: name,
+                    shippingPhone: phone,
+                    shippingAddress: address,
+                    shippingCity: `${city}, ${wilaya}`,
+
                     OrderItem: {
                         create: cart.map((item: any) => ({
                             id: randomBytes(16).toString('hex'),
@@ -159,37 +168,62 @@ export async function POST(request: Request) {
             return newOrder;
         });
 
+        console.log(`[ORDER] Order created successfully: ${order.id}`);
+
         // ==========================================
-        //         EMAIL NOTIFICATIONS
+        //         EMAIL NOTIFICATIONS (Sync-ish)
         // ==========================================
+        // In serverless (Vercel/Netlify), we MUST wait for async tasks
+        // otherwise the function freezes/terminates immediately after return.
 
-        // 1. Send Email to Buyer
-        if (order.User && order.User.email) {
-            await sendOrderConfirmation(order.User.email, order);
-        }
+        try {
+            const emailPromises = [];
 
-        // 2. Send Email to Sellers
-        // Extract unique store IDs involved in this order
-        const storeIds = Array.from(new Set(order.OrderItem.map((item: any) => item.Variant.Product.storeId)));
+            // 1. Send Email to Buyer
+            if (order.User && order.User.email) {
+                console.log(`[EMAIL] Sending confirmation to buyer: ${order.User.email}`);
+                emailPromises.push(
+                    sendOrderConfirmation(order.User.email, order)
+                        .catch(e => console.error('[EMAIL ERROR] Buyer confirmation failed:', e))
+                );
+            }
 
-        if (storeIds.length > 0) {
-            const stores = await prisma.store.findMany({
-                where: { id: { in: storeIds as string[] } },
-                include: { User: true }
-            });
+            // 2. Send Email to Sellers
+            const storeIds = Array.from(new Set(order.OrderItem.map((item: any) => item.Variant.Product.storeId)));
+            if (storeIds.length > 0) {
+                const stores = await prisma.store.findMany({
+                    where: { id: { in: storeIds as string[] } },
+                    include: { User: true }
+                });
 
-            for (const store of stores) {
-                if (store.User && store.User.email) {
-                    // Send notification to each seller involved
-                    await sendNewOrderNotification(store.User.email, order);
+                for (const store of stores) {
+                    if (store.User && store.User.email) {
+                        console.log(`[EMAIL] Sending notification to seller: ${store.User.email}`);
+                        emailPromises.push(
+                            sendNewOrderNotification(store.User.email, order)
+                                .catch(e => console.error(`[EMAIL ERROR] Seller notification failed for ${store.id}:`, e))
+                        );
+                    }
                 }
             }
+
+            // Await with timeout (5s max) to not block user too long
+            await Promise.race([
+                Promise.all(emailPromises),
+                new Promise(resolve => setTimeout(resolve, 5000))
+            ]);
+
+            console.log(`[ORDER] Email notifications processed`);
+
+        } catch (emailErr) {
+            console.error('[ORDER] Critical error in email dispatch:', emailErr);
+            // Non-blocking error for client, but logged
         }
 
         return NextResponse.json({ success: true, orderId: order.id });
 
     } catch (error: any) {
-        console.error('Order error:', error);
+        console.error('[ORDER] Create error:', error);
         return NextResponse.json({ error: error.message || 'Erreur lors de la commande' }, { status: 500 });
     }
 }

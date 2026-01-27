@@ -10,7 +10,7 @@ interface Product {
     id: string;
     title: string;
     price: number;
-    images: string[];
+    images: string;  // Comma-separated string from API
     Store?: {
         name: string;
     };
@@ -151,9 +151,9 @@ function SearchResults() {
                                                 className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
                                             >
                                                 <div className="aspect-[4/5] relative bg-gray-100">
-                                                    {product.images[0] && (
+                                                    {product.images && (
                                                         <Image
-                                                            src={product.images[0]}
+                                                            src={product.images.split(',')[0]}
                                                             alt={product.title}
                                                             fill
                                                             className="object-cover group-hover:scale-105 transition-transform duration-500"

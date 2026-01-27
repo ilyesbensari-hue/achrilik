@@ -34,7 +34,8 @@ export async function requireAdmin() {
 export async function requireSeller() {
     const user = await requireAuth();
     if (user.role !== 'SELLER' && user.role !== 'ADMIN') {
-        redirect('/why-sell');
+        // Redirect BUYER to store creation page instead of why-sell
+        redirect('/become-seller');
     }
     return user;
 }
@@ -47,4 +48,21 @@ export async function getOptionalAuth() {
 
     const user = await verifyToken(token);
     return user || null;
+}
+
+// API Helper - Throws error instead of redirect
+export async function requireAdminApi() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+        throw new Error('Unauthorized');
+    }
+
+    const user = await verifyToken(token);
+    if (!user || user.role !== 'ADMIN') {
+        throw new Error('Forbidden');
+    }
+
+    return user;
 }
