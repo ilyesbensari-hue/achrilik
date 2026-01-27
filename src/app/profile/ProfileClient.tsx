@@ -11,6 +11,7 @@ interface Order {
     createdAt: string;
     deliveryType: string;
     items: any[];
+    OrderItem?: any[]; // Added for buyer orders display
 }
 
 interface ProfileClientProps {
