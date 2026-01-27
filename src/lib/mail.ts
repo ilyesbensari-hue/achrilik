@@ -203,22 +203,173 @@ export async function sendNewOrderNotification(to: string, order: any) {
         await transporter.sendMail({
             from: SENDER_EMAIL,
             to: to,
-            subject: `💰 Nouvelle vente ! Commande #${order.id.slice(0, 8)}`,
+            subject: `💰 Nouvelle vente ! Commande #${order.id.slice(0, 8)} - ${order.total} DA`,
             html: `
-                <div style="font-family: Arial, sans-serif; color: #333;">
-                    <h1 style="color: #006233;">Nouvelle commande reçue !</h1>
-                    <p>Félicitations ! Vous avez réalisé une nouvelle vente.</p>
-                    
-                    <div style="background: #e8f5f0; padding: 15px; border-radius: 8px; border: 1px solid #006233; margin: 20px 0;">
-                        <h3>Détails de la commande #${order.id.slice(0, 8)}</h3>
-                        <p><strong>Montant:</strong> ${order.total} DA</p>
-                        <p><strong>Client:</strong> ${order.user?.name || 'Client'}</p>
-                        <p><strong>Articles:</strong> ${order.items?.length || 1}</p>
-                    </div>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <!-- Main Container -->
+                                <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center;">
+                                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">💰 Nouvelle Vente !</h1>
+                                            <p style="color: #fef3c7; margin: 10px 0 0 0; font-size: 16px;">Vous avez reçu une nouvelle commande</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td style="padding: 40px 30px;">
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Bonjour,</p>
+                                            
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                                                🎉 <strong>Félicitations !</strong> Vous venez de réaliser une nouvelle vente sur Achrilik.
+                                            </p>
 
-                    <p>Connectez-vous à votre tableau de bord vendeur pour traiter cette commande.</p>
-                    <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile" style="background: #006233; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Gérer ma commande</a>
-                </div>
+                                            <!-- Order Summary -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">📋 Détails de la commande</h2>
+                                                        <p style="margin: 8px 0; color: #78350f; font-size: 14px;">
+                                                            <strong>Numéro:</strong> #${order.id.slice(0, 8).toUpperCase()}
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #78350f; font-size: 14px;">
+                                                            <strong>Montant total:</strong> <span style="font-size: 18px; font-weight: bold; color: #92400e;">${order.total} DA</span>
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #78350f; font-size: 14px;">
+                                                            <strong>Nombre d'articles:</strong> ${order.OrderItem?.length || order.items?.length || 1}
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #78350f; font-size: 14px;">
+                                                            <strong>Mode de livraison:</strong> ${order.deliveryType === 'DELIVERY' ? '🚚 Livraison à domicile' : '🏪 Click & Collect'}
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #78350f; font-size: 14px;">
+                                                            <strong>Paiement:</strong> ${order.paymentMethod === 'CASH' ? '💵 Espèces' : '💳 Carte bancaire'}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <!-- Customer Info -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">👤 Informations Client</h2>
+                                                        <p style="margin: 8px 0; color: #1e3a8a; font-size: 14px;">
+                                                            <strong>Nom:</strong> ${order.shippingName || order.user?.name || 'Non spécifié'}
+                                                        </p>
+                                                        ${order.shippingPhone ? `
+                                                        <p style="margin: 8px 0; color: #1e3a8a; font-size: 14px;">
+                                                            <strong>📞 Téléphone:</strong> ${order.shippingPhone}
+                                                        </p>
+                                                        ` : ''}
+                                                        ${order.user?.email ? `
+                                                        <p style="margin: 8px 0; color: #1e3a8a; font-size: 14px;">
+                                                            <strong>📧 Email:</strong> ${order.user.email}
+                                                        </p>
+                                                        ` : ''}
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            ${order.deliveryType === 'DELIVERY' && order.shippingAddress ? `
+                                            <!-- Delivery Address -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">🚚 Adresse de Livraison</h2>
+                                                        <p style="margin: 8px 0; color: #064e3b; font-size: 14px;">
+                                                            <strong>📍 Adresse:</strong> ${order.shippingAddress}
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #064e3b; font-size: 14px;">
+                                                            <strong>🏙️ Ville:</strong> ${order.shippingCity}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            ` : ''}
+
+                                            ${order.deliveryType === 'CLICK_COLLECT' ? `
+                                            <!-- Click & Collect Info -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #f3e8ff; border: 2px solid #a855f7; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #6b21a8; margin: 0 0 15px 0; font-size: 20px;">🏪 Click & Collect</h2>
+                                                        <p style="margin: 8px 0; color: #581c87; font-size: 14px;">
+                                                            Le client viendra retirer sa commande en boutique.
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #581c87; font-size: 14px;">
+                                                            <strong>⚠️ Important:</strong> Préparez la commande et contactez le client quand elle sera prête.
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            ` : ''}
+
+                                            <!-- Action Required -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 10px; padding: 20px; margin: 30px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #991b1b; margin: 0 0 10px 0; font-size: 18px;">⚡ Action Requise</h2>
+                                                        <p style="margin: 8px 0; color: #7f1d1d; font-size: 14px;">
+                                                            1️⃣ Connectez-vous à votre tableau de bord vendeur<br>
+                                                            2️⃣ Confirmez la commande<br>
+                                                            3️⃣ Préparez les articles<br>
+                                                            4️⃣ ${order.deliveryType === 'DELIVERY' ? 'Organisez la livraison' : 'Contactez le client pour le retrait'}
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <!-- CTA Buttons -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 30px 0;">
+                                                <tr>
+                                                    <td align="center">
+                                                        <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/sell/orders" 
+                                                           style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 0 10px 10px 0;">
+                                                            📦 Gérer mes commandes
+                                                        </a>
+                                                        <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile" 
+                                                           style="display: inline-block; background: #6b7280; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 0 0 10px 0;">
+                                                            👤 Mon Profil
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0;">
+                                                Cordialement,<br>
+                                                <strong style="color: #006233;">L'équipe Achrilik</strong>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                                            <p style="margin: 0; color: #6b7280; font-size: 12px;">
+                                                Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+                                            </p>
+                                            <p style="margin: 10px 0 0 0; color: #6b7280; font-size: 12px;">
+                                                © ${new Date().getFullYear()} Achrilik - Mode & Tendance Algérie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
             `,
         });
     } catch (error) {
