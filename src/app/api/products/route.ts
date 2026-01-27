@@ -87,7 +87,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, price, images, storeId, variants } = body;
+    const { title, description, price, images, storeId, variants, promotionLabel } = body;
 
     const product = await prisma.product.create({
       data: {
@@ -98,6 +98,7 @@ export async function POST(request: Request) {
         images: images, // Comma separated string
         storeId,
         status: 'APPROVED', // Auto-approve products so they appear immediately
+        promotionLabel: promotionLabel || null,
         Variant: {
           create: variants.map((v: any) => ({
             id: randomBytes(16).toString('hex'),

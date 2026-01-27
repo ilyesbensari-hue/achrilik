@@ -25,6 +25,9 @@ export default function AddProductPage() {
     const [vColor, setVColor] = useState('#000000');
     const [vStock, setVStock] = useState(10);
 
+    // Promotion
+    const [promotionLabel, setPromotionLabel] = useState('');
+
     useEffect(() => {
         // Fetch categories
         fetch('/api/categories')
@@ -111,7 +114,8 @@ export default function AddProductPage() {
                     categoryId,
                     images: images.join(','),
                     storeId,
-                    variants
+                    variants,
+                    promotionLabel: promotionLabel || null
                 })
             });
 
@@ -165,6 +169,33 @@ export default function AddProductPage() {
                     <div>
                         <label className="label mb-1 block">Images du produit</label>
                         <ImageUpload onImagesChange={setImages} maxImages={5} />
+                    </div>
+
+                    {/* Promotion Label */}
+                    <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border-2 border-red-200">
+                        <label className="label mb-2 block flex items-center gap-2">
+                            <span className="text-lg">🏷️</span>
+                            <span>Label Promotion (optionnel)</span>
+                        </label>
+                        <input
+                            className="input mb-2"
+                            placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
+                            value={promotionLabel}
+                            onChange={e => setPromotionLabel(e.target.value)}
+                            maxLength={20}
+                        />
+                        <p className="text-xs text-gray-600 mt-1">
+                            💡 <strong>Astuce:</strong> Ajoutez un badge accrocheur pour attirer l'attention !
+                            Exemples: "-30%", "PROMO", "SOLDES", "NOUVEAU", "OFFRE LIMITÉE"
+                        </p>
+                        {promotionLabel && (
+                            <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
+                                <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
+                                <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                    {promotionLabel}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Variants Section */}

@@ -63,7 +63,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, description, price, images, categoryId, variants } = body;
+    const { title, description, price, images, categoryId, variants, promotionLabel } = body;
 
     // Update product and handle variants safely
     const product = await prisma.$transaction(async (tx) => {
@@ -97,6 +97,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           price: parseFloat(price),
           images,
           categoryId: categoryId || null,
+          promotionLabel: promotionLabel || null,
           Variant: {
             create: variants.map((v: any) => ({
               id: randomBytes(16).toString('hex'),
