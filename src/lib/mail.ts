@@ -46,7 +46,7 @@ export async function sendOrderConfirmation(to: string, order: any) {
                                     <!-- Content -->
                                     <tr>
                                         <td style="padding: 40px 30px;">
-                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Bonjour,</p>
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Bonjour ${order.shippingName || order.user?.name || ''},</p>
                                             
                                             <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
                                                 Nous avons bien reçu votre commande <strong style="color: #006233;">#${order.id.slice(0, 8)}</strong>. 
@@ -80,6 +80,78 @@ export async function sendOrderConfirmation(to: string, order: any) {
                                                     </td>
                                                 </tr>
                                             </table>
+                                            
+                                            ${order.deliveryType === 'DELIVERY' && order.shippingAddress ? `
+                                            <!-- Shipping Address Details -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 10px; padding: 20px; margin: 30px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 18px;">📍 Adresse de Livraison</h2>
+                                                        
+                                                        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                                                            ${order.shippingName ? `
+                                                            <tr>
+                                                                <td style="padding: 6px 0;">
+                                                                    <span style="color: #047857; font-weight: 600; font-size: 14px;">👤 Destinataire:</span>
+                                                                    <span style="color: #064e3b; font-size: 14px; margin-left: 8px;">${order.shippingName}</span>
+                                                                </td>
+                                                            </tr>
+                                                            ` : ''}
+                                                            ${order.shippingPhone ? `
+                                                            <tr>
+                                                                <td style="padding: 6px 0;">
+                                                                    <span style="color: #047857; font-weight: 600; font-size: 14px;">📞 Téléphone:</span>
+                                                                    <span style="color: #064e3b; font-size: 14px; margin-left: 8px;">${order.shippingPhone}</span>
+                                                                </td>
+                                                            </tr>
+                                                            ` : ''}
+                                                            <tr>
+                                                                <td style="padding: 6px 0;">
+                                                                    <span style="color: #047857; font-weight: 600; font-size: 14px;">🏠 Adresse:</span>
+                                                                    <span style="color: #064e3b; font-size: 14px; margin-left: 8px;">${order.shippingAddress}</span>
+                                                                </td>
+                                                            </tr>
+                                                            ${order.shippingCity ? `
+                                                            <tr>
+                                                                <td style="padding: 6px 0;">
+                                                                    <span style="color: #047857; font-weight: 600; font-size: 14px;">📍 Ville:</span>
+                                                                    <span style="color: #064e3b; font-size: 14px; margin-left: 8px;">${order.shippingCity}</span>
+                                                                </td>
+                                                            </tr>
+                                                            ` : ''}
+                                                        </table>
+                                                        
+                                                        <div style="background: #d1fae5; padding: 12px; border-radius: 6px; margin-top: 15px;">
+                                                            <p style="color: #065f46; margin: 0; font-size: 13px; line-height: 1.5;">
+                                                                <strong>💡 Important:</strong> Assurez-vous d'être disponible à cette adresse pour réceptionner votre colis. 
+                                                                Le livreur vous contactera au ${order.shippingPhone || 'numéro fourni'} avant la livraison.
+                                                            </p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            ` : ''}
+                                            
+                                            ${order.deliveryType === 'CLICK_COLLECT' ? `
+                                            <!-- Click & Collect Info -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 10px; padding: 20px; margin: 30px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 18px;">🏪 Retrait en Boutique</h2>
+                                                        <p style="color: #1e3a8a; margin: 0; font-size: 14px; line-height: 1.6;">
+                                                            Votre commande sera prête pour le retrait une fois que le vendeur l'aura confirmée. 
+                                                            Vous recevrez une notification par email dès qu'elle sera disponible.
+                                                        </p>
+                                                        ${order.storeName || order.storeAddress ? `
+                                                        <div style="background: #bfdbfe; padding: 12px; border-radius: 6px; margin-top: 15px;">
+                                                            ${order.storeName ? `<p style="color: #1e3a8a; margin: 0 0 5px 0; font-size: 14px;"><strong>📍 Boutique:</strong> ${order.storeName}</p>` : ''}
+                                                            ${order.storeAddress ? `<p style="color: #1e3a8a; margin: 0; font-size: 14px;"><strong>🏠 Adresse:</strong> ${order.storeAddress}${order.storeCity ? ', ' + order.storeCity : ''}</p>` : ''}
+                                                        </div>
+                                                        ` : ''}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            ` : ''}
                                             
                                             <!-- Next Steps -->
                                             <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 30px 0;">
