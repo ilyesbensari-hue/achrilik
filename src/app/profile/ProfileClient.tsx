@@ -124,12 +124,12 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
     };
 
     // --- Derived State (Stats) ---
-    const pendingCount = sellerOrders.filter(o => o.status === 'PENDING').length;
-    const confirmedCount = sellerOrders.filter(o => o.status === 'CONFIRMED').length;
+    const pendingCount = (sellerOrders || []).filter(o => o.status === 'PENDING').length;
+    const confirmedCount = (sellerOrders || []).filter(o => o.status === 'CONFIRMED').length;
     // For 'Ready' counts, usually part of 'Processing', but let's count separately
-    const readyCount = sellerOrders.filter(o => o.status === 'READY').length;
-    const cancelledCount = sellerOrders.filter(o => o.status === 'CANCELLED').length;
-    const deliveredCount = sellerOrders.filter(o => o.status === 'DELIVERED').length;
+    const readyCount = (sellerOrders || []).filter(o => o.status === 'READY').length;
+    const cancelledCount = (sellerOrders || []).filter(o => o.status === 'CANCELLED').length;
+    const deliveredCount = (sellerOrders || []).filter(o => o.status === 'DELIVERED').length;
 
 
     // --- Render ---
@@ -302,7 +302,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     <span>📦</span> Commandes à expédier
                                 </h2>
 
-                                {sellerOrders.length === 0 ? (
+                                {(sellerOrders || []).length === 0 ? (
                                     <div className="text-center py-10 bg-gray-50 rounded-xl">
                                         <div className="text-4xl mb-4">💤</div>
                                         <h3 className="text-lg font-bold text-gray-900">Aucune commande reçue</h3>
@@ -310,9 +310,9 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
-                                        {sellerOrders.map(order => {
+                                        {(sellerOrders || []).map(order => {
                                             // Filter items for THIS store
-                                            const storeItems = order.items.filter((item: any) => item.Variant.Product.StoreId === store?.id);
+                                            const storeItems = (order.items || []).filter((item: any) => item.Variant.Product.StoreId === store?.id);
                                             if (storeItems.length === 0) return null;
 
                                             return (
