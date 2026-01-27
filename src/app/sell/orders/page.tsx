@@ -96,7 +96,8 @@ export default function SellerOrdersPage() {
                 <div className="space-y-4">
                     {orders.map(order => {
                         // Calculate total for THIS store's items only (visual helper)
-                        const storeItems = order.items.filter((item: any) => item.Variant.Product.StoreId === store.id);
+                        const orderItems = order.OrderItem || order.items || [];
+                        const storeItems = orderItems.filter((item: any) => item.Variant?.Product?.storeId === store.id);
                         const storeTotal = storeItems.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
 
                         return (
@@ -123,8 +124,8 @@ export default function SellerOrdersPage() {
                                         </div>
 
                                         <div className="mb-4">
-                                            <p className="font-semibold text-gray-900">Client: {order.User.name}</p>
-                                            <p className="text-sm text-gray-500">{order.User.email}</p>
+                                            <p className="font-semibold text-gray-900">Client: {order.User?.name || 'Non spécifié'}</p>
+                                            <p className="text-sm text-gray-500">{order.User?.email || ''}</p>
                                             <p className="text-sm font-medium mt-1">Mode: {order.deliveryType === 'CLICK_COLLECT' ? '🏪 Click & Collect' : '🚚 Livraison'}</p>
                                         </div>
 
@@ -135,8 +136,8 @@ export default function SellerOrdersPage() {
                                                 {storeItems.map((item: any) => (
                                                     <li key={item.id} className="flex justify-between text-sm">
                                                         <span>
-                                                            <span className="font-bold">{item.quantity}x</span> {item.Variant.Product.title}
-                                                            <span className="text-gray-500"> ({item.Variant.size}/{item.Variant.color})</span>
+                                                            <span className="font-bold">{item.quantity}x</span> {item.Variant?.Product?.title || 'Produit'}
+                                                            <span className="text-gray-500"> ({item.Variant?.size || 'N/A'}/{item.Variant?.color || 'N/A'})</span>
                                                         </span>
                                                         <span className="font-medium text-gray-700">{item.price} DA</span>
                                                     </li>
