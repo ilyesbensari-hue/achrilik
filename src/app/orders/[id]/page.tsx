@@ -11,8 +11,12 @@ interface Order {
     status: string;
     createdAt: string;
     deliveryType: string;
-    items: any[];
+    OrderItem: any[]; // Changed from items to OrderItem to match API
     paymentMethod: string;
+    shippingName?: string;
+    shippingPhone?: string;
+    shippingAddress?: string;
+    shippingCity?: string;
 }
 
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -100,16 +104,16 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                     {/* Items List */}
                     <div className="card bg-white overflow-hidden">
                         <div className="p-4 bg-gray-50 border-b">
-                            <h3 className="font-bold text-gray-900">Articles ({order.items.length})</h3>
+                            <h3 className="font-bold text-gray-900">Articles ({order.OrderItem?.length || 0})</h3>
                         </div>
                         <div className="divide-y divide-gray-100">
-                            {order.items.map((item: any) => (
+                            {order.OrderItem?.map((item: any) => (
                                 <div key={item.id} className="p-4 flex gap-4">
                                     <div className="relative w-20 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                        {item.variant.product.images && item.variant.product.images[0] ? (
+                                        {item.Variant?.Product?.images && item.Variant.Product.images[0] ? (
                                             <Image
-                                                src={item.variant.product.images[0]}
-                                                alt={item.variant.product.title}
+                                                src={item.Variant.Product.images[0]}
+                                                alt={item.Variant.Product.title}
                                                 fill
                                                 className="object-cover"
                                             />
@@ -118,9 +122,9 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                                         )}
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="font-medium text-gray-900 line-clamp-2">{item.variant.product.title}</h4>
+                                        <h4 className="font-medium text-gray-900 line-clamp-2">{item.Variant?.Product?.title || 'Produit'}</h4>
                                         <p className="text-sm text-gray-500 mt-1">
-                                            {item.variant.size} / {item.variant.color}
+                                            {item.Variant?.size} {item.Variant?.color && `/ ${item.Variant.color}`}
                                         </p>
                                         <div className="flex justify-between items-center mt-3">
                                             <div className="text-sm">
@@ -174,8 +178,20 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                         </div>
                     </div>
 
-                    {/* Stores Contact (Optional enhancement) */}
-                    {/* Logic to show store contact could actully be useful here if we had store data attached to order items deep check */}
+                    {/* Shipping Address */}
+                    {order.deliveryType === 'DELIVERY' && order.shippingAddress && (
+                        <div className="card p-6">
+                            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <span>📍</span> Adresse de livraison
+                            </h3>
+                            <div className="text-sm text-gray-600 space-y-2">
+                                {order.shippingName && <p className="font-medium text-black">{order.shippingName}</p>}
+                                {order.shippingPhone && <p>{order.shippingPhone}</p>}
+                                {order.shippingAddress && <p>{order.shippingAddress}</p>}
+                                {order.shippingCity && <p>{order.shippingCity}</p>}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
