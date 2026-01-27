@@ -32,6 +32,8 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [store, setStore] = useState<Store | null>(null);
+    const [orders, setOrders] = useState<any[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(true);
 
     // Form states
     const [storeName, setStoreName] = useState('');
@@ -67,12 +69,29 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                 setStorePhone(myStore.phone || '');
                 setLatitude(myStore.latitude ? myStore.latitude.toString() : '');
                 setLongitude(myStore.longitude ? myStore.longitude.toString() : '');
-                setHasPhysicalStore(myStore.clickCollect !== false); // Default true if boolean true or undefined
+                setHasPhysicalStore(myStore.clickCollect !== false);
+
+                // Fetch orders for this store
+                fetchOrders(myStore.id);
             }
         } catch (e) {
             console.error(e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchOrders = async (storeId: string) => {
+        try {
+            const res = await fetch(`/api/orders?storeId=${storeId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setOrders(data || []);
+            }
+        } catch (e) {
+            console.error('Error fetching orders:', e);
+        } finally {
+            setOrdersLoading(false);
         }
     };
 
@@ -338,6 +357,67 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                                 <span className="text-gray-700">📞 {store.phone}</span>
                             </div>
                         )}
+                    </div>
+                )}
+            </div>
+
+            {/* Orders Summary Section */}
+            <div className="card p-6 mb-8">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">📦 Mes Commandes</h2>
+                    <Link href="/sell/orders" className="btn btn-primary btn-sm">
+                        Voir toutes les commandes →
+                    </Link>
+                </div>
+
+                {ordersLoading ? (
+                    <div className="text-center py-8 text-gray-500">Chargement des commandes...</div>
+                ) : orders.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                        <div className="text-4xl mb-2">📭</div>
+                        <p className="text-gray-600">Aucune commande pour le moment</p>
+                        <p className="text-sm text-gray-500 mt-1">Les commandes apparaîtront ici dès qu'un client achètera vos produits</p>
+                    </div>
+                ) : (
+                    <div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div className="text-2xl font-bold text-yellow-600">
+                                    {orders.filter(o => o.status === 'PENDING').length}
+                                </div>
+                                <div className="text-sm text-gray-600">En attente</div>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="text-2xl font-bold text-blue-600">
+                                    {orders.filter(o => o.status === 'CONFIRMED').length}
+                                </div>
+                                <div className="text-sm text-gray-600">Confirmées</div>
+                            </div>
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <div className="text-2xl font-bold text-purple-600">
+                                    {orders.filter(o => o.status === 'READY').length}
+                                </div>
+                                <div className="text-sm text-gray-600">Prêtes</div>
+                            </div>
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div className="text-2xl font-bold text-green-600">
+                                    {orders.filter(o => o.status === 'DELIVERED').length}
+                                </div>
+                                <div className="text-sm text-gray-500">Livrées</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-sm text-gray-600">Total des commandes</p>
+                                    <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+                                </div>
+                                <Link href="/sell/orders" className="btn btn-outline">
+                                    Gérer les commandes
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
