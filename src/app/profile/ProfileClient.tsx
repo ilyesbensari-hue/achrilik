@@ -1,3 +1,4 @@
+// Last updated: 2026-01-28T14:56:00Z
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -331,6 +332,6 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                 </div>
             </div>
         </div>
-        </div>
+        </div >
     );
 }
