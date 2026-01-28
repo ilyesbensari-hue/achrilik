@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/ImageUpload';
+import HierarchicalCategorySelector from '@/components/HierarchicalCategorySelector';
+
 
 export default function EditProductPage({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -27,8 +29,28 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     // Promotion
     const [promotionLabel, setPromotionLabel] = useState('');
 
+    // Category
+    const [categoryId, setCategoryId] = useState('');
+    const [categories, setCategories] = useState<any[]>([]);
+
+
     useEffect(() => {
-        const userId = localStorage.getItem('userId');
+        // Fetch categories
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => {
+                // Flatten categories (parent + children)
+                const allCategories: any[] = [];
+                data.forEach((cat: any) => {
+                    allCategories.push(cat);
+                    if (cat.children) {
+                        cat.children.forEach((child: any) => {
+                            allCategories.push(child);
+                        });
+                    }
+                });
+                setCategories(allCategories);
+            });
 
         // Fetch product data
         fetch(`/api/products/${params.id}`)
@@ -41,6 +63,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 setVariants(product.Variant || []);
                 setStoreId(product.StoreId);
                 setPromotionLabel(product.promotionLabel || '');
+                setCategoryId(product.categoryId || '');
                 setLoading(false);
             })
             .catch(() => {
@@ -76,6 +99,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     price: parseFloat(price),
                     images: images.join(','),
                     variants,
+                    categoryId,
                     promotionLabel: promotionLabel || null
                 })
             });
@@ -111,6 +135,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                         <label className="label mb-1 block">Description</label>
                         <textarea className="input h-24 py-2" required value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
+
+                    <HierarchicalCategorySelector
+                        value={categoryId}
+                        onChange={setCategoryId}
+                        categories={categories}
+                    />
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/ImageUpload';
+import HierarchicalCategorySelector from '@/components/HierarchicalCategorySelector';
+
 
 export default function AddProductPage() {
     const router = useRouter();
@@ -147,17 +149,12 @@ export default function AddProductPage() {
                         <textarea className="input h-24 py-2" required value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
 
-                    <div>
-                        <label className="label mb-1 block">Catégorie</label>
-                        <select className="input" required value={categoryId} onChange={e => setCategoryId(e.target.value)}>
-                            <option value="">-- Sélectionnez une catégorie --</option>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>
-                                    {cat.parentId ? `  └─ ${cat.name}` : cat.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <HierarchicalCategorySelector
+                        value={categoryId}
+                        onChange={setCategoryId}
+                        categories={categories}
+                    />
+
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
