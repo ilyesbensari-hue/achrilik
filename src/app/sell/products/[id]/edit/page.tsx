@@ -4,6 +4,7 @@ import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/ImageUpload';
 import Link from 'next/link';
+import HierarchicalCategorySelector from '@/components/HierarchicalCategorySelector';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -18,6 +19,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [price, setPrice] = useState('');
     const [categoryId, setCategoryId] = useState('');
     const [images, setImages] = useState<string[]>([]);
+    const [promotionLabel, setPromotionLabel] = useState('');
 
     // Variants
     const [variants, setVariants] = useState<{ size: string, color: string, stock: number }[]>([]);
@@ -53,6 +55,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setPrice(data.price.toString());
                 setCategoryId(data.CategoryId || '');
                 setImages(data.images.split(','));
+                setPromotionLabel(data.promotionLabel || '');
                 setVariants(data.Variant.map((v: any) => ({
                     size: v.size,
                     color: v.color,
@@ -96,6 +99,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     price: parseFloat(price),
                     images: images.join(','),
                     categoryId: categoryId || null,
+                    promotionLabel: promotionLabel || null,
                     variants
                 })
             });
@@ -145,20 +149,43 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         <textarea className="input h-24 py-2" required value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
 
+                    <HierarchicalCategorySelector
+                        categories={categories}
+                        value={categoryId}
+                        onChange={setCategoryId}
+                    />
+
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="label mb-1 block">Prix (DA)</label>
                             <input className="input" type="number" required value={price} onChange={e => setPrice(e.target.value)} />
                         </div>
-                        <div>
-                            <label className="label mb-1 block">Catégorie</label>
-                            <select className="input" value={categoryId} onChange={e => setCategoryId(e.target.value)}>
-                                <option value="">Aucune catégorie</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-red-50 to-orange-50 p-4 rounded-xl border border-red-200">
+                        <label className="label mb-1 block flex items-center gap-2">
+                            <span className="text-lg">🏷️</span>
+                            Label Promotion (optionnel)
+                        </label>
+                        <input
+                            className="input mb-2"
+                            placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
+                            value={promotionLabel}
+                            onChange={e => setPromotionLabel(e.target.value)}
+                            maxLength={20}
+                        />
+                        <p className="text-xs text-gray-600 mb-2">
+                            Ajoutez un badge promotionnel qui apparaîtra sur votre produit (max 20 caractères)
+                        </p>
+                        {promotionLabel && (
+                            <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
+                                <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
+                                <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                    {promotionLabel}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div>
