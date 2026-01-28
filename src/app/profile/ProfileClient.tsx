@@ -331,6 +331,6 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                 </div>
             </div>
         </div>
-        </div >
+        </div>
     );
 }
