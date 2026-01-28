@@ -8,7 +8,7 @@ export default function DeliveryBanner() {
                     <div className="flex items-center gap-2">
                         <span className="text-xl">🚀</span>
                         <p className="font-bold text-sm md:text-base tracking-wide">
-                            Commandez maintenent, payez à la livraison !
+                            Commandez maintenant, payez à la livraison !
                         </p>
                     </div>
                     <div className="hidden md:block w-px h-6 bg-white/40"></div>
