@@ -12,6 +12,7 @@ jobs:
     
     # Set default environment variables for CI
     env:
+      CI: true
       DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
       BREVO_API_KEY: dummy-brevo-key
       CLOUDINARY_CLOUD_NAME: dummy-cloud
@@ -26,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       
       - name: Install dependencies
