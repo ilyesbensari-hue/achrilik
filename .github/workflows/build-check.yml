@@ -10,6 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
+    # Set default environment variables for CI
+    env:
+      DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+      BREVO_API_KEY: dummy-brevo-key
+      CLOUDINARY_CLOUD_NAME: dummy-cloud
+      CLOUDINARY_API_KEY: dummy-api-key
+      CLOUDINARY_API_SECRET: dummy-api-secret
+      NEXTAUTH_SECRET: dummy-nextauth-secret-for-ci-build-only-minimum-32-characters-long
+      NEXTAUTH_URL: http://localhost:3000
+    
     steps:
       - uses: actions/checkout@v3
       
@@ -24,23 +34,9 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          # Use dummy URL for CI if secret is not set
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy' }}
-
       
       - name: TypeScript Check
         run: npx tsc --noEmit
       
       - name: Build
         run: npm run build
-        env:
-          # Use dummy values for CI if secrets are not set
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy' }}
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY || 'dummy-brevo-key' }}
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME || 'dummy-cloud' }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY || 'dummy-api-key' }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET || 'dummy-api-secret' }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'dummy-nextauth-secret-for-ci-build-only' }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
-
