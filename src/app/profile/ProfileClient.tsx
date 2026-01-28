@@ -34,10 +34,8 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
     // Buyer Data
     const [orders, setOrders] = useState<Order[]>([]);
 
-    // Seller Data & View
-    const [viewMode, setViewMode] = useState<'buyer' | 'seller'>(initialUser.role === 'SELLER' ? 'seller' : 'buyer');
+    // Seller Data (for button display only)
     const [store, setStore] = useState<any>(null);
-    const [sellerOrders, setSellerOrders] = useState<any[]>([]);
 
     // --- Effects ---
     useEffect(() => {
@@ -45,7 +43,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
             if (!initialUser?.id) return;
 
             try {
-                // 1. Fetch Buyer Orders
+                // 1. Fetch Buyer Orders (orders placed BY this user)
                 fetch(`/api/orders?userId=${initialUser.id}`)
                     .then(res => res.json())
                     .then(data => {
@@ -53,18 +51,12 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                     })
                     .catch(console.error);
 
-                // 2. Fetch Seller Data (If Seller)
+                // 2. Check if user has a store (for dashboard button display)
                 if (initialUser.role === 'SELLER') {
                     const storeRes = await fetch('/api/stores');
                     const stores = await storeRes.json();
                     const myStore = stores.find((s: any) => s.ownerId === initialUser.id);
-
-                    if (myStore) {
-                        setStore(myStore);
-                        const ordersRes = await fetch(`/api/orders?storeId=${myStore.id}`);
-                        const ordersData = await ordersRes.json();
-                        if (Array.isArray(ordersData)) setSellerOrders(ordersData);
-                    }
+                    if (myStore) setStore(myStore);
                 }
             } catch (error) {
                 console.error(error);
@@ -106,30 +98,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
         }
     };
 
-    const updateSellerOrder = async (orderId: string, newStatus: string) => {
-        if (!confirm(`Changer le statut en "${newStatus}" ?`)) return;
-        try {
-            const res = await fetch(`/api/orders/${orderId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
 
-            if (res.ok) {
-                setSellerOrders(sellerOrders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-            } else {
-                alert('Erreur lors de la mise à jour');
-            }
-        } catch (e) { alert('Erreur technique'); }
-    };
-
-    // --- Derived State (Stats) ---
-    const pendingCount = (sellerOrders || []).filter(o => o.status === 'PENDING').length;
-    const confirmedCount = (sellerOrders || []).filter(o => o.status === 'CONFIRMED').length;
-    // For 'Ready' counts, usually part of 'Processing', but let's count separately
-    const readyCount = (sellerOrders || []).filter(o => o.status === 'READY').length;
-    const cancelledCount = (sellerOrders || []).filter(o => o.status === 'CANCELLED').length;
-    const deliveredCount = (sellerOrders || []).filter(o => o.status === 'DELIVERED').length;
 
 
     // --- Render ---
@@ -138,7 +107,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
 
     return (
         <div className="container py-10">
-            <h1 className="text-3xl font-bold mb-8">Mon Espace {viewMode === 'seller' ? 'Vendeur' : 'Client'}</h1>
+            <h1 className="text-3xl font-bold mb-8">Mon Profil</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* ---------------- LEFT COL: Profile & Nav ---------------- */}
@@ -273,211 +242,95 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
 
                 {/* ---------------- RIGHT COL: Main Content ---------------- */}
                 <div className="md:col-span-2">
+                    {/* === BUYER VIEW (Mes Commandes) === */}
+                    <div className="card p-6 bg-white shadow-lg">
+                        <h2 className="text-2xl font-bold mb-6">Mes Commandes</h2>
 
-                    {/* === SELLER VIEW === */}
-                    {viewMode === 'seller' && user.role === 'SELLER' ? (
-                        <div className="space-y-6">
-                            {/* Stats Cards */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="p-4 rounded-xl bg-orange-50 border border-orange-100 text-center">
-                                    <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
-                                    <p className="text-[10px] sm:text-xs text-orange-800 font-bold uppercase">En attente</p>
-                                </div>
-                                <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100 text-center">
-                                    <p className="text-2xl font-bold text-indigo-600">{confirmedCount + readyCount}</p>
-                                    <p className="text-[10px] sm:text-xs text-indigo-800 font-bold uppercase">En cours</p>
-                                </div>
-                                <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-center">
-                                    <p className="text-2xl font-bold text-green-600">{deliveredCount}</p>
-                                    <p className="text-[10px] sm:text-xs text-green-800 font-bold uppercase">Livrées</p>
-                                </div>
-                                <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-center">
-                                    <p className="text-2xl font-bold text-red-600">{cancelledCount}</p>
-                                    <p className="text-[10px] sm:text-xs text-red-800 font-bold uppercase">Annulées</p>
-                                </div>
-                            </div>
-
-                            <div className="card p-6 bg-white shadow-lg">
-                                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                    <span>📦</span> Commandes à expédier
-                                </h2>
-
-                                {(sellerOrders || []).length === 0 ? (
-                                    <div className="text-center py-10 bg-gray-50 rounded-xl">
-                                        <div className="text-4xl mb-4">💤</div>
-                                        <h3 className="text-lg font-bold text-gray-900">Aucune commande reçue</h3>
-                                        <p className="text-gray-500">Dès que vous recevrez une commande, elle s'affichera ici.</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {(sellerOrders || []).map(order => {
-                                            // Filter items for THIS store
-                                            const storeItems = (order.items || []).filter((item: any) => item.Variant.Product.StoreId === store?.id);
-                                            if (storeItems.length === 0) return null;
-
-                                            return (
-                                                <div key={order.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                                                    <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-4">
-                                                        <div>
-                                                            <div className="flex flex-wrap items-center gap-2">
-                                                                <span className="font-bold">Commande #{order.id.slice(0, 8).toUpperCase()}</span>
-                                                                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase
-                                                                    ${order.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
-                                                                        order.status === 'CONFIRMED' ? 'bg-indigo-100 text-indigo-700' :
-                                                                            order.status === 'READY' ? 'bg-blue-100 text-blue-700' :
-                                                                                order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                                                                                    'bg-red-100 text-red-700'}`}>
-                                                                    {order.status}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-sm text-gray-500 mt-1">
-                                                                Client: <span className="text-gray-900 font-medium">{order.User.name}</span> • {new Date(order.createdAt).toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-left md:text-right">
-                                                            <p className="font-bold text-lg text-[#006233]">
-                                                                {storeItems.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0)} DA
-                                                            </p>
-                                                            <span className="text-xs text-gray-400 block">{order.deliveryType === 'CLICK_COLLECT' ? '🏪 Click & Collect' : '🚚 Livraison'}</span>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Items Preview */}
-                                                    <div className="bg-gray-50 p-3 rounded-lg mb-4 text-sm space-y-2">
-                                                        {storeItems.map((item: any) => (
-                                                            <div key={item.id} className="flex justify-between">
-                                                                <span><span className="font-bold">{item.quantity}x</span> {item.Variant.Product.title} <span className="text-gray-400">({item.Variant.size})</span></span>
-                                                                <span>{item.price} DA</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    {/* Quick Actions */}
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {order.status === 'PENDING' && (
-                                                            <button onClick={() => updateSellerOrder(order.id, 'CONFIRMED')} className="btn btn-sm bg-indigo-600 text-white hover:bg-indigo-700 flex-1">
-                                                                Accepter
-                                                            </button>
-                                                        )}
-                                                        {order.status === 'CONFIRMED' && order.deliveryType === 'CLICK_COLLECT' && (
-                                                            <button onClick={() => updateSellerOrder(order.id, 'READY')} className="btn btn-sm bg-blue-600 text-white hover:bg-blue-700 flex-1">
-                                                                Prêt à récupérer
-                                                            </button>
-                                                        )}
-                                                        {order.status === 'READY' && (
-                                                            <button onClick={() => updateSellerOrder(order.id, 'DELIVERED')} className="btn btn-sm bg-green-600 text-white hover:bg-green-700 flex-1">
-                                                                Confirmer retrait
-                                                            </button>
-                                                        )}
-                                                        {order.status === 'CONFIRMED' && order.deliveryType !== 'CLICK_COLLECT' && (
-                                                            <button onClick={() => updateSellerOrder(order.id, 'DELIVERED')} className="btn btn-sm bg-green-600 text-white hover:bg-green-700 flex-1">
-                                                                Marquer Livré
-                                                            </button>
-                                                        )}
-                                                        {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
-                                                            <button onClick={() => updateSellerOrder(order.id, 'CANCELLED')} className="btn btn-sm border border-red-200 text-red-600 hover:bg-red-50">
-                                                                Annuler
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-
-                        /* === BUYER VIEW (Mes Commandes) === */
-                        <div className="card p-6 bg-white shadow-lg">
-                            <h2 className="text-2xl font-bold mb-6">Mes Commandes</h2>
-
-                            {orders.length > 0 ? (
-                                <div className="space-y-4">
-                                    {orders.map(order => (
-                                        <div key={order.id} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <p className="font-bold">Commande #{order.id.slice(-6)}</p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {new Date(order.createdAt).toLocaleDateString('fr-FR')}
-                                                    </p>
-                                                    {order.deliveryType === 'CLICK_COLLECT' && (
-                                                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mt-1 inline-block">
-                                                            🏪 Click & Collect
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold 
-                                                    ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                                                            order.status === 'READY' ? 'bg-blue-100 text-blue-700 animate-pulse' :
-                                                                order.status === 'CONFIRMED' ? 'bg-indigo-100 text-indigo-700' :
-                                                                    order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
-                                                                        'bg-yellow-100 text-yellow-700'
-                                                        }`}>
-                                                        {order.status === 'PENDING' && 'En attente'}
-                                                        {order.status === 'CONFIRMED' && 'En cours'}
-                                                        {order.status === 'READY' && 'Prêt à récupérer'}
-                                                        {order.status === 'DELIVERED' && 'Livrée'}
-                                                        {order.status === 'CANCELLED' && 'Annulée'}
+                        {orders.length > 0 ? (
+                            <div className="space-y-4">
+                                {orders.map(order => (
+                                    <div key={order.id} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <p className="font-bold">Commande #{order.id.slice(-6)}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                                                </p>
+                                                {order.deliveryType === 'CLICK_COLLECT' && (
+                                                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded mt-1 inline-block">
+                                                        🏪 Click & Collect
                                                     </span>
-                                                    {order.status === 'READY' && order.deliveryType === 'CLICK_COLLECT' && (
-                                                        <small className="text-xs text-blue-600 font-medium">
-                                                            Rendez-vous en boutique !
-                                                        </small>
-                                                    )}
-                                                </div>
+                                                )}
                                             </div>
-
-                                            {/* Products List */}
-                                            {order.OrderItem && order.OrderItem.length > 0 && (
-                                                <div className="mt-3 bg-gray-50 p-3 rounded-lg space-y-2">
-                                                    <p className="text-xs font-bold text-gray-600 uppercase mb-2">Articles commandés:</p>
-                                                    {order.OrderItem.map((item: any) => (
-                                                        <div key={item.id} className="flex justify-between items-center text-sm">
-                                                            <div className="flex-1">
-                                                                <span className="font-semibold text-gray-900">
-                                                                    {item.quantity}x {item.Variant?.Product?.title || 'Produit'}
-                                                                </span>
-                                                                {item.Variant?.size && (
-                                                                    <span className="text-gray-500 text-xs ml-2">
-                                                                        (Taille: {item.Variant.size})
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <span className="text-gray-700 font-medium">
-                                                                {item.price * item.quantity} DA
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            <div className="flex justify-between items-center mt-4 pt-4 border-t">
-                                                <span className="font-bold text-lg">{order.total} DA</span>
-                                                <Link href={`/orders/${order.id}`} className="text-green-600 hover:underline text-sm font-medium">
-                                                    Voir détails →
-                                                </Link>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold 
+                                                ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
+                                                        order.status === 'READY' ? 'bg-blue-100 text-blue-700 animate-pulse' :
+                                                            order.status === 'CONFIRMED' ? 'bg-indigo-100 text-indigo-700' :
+                                                                order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
+                                                                    'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                    {order.status === 'PENDING' && 'En attente'}
+                                                    {order.status === 'CONFIRMED' && 'En cours'}
+                                                    {order.status === 'READY' && 'Prêt à récupérer'}
+                                                    {order.status === 'DELIVERED' && 'Livrée'}
+                                                    {order.status === 'CANCELLED' && 'Annulée'}
+                                                </span>
+                                                {order.status === 'READY' && order.deliveryType === 'CLICK_COLLECT' && (
+                                                    <small className="text-xs text-blue-600 font-medium">
+                                                        Rendez-vous en boutique !
+                                                    </small>
+                                                )}
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-10 bg-gray-50 rounded-xl">
-                                    <div className="text-4xl mb-4">🛍️</div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2">Aucune commande</h3>
-                                    <p className="text-gray-500 mb-6">Vous n'avez pas encore passé de commande.</p>
-                                    <Link href="/" className="btn btn-primary">
-                                        Commencer mon shopping
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-                    )}
+
+                                        {/* Products List */}
+                                        {order.OrderItem && order.OrderItem.length > 0 && (
+                                            <div className="mt-3 bg-gray-50 p-3 rounded-lg space-y-2">
+                                                <p className="text-xs font-bold text-gray-600 uppercase mb-2">Articles commandés:</p>
+                                                {order.OrderItem.map((item: any) => (
+                                                    <div key={item.id} className="flex justify-between items-center text-sm">
+                                                        <div className="flex-1">
+                                                            <span className="font-semibold text-gray-900">
+                                                                {item.quantity}x {item.Variant?.Product?.title || 'Produit'}
+                                                            </span>
+                                                            {item.Variant?.size && (
+                                                                <span className="text-gray-500 text-xs ml-2">
+                                                                    (Taille: {item.Variant.size})
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-gray-700 font-medium">
+                                                            {item.price * item.quantity} DA
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                                            <span className="font-bold text-lg">{order.total} DA</span>
+                                            <Link href={`/orders/${order.id}`} className="text-green-600 hover:underline text-sm font-medium">
+                                                Voir détails →
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-10 bg-gray-50 rounded-xl">
+                                <div className="text-4xl mb-4">🛍️</div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">Aucune commande</h3>
+                                <p className="text-gray-500 mb-6">Vous n'avez pas encore passé de commande.</p>
+                                <Link href="/" className="btn btn-primary">
+                                    Commencer mon shopping
+                                </Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
+        </div >
     );
 }
