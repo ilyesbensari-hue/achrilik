@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ModeSwitcher from '@/components/ModeSwitcher';
+
 
 interface Order {
     id: string;
@@ -45,10 +45,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
     // --- Effects ---
     useEffect(() => {
         // Initialize mode from localStorage
-        const savedMode = localStorage.getItem('userMode') as 'buyer' | 'seller' | null;
-        if (savedMode) {
-            setUserMode(savedMode);
-        }
+
 
         const init = async () => {
             if (!initialUser?.id) return;
@@ -221,11 +218,8 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                             )}
 
                             {/* Dashboard link for SELLERS */}
-                            {user.role === 'SELLER' && !isEditing && store && (
+                            {(user.role === 'SELLER' || user.roles?.includes('SELLER')) && !isEditing && store && (
                                 <div className="w-full pt-2 border-t mt-2 space-y-2">
-                                    {/* Mode Switcher */}
-                                    <ModeSwitcher currentMode={userMode} className="w-full" />
-
                                     {/* Dashboard Link */}
                                     <Link href="/sell" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
                                         <span>🏪</span> Ma boutique en ligne

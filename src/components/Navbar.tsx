@@ -95,14 +95,25 @@ export default function Navbar() {
                         </div>
                     )}
 
-                    {/* Desktop: Devenir Vendeur CTA for BUYERS */}
-                    {user && user.role === 'BUYER' && (
+                    {/* Desktop: Devenir Vendeur CTA for BUYERS (Non-Sellers) */}
+                    {user && user.role !== 'SELLER' && !user.roles?.includes('SELLER') && (
                         <Link
                             href="/become-seller"
                             className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-sm"
                         >
                             <span>🚀</span>
                             Devenir Vendeur
+                        </Link>
+                    )}
+
+                    {/* Desktop: Seller Dashboard for SELLERS */}
+                    {user && (user.role === 'SELLER' || user.roles?.includes('SELLER')) && (
+                        <Link
+                            href="/sell"
+                            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-[#006233] text-white text-sm font-medium rounded-lg hover:bg-[#004d28] transition-all shadow-sm"
+                        >
+                            <span>🏪</span>
+                            Ma Boutique
                         </Link>
                     )}
 
