@@ -35,18 +35,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
 
     const handleAddToCart = () => {
         // Check role
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                if (user.role === 'SELLER') {
-                    showToast("Les vendeurs ne peuvent pas acheter. Veuillez créer un compte client.", 'error');
-                    return;
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
+
 
         // Validate selection
         if (sizes.length > 1 && !selectedSize) {
