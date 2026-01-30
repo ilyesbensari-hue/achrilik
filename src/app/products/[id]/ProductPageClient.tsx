@@ -2,15 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface ProductPageClientProps {
-    product: any;
-    sizes: string[];
-    colors: string[];
-    images: string[];
-}
-
-import Toast from '@/components/Toast';
+import { useRouter } from 'next/navigation';
+import { showToast } from '@/lib/toast';
+import Image from 'next/image';
 
 interface ProductPageClientProps {
     product: any;
@@ -20,13 +14,11 @@ interface ProductPageClientProps {
 }
 
 export default function ProductPageClient({ product, sizes, colors, images }: ProductPageClientProps) {
+    const router = useRouter();
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
-    const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
     // Auto-select when there's only one option
     useEffect(() => {
@@ -41,13 +33,6 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         }
     }, [colors, selectedColor]);
 
-    // Toast helper
-    const showToastNotification = (message: string, type: 'success' | 'error') => {
-        setToastMessage(message);
-        setToastType(type);
-        setShowToast(true);
-    };
-
     const handleAddToCart = () => {
         // Check role
         const userStr = localStorage.getItem('user');
@@ -55,7 +40,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             try {
                 const user = JSON.parse(userStr);
                 if (user.role === 'SELLER') {
-                    showToastNotification("Les vendeurs ne peuvent pas acheter. Veuillez créer un compte client.", 'error');
+                    showToast("Les vendeurs ne peuvent pas acheter. Veuillez créer un compte client.", 'error');
                     return;
                 }
             } catch (e) {
@@ -65,25 +50,25 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
 
         // Validate selection
         if (sizes.length > 1 && !selectedSize) {
-            showToastNotification('Veuillez sélectionner une taille', 'error');
+            showToast('Veuillez sélectionner une taille', 'error');
             return;
         }
         if (colors.length > 1 && !selectedColor) {
-            showToastNotification('Veuillez sélectionner une couleur', 'error');
+            showToast('Veuillez sélectionner une couleur', 'error');
             return;
         }
         if (!selectedSize || !selectedColor) {
-            showToastNotification('Erreur: Aucune variante disponible', 'error');
+            showToast('Erreur: Aucune variante disponible', 'error');
             return;
         }
 
         const variant = product.Variant.find((v: any) => v.size === selectedSize && v.color === selectedColor);
         if (!variant) {
-            showToastNotification('Combinaison indisponible', 'error');
+            showToast('Combinaison indisponible', 'error');
             return;
         }
         if (variant.stock < quantity) {
-            showToastNotification(`Stock insuffisant (${variant.stock} disponibles)`, 'error');
+            showToast(`Stock insuffisant (${variant.stock} disponibles)`, 'error');
             return;
         }
 
@@ -96,6 +81,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             color: selectedColor,
             image: images[0],
             storeId: product.storeId,
+            stock: variant.stock,
             quantity
         };
 
@@ -104,20 +90,14 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('storage'));
 
-        showToastNotification('✅ Ajouté au panier !', 'success');
+        showToast('Produit ajouté au panier', 'success', {
+            label: 'Voir le panier',
+            onClick: () => router.push('/cart')
+        });
     };
 
     return (
         <>
-            {/* Toast Notification */}
-            {showToast && (
-                <Toast
-                    message={toastMessage}
-                    type={toastType}
-                    onClose={() => setShowToast(false)}
-                />
-            )}
-
             {/* Images Gallery */}
             <div className="p-8">
                 <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-4 relative group shadow-inner">
@@ -160,7 +140,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                                     : 'border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-100'
                                     }`}
                             >
-                                <img src={img} alt="" className="w-full h-full object-cover" />
+                                <Image src={img} alt="" width={600} height={600} className="object-cover" />
                             </button>
                         ))}
                     </div>

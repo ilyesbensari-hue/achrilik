@@ -9,7 +9,7 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { name, password, email, address, phone } = body;
+        const { name, password, email, address, city, wilaya, phone } = body;
 
         // Basic validation
         if (!name) {
@@ -24,6 +24,8 @@ export async function PATCH(
         }
 
         if (address !== undefined) data.address = address;
+        if (city !== undefined) data.city = city;
+        if (wilaya !== undefined) data.wilaya = wilaya;
         if (phone !== undefined) data.phone = phone;
 
         const updatedUser = await prisma.user.update({
@@ -35,6 +37,8 @@ export async function PATCH(
                 name: true,
                 role: true,
                 address: true,
+                city: true,
+                wilaya: true,
                 phone: true,
                 // Do not return password
             }

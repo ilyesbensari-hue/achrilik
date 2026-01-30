@@ -1,21 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function WhySellPage() {
-    const [user, setUser] = useState<any>(null);
-
-    useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            try {
-                setUser(JSON.parse(userData));
-            } catch (e) {
-                // Invalid data
-            }
-        }
-    }, []);
+    const { user } = useAuth();
 
     return (
         <div className="min-h-screen bg-white">

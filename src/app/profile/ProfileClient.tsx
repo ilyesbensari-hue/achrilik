@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ModeSwitcher from '@/components/ModeSwitcher';
 
 interface Order {
     id: string;
@@ -30,6 +31,8 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
     const [editName, setEditName] = useState('');
     const [editPassword, setEditPassword] = useState('');
     const [editAddress, setEditAddress] = useState('');
+    const [editCity, setEditCity] = useState('');
+    const [editWilaya, setEditWilaya] = useState('');
     const [editPhone, setEditPhone] = useState('');
 
     // Buyer Data
@@ -37,9 +40,16 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
 
     // Seller Data (for button display only)
     const [store, setStore] = useState<any>(null);
+    const [userMode, setUserMode] = useState<'buyer' | 'seller'>('buyer');
 
     // --- Effects ---
     useEffect(() => {
+        // Initialize mode from localStorage
+        const savedMode = localStorage.getItem('userMode') as 'buyer' | 'seller' | null;
+        if (savedMode) {
+            setUserMode(savedMode);
+        }
+
         const init = async () => {
             if (!initialUser?.id) return;
 
@@ -79,6 +89,8 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                     name: editName,
                     password: editPassword || undefined,
                     address: editAddress,
+                    city: editCity,
+                    wilaya: editWilaya,
                     phone: editPhone
                 })
             });
@@ -123,9 +135,10 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                 <>
                                     <h2 className="text-xl font-bold">{user.name}</h2>
                                     <p className="text-gray-500">{user.email}</p>
-                                    {(user.address || user.phone) && (
+                                    {(user.address || user.city || user.wilaya || user.phone) && (
                                         <div className="mt-2 text-sm text-gray-600">
                                             {user.address && <p>📍 {user.address}</p>}
+                                            {(user.city || user.wilaya) && <p>🏙️ {user.city}{user.city && user.wilaya ? ', ' : ''}{user.wilaya}</p>}
                                             {user.phone && <p>📞 {user.phone}</p>}
                                         </div>
                                     )}
@@ -142,6 +155,16 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     <div>
                                         <label className="text-xs font-bold text-gray-500 float-left ml-1">Adresse</label>
                                         <input className="input w-full" value={editAddress} onChange={e => setEditAddress(e.target.value)} placeholder="Adresse" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 float-left ml-1">Commune</label>
+                                            <input className="input w-full" value={editCity} onChange={e => setEditCity(e.target.value)} placeholder="Es Senia" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 float-left ml-1">Wilaya</label>
+                                            <input className="input w-full" value={editWilaya} onChange={e => setEditWilaya(e.target.value)} placeholder="Oran" />
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold text-gray-500 float-left ml-1">Téléphone</label>
@@ -165,6 +188,8 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     onClick={() => {
                                         setEditName(user.name);
                                         setEditAddress(user.address || '');
+                                        setEditCity(user.city || '');
+                                        setEditWilaya(user.wilaya || '');
                                         setEditPhone(user.phone || '');
                                         setEditPassword('');
                                         setIsEditing(true);
@@ -197,8 +222,12 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
 
                             {/* Dashboard link for SELLERS */}
                             {user.role === 'SELLER' && !isEditing && store && (
-                                <div className="w-full pt-2 border-t mt-2">
-                                    <Link href="/seller/dashboard" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
+                                <div className="w-full pt-2 border-t mt-2 space-y-2">
+                                    {/* Mode Switcher */}
+                                    <ModeSwitcher currentMode={userMode} className="w-full" />
+
+                                    {/* Dashboard Link */}
+                                    <Link href="/sell" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
                                         <span>🏪</span> Ma boutique en ligne
                                     </Link>
                                 </div>

@@ -140,7 +140,7 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
       <section className="bg-gradient-to-b from-white to-gray-50 pb-12">
         <div className="container mx-auto px-4 pt-8">
           {/* Logo Central (Desktop only now, since Mobile has it in header) */}
-          <div className="flex justify-center mb-8 hidden lg:flex">
+          <div className="flex flex-col items-center justify-center mb-8 hidden lg:flex">
             <Image
               src="/achrilik-logo.png"
               alt="Achrilik Logo"
@@ -149,6 +149,9 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
               className="w-40 h-auto object-contain"
               priority
             />
+            <p className="text-2xl font-bold text-[#006233] mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+              اشرليك
+            </p>
           </div>
 
           {/* "Stories" Style Categories - Dynamic from DB */}

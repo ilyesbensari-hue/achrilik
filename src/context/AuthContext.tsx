@@ -8,6 +8,8 @@ interface User {
     email: string;
     name: string;
     role: string;
+    roles?: string[];
+    activeRole?: string;
 }
 
 interface AuthContextType {
@@ -53,8 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const logout = async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+            console.error('Logout error', e);
+        }
         setUser(null);
+        localStorage.removeItem('user'); // Ensure local storage is also cleared
         router.push('/login');
         router.refresh();
     };

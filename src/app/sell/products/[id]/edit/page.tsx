@@ -53,7 +53,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setTitle(data.title);
                 setDescription(data.description);
                 setPrice(data.price.toString());
-                setCategoryId(data.CategoryId || '');
+                setCategoryId(data.categoryId || '');
                 setImages(data.images.split(','));
                 setPromotionLabel(data.promotionLabel || '');
                 setVariants(data.Variant.map((v: any) => ({
@@ -85,6 +85,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!categoryId) return alert('Veuillez sélectionner une catégorie complète');
         if (variants.length === 0) return alert('Ajoutez au moins une variante');
         if (images.length === 0) return alert('Ajoutez au moins une image');
 

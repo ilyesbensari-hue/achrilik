@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
+import { verifyToken } from '@/lib/auth-token';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const storeId = searchParams.get('storeId');
@@ -80,14 +81,37 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    console.error('GET /api/products error:', error);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const token = request.cookies.get('auth_token')?.value;
+    const user = await verifyToken(token);
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Strict Role Check
+    const isSeller = user.roles?.includes('SELLER') || user.role === 'SELLER';
+    if (!isSeller) {
+      return NextResponse.json({ error: 'Must be a SELLER to create products' }, { status: 403 });
+    }
+
     const body = await request.json();
-    const { title, description, price, images, storeId, variants, promotionLabel } = body;
+    const { title, description, price, images, storeId, categoryId, variants, promotionLabel } = body;
+
+    // Verify Store Ownership (Optional but recommended, requires DB call. For now, we trust the token+role)
+    // Ideally: const store = await prisma.store.findUnique({ where: { id: storeId } });
+    // if (store.ownerId !== user.id) throw new Error("Not your store");
+
+    // Validate required fields
+    if (!categoryId) {
+      return NextResponse.json({ error: 'La catégorie est obligatoire' }, { status: 400 });
+    }
 
     const product = await prisma.product.create({
       data: {
@@ -97,6 +121,7 @@ export async function POST(request: Request) {
         price: parseFloat(price),
         images: images, // Comma separated string
         storeId,
+        categoryId,
         status: 'APPROVED', // Auto-approve products so they appear immediately
         promotionLabel: promotionLabel || null,
         Variant: {
@@ -110,11 +135,13 @@ export async function POST(request: Request) {
       },
       include: {
         Variant: true,
+        Category: true,
       },
     });
 
     return NextResponse.json(product);
   } catch (error) {
+    console.error('POST /api/products error:', error);
     return NextResponse.json({ error: 'Failed to create product', details: error }, { status: 500 });
   }
 }

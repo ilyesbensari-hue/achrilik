@@ -3,27 +3,8 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Line } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-} from 'chart.js';
-
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Image from 'next/image';
 
 interface ProductAnalytics {
     product: {
@@ -110,39 +91,12 @@ export default function ProductAnalyticsPage({ params }: { params: Promise<{ id:
         );
     }
 
-    const chartData = {
-        labels: analytics.salesTrend.map(d => new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })),
-        datasets: [
-            {
-                label: 'Ventes (unités)',
-                data: analytics.salesTrend.map(d => d.sales),
-                borderColor: '#006233',
-                backgroundColor: 'rgba(0, 98, 51, 0.1)',
-                tension: 0.4
-            }
-        ]
-    };
-
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top' as const,
-            },
-            title: {
-                display: true,
-                text: 'Évolution des ventes (30 derniers jours)'
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
-        }
-    };
+    // Prepare data for recharts
+    const chartData = analytics.salesTrend.map(d => ({
+        date: new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+        ventes: d.sales,
+        revenue: d.revenue
+    }));
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -156,10 +110,12 @@ export default function ProductAnalyticsPage({ params }: { params: Promise<{ id:
                     <div className="flex items-start justify-between">
                         <div className="flex gap-6">
                             {analytics.product.images[0] && (
-                                <img
+                                <Image
                                     src={analytics.product.images[0]}
                                     alt={analytics.product.title}
-                                    className="w-32 h-32 object-cover rounded-lg shadow-md"
+                                    width={128}
+                                    height={128}
+                                    className="object-cover rounded-lg shadow-md"
                                 />
                             )}
                             <div>
@@ -226,7 +182,23 @@ export default function ProductAnalyticsPage({ params }: { params: Promise<{ id:
 
                 {/* Sales Chart */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-                    <Line data={chartData} options={chartOptions} />
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Évolution des ventes (30 derniers jours)</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Line
+                                type="monotone"
+                                dataKey="ventes"
+                                stroke="#006233"
+                                strokeWidth={2}
+                                name="Ventes (unités)"
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

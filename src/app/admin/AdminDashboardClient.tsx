@@ -207,7 +207,7 @@ export default function AdminDashboard() {
             {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions Rapides</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <a
                         href="/admin/users"
                         className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all"
@@ -229,8 +229,38 @@ export default function AdminDashboard() {
                         </div>
                     </a>
                     <a
+                        href="/admin/delivery-agents"
+                        className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+                    >
+                        <span className="text-2xl">🚚</span>
+                        <div>
+                            <p className="font-medium text-gray-900">Prestataires</p>
+                            <p className="text-sm text-gray-500">Gérer les livreurs</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/admin/deliveries"
+                        className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+                    >
+                        <span className="text-2xl">📍</span>
+                        <div>
+                            <p className="font-medium text-gray-900">Livraisons</p>
+                            <p className="text-sm text-gray-500">Suivi des livraisons</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/admin/delivery-config"
+                        className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all"
+                    >
+                        <span className="text-2xl">⚙️</span>
+                        <div>
+                            <p className="font-medium text-gray-900">Config Livraisons</p>
+                            <p className="text-sm text-gray-500">Par wilaya</p>
+                        </div>
+                    </a>
+                    <a
                         href="/admin/logs"
-                        className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border- indigo-500 hover:bg-indigo-50 transition-all"
+                        className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all"
                     >
                         <span className="text-2xl">📋</span>
                         <div>

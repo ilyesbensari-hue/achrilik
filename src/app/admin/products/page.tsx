@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Product {
     id: string;
@@ -193,7 +194,7 @@ export default function AdminProductsPage() {
                             <tr key={product.id}>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <img src={product.images.split(',')[0]} className="w-12 h-12 object-cover rounded" />
+                                        <Image src={product.images.split(',')[0]} width={48} height={48} alt={product.title} className="object-cover rounded" />
                                         <div>
                                             <p className="font-medium text-gray-900">{product.title}</p>
                                             <p className="text-sm text-gray-500">{product.category?.name || 'Sans catégorie'}</p>

@@ -13,6 +13,7 @@ interface Product {
     discountPrice?: number | null;
     description?: string;
     images: string;
+    createdAt: Date | string;
     store: {
         name: string;
         city: string | null;
@@ -125,6 +126,22 @@ export default function ProductGrid({ products, title }: ProductGridProps) {
                                     </span>
                                 </div>
                             )}
+
+                            {/* NEW Badge - for products created in last 30 days */}
+                            {(() => {
+                                const thirtyDaysAgo = new Date();
+                                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                                const productDate = new Date(product.createdAt);
+                                const isNew = productDate > thirtyDaysAgo;
+
+                                return isNew && (
+                                    <div className={`absolute ${product.discountPrice && product.discountPrice < product.price ? 'top-12' : 'top-2'} left-2 z-10`}>
+                                        <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-2.5 py-1 rounded-md text-xs font-bold shadow-lg animate-pulse">
+                                            NEW
+                                        </span>
+                                    </div>
+                                );
+                            })()}
 
                             {/* Wishlist Button */}
                             <div className="absolute top-2 right-2 z-10">

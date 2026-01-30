@@ -18,10 +18,10 @@ const CATEGORY_ICONS: Record<string, string> = {
     'Femmes': '👗',
     'Hommes': '👔',
     'Enfants': '👶',
-    'Accessoires': '👜',
+    'Accessoires': '🎧',
     'High-Tech': '📱',
     'Maroquinerie': '👜',
-    'Sacs': '🎒',
+    'Sacs': '👜',
     'Chaussures': '👟',
 };
 

@@ -81,21 +81,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </Link>
                     <Link
                         href="/admin/products"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/products' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                            }`}
                     >
                         <span>📦</span>
                         <span>Produits</span>
                     </Link>
-                    <Link
-                        href="/admin/orders"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
-                    >
-                        <span>🛒</span>
-                        <span>Commandes</span>
-                    </Link>
+
+                    {/* Delivery Management */}
+                    <div className="pt-4 mt-4 border-t border-slate-700">
+                        <p className="text-xs text-gray-400 px-4 mb-2">LIVRAISONS</p>
+                        <Link
+                            href="/admin/delivery-agents"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname?.startsWith('/admin/delivery-agents') ? 'bg-slate-700' : 'hover:bg-slate-700'
+                                }`}
+                        >
+                            <span>🚚</span>
+                            <span>Prestataires</span>
+                        </Link>
+                        <Link
+                            href="/admin/deliveries"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/deliveries' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                                }`}
+                        >
+                            <span>📍</span>
+                            <span>Suivi Livraisons</span>
+                        </Link>
+                        <Link
+                            href="/admin/delivery-config"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/delivery-config' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                                }`}
+                        >
+                            <span>⚙️</span>
+                            <span>Config Livraisons</span>
+                        </Link>
+                    </div>
+
                     <Link
                         href="/admin/analytics"
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/analytics' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                            }`}
                     >
                         <span>📈</span>
                         <span>Analytics</span>

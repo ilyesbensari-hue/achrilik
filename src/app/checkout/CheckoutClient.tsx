@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 const StoreMap = dynamic(() => import('@/components/StoreMap'), { ssr: false });
 
@@ -33,6 +34,17 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         const t = storedCart.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
         setTotal(t);
 
+        // Pre-fill form with user data if available
+        if (initialUser) {
+            setFormData({
+                name: initialUser.name || '',
+                phone: initialUser.phone || '',
+                wilaya: initialUser.wilaya || '',
+                city: initialUser.city || '',
+                address: initialUser.address || ''
+            });
+        }
+
         // Fetch Stores if pickup
         fetch('/api/stores/locations')
             .then(res => res.json())
@@ -44,7 +56,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 setStores(data);
             })
             .catch(e => console.error(e));
-    }, []);
+    }, [initialUser]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -129,6 +141,36 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 {/* LEFT COLUMN: Options */}
                 <div className="space-y-8">
 
+                    {/* User Info Confirmation */}
+                    {initialUser && (
+                        <section className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl shadow-sm border-2 border-green-200">
+                            <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-gray-900">
+                                <span>✅</span> Vos informations
+                            </h2>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg">
+                                    <span className="text-gray-600">📧 Email:</span>
+                                    <span className="font-semibold text-gray-900">{initialUser.email}</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg">
+                                    <span className="text-gray-600">📱 Téléphone:</span>
+                                    <span className="font-semibold text-gray-900">{formData.phone || initialUser.phone}</span>
+                                </div>
+                                {formData.address && (
+                                    <div className="flex items-start gap-2 bg-white/60 p-3 rounded-lg">
+                                        <span className="text-gray-600">📍 Adresse:</span>
+                                        <span className="font-semibold text-gray-900 flex-1">
+                                            {formData.address}, {formData.city}, {formData.wilaya}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-600 mt-3 italic">
+                                Ces informations seront utilisées pour votre commande
+                            </p>
+                        </section>
+                    )}
+
                     {/* 1. Mode de Livraison */}
                     <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -194,25 +236,25 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Nom complet</label>
-                                        <input type="text" name="name" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Votre nom" required />
+                                        <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Votre nom" required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Téléphone</label>
-                                        <input type="tel" name="phone" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="05..." required />
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="05..." required />
                                     </div>
                                 </div>
                                 <div>
                                     <label className="text-sm font-bold text-gray-700 mb-1 block">Adresse</label>
-                                    <input type="text" name="address" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Cité 123 logts..." required />
+                                    <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Cité 123 logts..." required />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Wilaya</label>
-                                        <input type="text" name="wilaya" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Oran" required />
+                                        <input type="text" name="wilaya" value={formData.wilaya} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Oran" required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Commune</label>
-                                        <input type="text" name="city" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Es Senia" required />
+                                        <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Es Senia" required />
                                     </div>
                                 </div>
                             </div>
@@ -246,11 +288,11 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 </div>
                                 <div className="mt-4">
                                     <label className="text-sm font-bold text-gray-700 mb-1 block">Nom complet (pour le retrait)</label>
-                                    <input type="text" name="name" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Votre nom" required />
+                                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Votre nom" required />
                                 </div>
                                 <div className="mt-2">
                                     <label className="text-sm font-bold text-gray-700 mb-1 block">Téléphone</label>
-                                    <input type="tel" name="phone" onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="05..." required />
+                                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="05..." required />
                                 </div>
                             </div>
                         )}
@@ -303,7 +345,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                             {cart.map((item, idx) => (
                                 <div key={idx} className="flex gap-3">
                                     <div className="w-16 h-16 bg-white rounded-lg border border-gray-200 flex-shrink-0 overflow-hidden">
-                                        <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                        <Image src={item.image} alt="" width={64} height={64} className="object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-bold text-sm text-gray-900 truncate">{item.title}</p>

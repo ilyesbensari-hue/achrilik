@@ -15,6 +15,28 @@ function LoginForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedType, setSelectedType] = useState<'client' | 'seller' | 'delivery'>('client');
+
+    const loginTypes = [
+        {
+            id: 'client' as const,
+            icon: '🛍️',
+            title: 'Client',
+            description: 'Acheter des produits'
+        },
+        {
+            id: 'seller' as const,
+            icon: '🏪',
+            title: 'Vendeur',
+            description: 'Vendre vos produits'
+        },
+        {
+            id: 'delivery' as const,
+            icon: '🚚',
+            title: 'Livreur',
+            description: 'Livrer des commandes'
+        }
+    ];
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -29,18 +51,25 @@ function LoginForm() {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, loginType: selectedType }),
             });
 
             if (res.ok) {
                 // Success
-                const data = await res.json(); // Assuming data contains user info
+                const data = await res.json();
                 localStorage.setItem('user', JSON.stringify(data.user));
                 // Trigger storage event to update Navbar
                 window.dispatchEvent(new Event('storage'));
                 await refresh(); // Refresh user context
-                // Redirect to callback URL or home
-                router.push(callbackUrl);
+
+                // Redirect based on login type
+                if (selectedType === 'seller') {
+                    router.push('/sell');
+                } else if (selectedType === 'delivery') {
+                    router.push('/delivery/dashboard');
+                } else {
+                    router.push(callbackUrl);
+                }
                 router.refresh();
             } else {
                 const data = await res.json();
@@ -60,8 +89,34 @@ function LoginForm() {
                     Connexion
                 </h2>
                 <p className="text-sm text-gray-600">
-                    Connectez-vous pour accéder à votre compte
+                    Choisissez votre type de compte
                 </p>
+            </div>
+
+            {/* Login Type Selection */}
+            <div className="grid grid-cols-3 gap-3 mb-8">
+                {loginTypes.map((type) => (
+                    <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setSelectedType(type.id)}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${selectedType === type.id
+                            ? 'border-[#006233] bg-green-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                    >
+                        <span className="text-3xl">{type.icon}</span>
+                        <div className="text-center">
+                            <div className={`text-sm font-bold ${selectedType === type.id ? 'text-[#006233]' : 'text-gray-700'
+                                }`}>
+                                {type.title}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-0.5">
+                                {type.description}
+                            </div>
+                        </div>
+                    </button>
+                ))}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -140,7 +195,7 @@ function LoginForm() {
 export default function LoginPage() {
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 p-4">
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-2xl">
                 <Suspense fallback={<div className="text-center p-8">Chargement...</div>}>
                     <LoginForm />
                 </Suspense>

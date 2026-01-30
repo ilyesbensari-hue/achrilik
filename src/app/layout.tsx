@@ -4,8 +4,10 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import DeliveryBanner from "@/components/DeliveryBanner";
 import BottomNav from "@/components/BottomNav";
+import ToastContainer from "@/components/ToastContainer";
 import { PHProvider } from "@/providers/PosthogProvider";
 import { GoogleAnalytics } from '@next/third-parties/google';
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -82,6 +84,7 @@ export default function RootLayout({
               {children}
             </div>
             <BottomNav />
+            <ToastContainer />
           </Providers>
         </PHProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (

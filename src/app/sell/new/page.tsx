@@ -35,17 +35,18 @@ export default function AddProductPage() {
         fetch('/api/categories')
             .then(res => res.json())
             .then(data => {
-                // Flatten categories (parent + children)
-                const allCategories: any[] = [];
-                data.forEach((cat: any) => {
-                    allCategories.push(cat);
-                    if (cat.children) {
-                        cat.children.forEach((child: any) => {
-                            allCategories.push(child);
-                        });
-                    }
-                });
-                setCategories(allCategories);
+                // Recursively flatten ALL categories (including grandchildren)
+                const flattenCategories = (cats: any[]): any[] => {
+                    let result: any[] = [];
+                    cats.forEach((cat: any) => {
+                        result.push(cat);
+                        if (cat.children && cat.children.length > 0) {
+                            result = result.concat(flattenCategories(cat.children));
+                        }
+                    });
+                    return result;
+                };
+                setCategories(flattenCategories(data));
             });
 
         const userStr = localStorage.getItem('user');
@@ -101,6 +102,7 @@ export default function AddProductPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!storeId) return alert('Boutique introuvable');
+        if (!categoryId) return alert('Veuillez sélectionner une catégorie complète');
         if (variants.length === 0) return alert('Ajoutez au moins une variante');
         if (images.length === 0) return alert('Ajoutez au moins une image');
 

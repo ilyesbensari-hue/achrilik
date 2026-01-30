@@ -76,12 +76,33 @@ model Order {
   Store               Store?      @relation(fields: [storeId], references: [id])
   User                User        @relation(fields: [userId], references: [id])
   OrderItem           OrderItem[]
+  
+  // Suivi livraison manuel
+  trackingUrl         String?
+  deliveryStatus      DeliveryStatus @default(PENDING)
+  shippingWilaya      String?
+  
+  // COD
+  codAmount           Float?
+  codReceived         Boolean     @default(false)
+  codReceivedAt       DateTime?
+  codReceivedAmount   Float?
+  paymentReceipt      String?
+  
+  // Notes vendeur
+  sellerNotes         String?
+  lastUpdatedBy       String?
+  lastUpdatedAt       DateTime?
+  
+  // Relation avec système de livraison
+  delivery            Delivery?
 
   @@index([createdAt])
   @@index([isPaid])
   @@index([status])
   @@index([storeId])
   @@index([userId])
+  @@index([deliveryStatus])
 }
 
 model OrderItem {
@@ -157,24 +178,29 @@ model Review {
 }
 
 model Store {
-  id           String    @id
-  name         String
-  description  String?
-  ownerId      String    @unique
-  latitude     Float?
-  longitude    Float?
-  address      String?
-  city         String?
-  phone        String?
-  hours        String?
-  clickCollect Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  verified     Boolean   @default(false)
-  verifiedAt   DateTime?
-  verifiedBy   String?
-  Order        Order[]
-  Product      Product[]
-  User         User      @relation(fields: [ownerId], references: [id])
+  id                      String          @id
+  name                    String
+  description             String?
+  ownerId                 String          @unique
+  latitude                Float?
+  longitude               Float?
+  address                 String?
+  city                    String?
+  phone                   String?
+  hours                   String?
+  clickCollect            Boolean         @default(true)
+  createdAt               DateTime        @default(now())
+  verified                Boolean         @default(false)
+  verifiedAt              DateTime?
+  verifiedBy              String?
+  
+  // Prestataire par défaut
+  defaultDeliveryAgentId  String?
+  defaultDeliveryAgent    DeliveryAgent?  @relation(fields: [defaultDeliveryAgentId], references: [id])
+  
+  Order                   Order[]
+  Product                 Product[]
+  User                    User            @relation(fields: [ownerId], references: [id])
 }
 
 model SystemSettings {
@@ -194,8 +220,11 @@ model User {
   email              String               @unique
   password           String
   name               String?
-  role               String               @default("BUYER")
+  role               String               @default("BUYER") // Deprecated, use roles
+  roles              Role[]               @default([BUYER])
   address            String?
+  city               String?
+  wilaya             String?
   phone              String?
   createdAt          DateTime             @default(now())
   AdminLog           AdminLog[]
@@ -204,6 +233,7 @@ model User {
   Review             Review[]
   Store              Store?
   Wishlist           Wishlist[]
+  DeliveryAgent      DeliveryAgent?
 }
 
 model Variant {
@@ -238,4 +268,87 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ACCEPTED
+  READY_TO_SHIP
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum Role {
+  BUYER
+  SELLER
+  DELIVERY_AGENT
+  ADMIN
+}
+
+model DeliveryAgent {
+  id              String     @id
+  userId          String     @unique
+  user            User       @relation(fields: [userId], references: [id])
+  
+  // Informations livreur
+  provider        String     // "YALIDINE", "ECOLOG", "INDEPENDENT"
+  vehicleType     String?    // "MOTO", "VOITURE", "CAMIONNETTE"
+  licenseNumber   String?
+  wilayasCovered  String[]   // ["Oran", "Alger", ...]
+  
+  // Statut
+  isActive        Boolean    @default(true)
+  isVerified      Boolean    @default(false)
+  
+  // Statistiques
+  totalDeliveries Int        @default(0)
+  successRate     Float      @default(0)
+  
+  // Relations
+  deliveries      Delivery[]
+  stores          Store[]    // Magasins qui utilisent ce prestataire par défaut
+  
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  @@index([userId])
+  @@index([isActive])
+  @@index([provider])
+}
+
+model Delivery {
+  id                String           @id
+  orderId           String           @unique
+  order             Order            @relation(fields: [orderId], references: [id])
+  
+  // Assignation livreur
+  agentId           String?
+  agent             DeliveryAgent?   @relation(fields: [agentId], references: [id])
+  assignedAt        DateTime?
+  
+  // Statut et tracking
+  status            DeliveryStatus   @default(PENDING)
+  trackingNumber    String?
+  trackingUrl       String?
+  
+  // COD (Cash on Delivery)
+  codAmount         Float?
+  codCollected      Boolean          @default(false)
+  codCollectedAt    DateTime?
+  codTransferred    Boolean          @default(false)
+  codTransferredAt  DateTime?
+  
+  // Notes livreur
+  agentNotes        String?
+  
+  // Timestamps
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  @@index([orderId])
+  @@index([agentId])
+  @@index([status])
 }

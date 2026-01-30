@@ -443,14 +443,24 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                                     {/* Hover Actions */}
                                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                                         <Link
+                                            href={`/products/${product.id}`}
+                                            className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600"
+                                            target="_blank"
+                                            aria-label="Voir le produit"
+                                        >
+                                            👁️ Voir
+                                        </Link>
+                                        <Link
                                             href={`/sell/products/${product.id}/edit`}
                                             className="btn btn-sm bg-white text-black hover:bg-gray-100"
+                                            aria-label="Éditer le produit"
                                         >
                                             ✏️ Éditer
                                         </Link>
                                         <button
                                             onClick={() => handleDeleteProduct(product.id)}
                                             className="btn btn-sm bg-red-500 text-white hover:bg-red-600"
+                                            aria-label="Supprimer le produit"
                                         >
                                             🗑️ Supprimer
                                         </button>

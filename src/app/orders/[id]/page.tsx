@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import DeliveryTracking from '@/components/DeliveryTracking';
 
 interface Order {
     id: string;
@@ -139,6 +140,9 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                             ))}
                         </div>
                     </div>
+
+                    {/* Delivery Tracking */}
+                    <DeliveryTracking order={order} />
                 </div>
 
                 {/* Sidebar Info */}

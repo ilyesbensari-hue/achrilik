@@ -6,7 +6,7 @@ import { signToken } from '@/lib/auth-token';
 
 export async function POST(request: Request) {
     try {
-        const { email, password } = await request.json();
+        const { email, password, loginType } = await request.json();
 
         // 1. Find User
         const user = await prisma.user.findUnique({ where: { email } });
@@ -26,17 +26,31 @@ export async function POST(request: Request) {
             }
         }
 
-        // 3. Generate Token
+        // 3. Generate Token with roles (handle null/undefined roles safely)
+        const userRoles = user.roles || [user.role]; // Fallback to legacy role if roles is null
+
+        // Determine active role based on login type
+        let activeRole = userRoles[0]; // Default to first role (usually BUYER)
+
+        if (loginType === 'seller' && userRoles.includes('SELLER')) {
+            activeRole = 'SELLER';
+        } else if (loginType === 'delivery' && userRoles.includes('DELIVERY_AGENT')) {
+            activeRole = 'DELIVERY_AGENT';
+        }
+
         const token = await signToken({
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role
+            role: user.role, // Deprecated, for backward compatibility
+            roles: userRoles, // New multi-role support
+            activeRole: activeRole // Set active role based on selection
         });
 
         // 4. Set Cookie with explicit Domain for Edge Runtime compatibility
         const isProduction = process.env.NODE_ENV === 'production';
-        const domain = isProduction ? '.achrilik.com' : undefined; // Leading dot allows subdomains
+        // FIX: Do not force domain .achrilik.com if running locally (even in prod mode)
+        const domain = isProduction && !process.env.NEXT_PUBLIC_URL?.includes('localhost') ? '.achrilik.com' : undefined;
 
         const cookieHeader = [
             `auth_token=${token}`,
@@ -54,7 +68,9 @@ export async function POST(request: Request) {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role, // Deprecated
+                roles: userRoles, // New
+                activeRole: activeRole
             }
         });
 

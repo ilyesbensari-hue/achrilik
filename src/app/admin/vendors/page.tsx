@@ -22,16 +22,31 @@ interface Vendor {
     };
     productCount: number;
     orderCount: number;
+    defaultDeliveryAgent?: {
+        id: string;
+        name: string;
+        provider: string;
+    } | null;
+}
+
+interface DeliveryAgent {
+    id: string;
+    name: string;
+    provider: string;
+    wilayasCovered: string[];
+    isActive: boolean;
 }
 
 export default function VendorsPage() {
     const [vendors, setVendors] = useState<Vendor[]>([]);
+    const [deliveryAgents, setDeliveryAgents] = useState<DeliveryAgent[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'pending' | 'verified'>('all');
     const [search, setSearch] = useState('');
 
     useEffect(() => {
         fetchVendors();
+        fetchDeliveryAgents();
     }, [filter]);
 
     const fetchVendors = async () => {
@@ -44,6 +59,39 @@ export default function VendorsPage() {
             console.error('Error fetching vendors:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchDeliveryAgents = async () => {
+        try {
+            const res = await fetch('/api/admin/delivery-agents');
+            const data = await res.json();
+            if (data.agents) {
+                setDeliveryAgents(data.agents.filter((a: DeliveryAgent) => a.isActive));
+            }
+        } catch (error) {
+            console.error('Error fetching delivery agents:', error);
+        }
+    };
+
+    const handleAssignDefaultAgent = async (storeId: string, agentId: string | null) => {
+        try {
+            const res = await fetch(`/api/admin/stores/${storeId}/default-agent`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ deliveryAgentId: agentId })
+            });
+
+            if (res.ok) {
+                alert('✅ Prestataire par défaut mis à jour');
+                fetchVendors();
+            } else {
+                const data = await res.json();
+                alert(`Erreur: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error assigning default agent:', error);
+            alert('Erreur technique');
         }
     };
 
@@ -115,8 +163,8 @@ export default function VendorsPage() {
                         <button
                             onClick={() => setFilter('all')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'all'
-                                    ? 'bg-indigo-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Tous ({vendors.length})
@@ -124,8 +172,8 @@ export default function VendorsPage() {
                         <button
                             onClick={() => setFilter('pending')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'pending'
-                                    ? 'bg-yellow-600 text-white shadow-md'
-                                    : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+                                ? 'bg-yellow-600 text-white shadow-md'
+                                : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
                                 }`}
                         >
                             En attente ({pendingCount})
@@ -133,8 +181,8 @@ export default function VendorsPage() {
                         <button
                             onClick={() => setFilter('verified')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'verified'
-                                    ? 'bg-green-600 text-white shadow-md'
-                                    : 'bg-green-50 text-green-700 hover:bg-green-100'
+                                ? 'bg-green-600 text-white shadow-md'
+                                : 'bg-green-50 text-green-700 hover:bg-green-100'
                                 }`}
                         >
                             Certifiés ({verifiedCount})
@@ -160,6 +208,7 @@ export default function VendorsPage() {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Propriétaire</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Localisation</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Activité</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prestataire</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                 </tr>
@@ -246,8 +295,8 @@ export default function VendorsPage() {
                                             <button
                                                 onClick={() => handleVerify(vendor.id, vendor.verified)}
                                                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${vendor.verified
-                                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                                                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
                                                     }`}
                                             >
                                                 {vendor.verified ? '✓ Retirer' : '✓ Certifier'}

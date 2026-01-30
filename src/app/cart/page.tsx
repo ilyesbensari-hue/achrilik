@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 
 const MapPicker = dynamic(() => import('@/components/Map'), { ssr: false });
 
@@ -89,7 +90,28 @@ export default function CartPage() {
         setCart(newCart);
         localStorage.setItem('cart', JSON.stringify(newCart));
         window.dispatchEvent(new Event('storage'));
-        setTotal(newCart.reduce((sum, item) => sum + (item.price * item.quantity), 0));
+        setTotal(newCart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0));
+    };
+
+    const updateQuantity = (index: number, newQuantity: number) => {
+        if (newQuantity < 1) return;
+
+        const item = cart[index];
+        // Vérifier le stock disponible
+        if (newQuantity > item.stock) {
+            alert(`Stock maximum disponible: ${item.stock}`);
+            return;
+        }
+
+        // Mettre à jour le panier
+        const newCart = [...cart];
+        newCart[index] = { ...newCart[index], quantity: newQuantity };
+        setCart(newCart);
+        localStorage.setItem('cart', JSON.stringify(newCart));
+        window.dispatchEvent(new Event('storage'));
+
+        // Recalculer le total
+        setTotal(newCart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0));
     };
 
     if (isLoading) {
@@ -138,7 +160,7 @@ export default function CartPage() {
 
                             return (
                                 <div key={i} className="card flex gap-4 items-start p-4 relative overflow-hidden">
-                                    <img src={item.image} alt={item.title} className="w-24 h-24 object-cover rounded bg-gray-100" />
+                                    <Image src={item.image} alt={item.title} width={96} height={96} className="object-cover rounded bg-gray-100" />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-2 mb-1">
                                             <h3 className="font-bold text-gray-900 truncate pr-4">{item.title}</h3>
@@ -149,11 +171,42 @@ export default function CartPage() {
                                             )}
                                         </div>
                                         <p className="text-sm text-gray-500 mb-2">Taille: {item.size} | Couleur: {item.color}</p>
-                                        <div className="flex items-center justify-between mt-2">
-                                            <p className="text-[#006233] font-bold text-lg">{item.price.toLocaleString()} DA</p>
-                                            <button onClick={() => removeItem(i)} className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors">
-                                                Supprimer
-                                            </button>
+                                        <div className="flex items-center justify-between mt-2 gap-3">
+                                            {/* Quantity controls */}
+                                            <div className="flex items-center border border-gray-300 rounded-lg">
+                                                <button
+                                                    onClick={() => updateQuantity(i, (item.quantity || 1) - 1)}
+                                                    className="min-w-[44px] min-h-[44px] px-3 py-2 hover:bg-gray-100 transition-colors flex items-center justify-center"
+                                                    disabled={(item.quantity || 1) <= 1}
+                                                    aria-label="Diminuer la quantité"
+                                                >
+                                                    −
+                                                </button>
+                                                <span className="px-4 py-2 font-medium min-w-[40px] text-center">
+                                                    {item.quantity || 1}
+                                                </span>
+                                                <button
+                                                    onClick={() => updateQuantity(i, (item.quantity || 1) + 1)}
+                                                    className="min-w-[44px] min-h-[44px] px-3 py-2 hover:bg-gray-100 transition-colors flex items-center justify-center"
+                                                    aria-label="Augmenter la quantité"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+
+                                            {/* Price */}
+                                            <div className="flex flex-col items-end">
+                                                <p className="text-[#006233] font-bold text-lg">
+                                                    {(item.price * (item.quantity || 1)).toLocaleString()} DA
+                                                </p>
+                                                <button
+                                                    onClick={() => removeItem(i)}
+                                                    className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors mt-1"
+                                                    aria-label="Supprimer l'article"
+                                                >
+                                                    Supprimer
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

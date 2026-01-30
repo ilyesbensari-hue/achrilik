@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import WishlistButton from '@/components/WishlistButton';
 
 export default function WishlistPage() {
@@ -151,10 +152,12 @@ export default function WishlistPage() {
                                         <Link href={`/products/${product.id}`} className="block">
                                             {/* Image */}
                                             <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
-                                                <img
+                                                <Image
                                                     src={images[0]}
                                                     alt={product.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    width={400}
+                                                    height={500}
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
 
                                                 {/* Wishlist Button */}

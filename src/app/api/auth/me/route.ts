@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/auth-token';
 
 export async function GET(request: NextRequest) {
@@ -17,10 +16,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
         user: {
-            id: payload.id,
-            email: payload.email,
-            name: payload.name,
-            role: payload.role
+            id: payload.id as string,
+            email: payload.email as string,
+            name: payload.name as string,
+            role: payload.role as string,
+            roles: payload.roles as string[],
+            activeRole: payload.activeRole as string
         }
     });
 }
