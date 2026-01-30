@@ -37,8 +37,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
     useEffect(() => {
         Promise.all([
-            fetch('/api/products').then(res => res.json()),
-            fetch('/api/categories').then(res => res.json()),
+            fetch('/api/products', { cache: 'no-store' }).then(res => res.json()),
+            fetch('/api/categories', { cache: 'no-store' }).then(res => res.json()),
         ])
             .then(([productsData, categoriesData]) => {
                 setAllCategories(categoriesData);
