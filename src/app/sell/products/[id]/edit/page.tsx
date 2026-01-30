@@ -38,7 +38,20 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         try {
             const res = await fetch('/api/categories');
             const data = await res.json();
-            setCategories(data);
+
+            // Recursively flatten ALL categories
+            const flattenCategories = (cats: any[]): any[] => {
+                let result: any[] = [];
+                cats.forEach((cat: any) => {
+                    result.push(cat);
+                    if (cat.children && cat.children.length > 0) {
+                        result = result.concat(flattenCategories(cat.children));
+                    }
+                });
+                return result;
+            };
+
+            setCategories(flattenCategories(data));
         } catch (error) {
             console.error('Failed to fetch categories:', error);
         }
