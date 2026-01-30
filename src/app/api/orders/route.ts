@@ -9,6 +9,11 @@ import { randomBytes } from 'crypto';
 export async function GET(request: NextRequest) {
     try {
         const token = request.cookies.get('auth_token')?.value;
+
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const user = await verifyToken(token);
 
         if (!user) {
@@ -96,6 +101,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const token = request.cookies.get('auth_token')?.value;
+
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const user = await verifyToken(token);
 
         if (!user) {

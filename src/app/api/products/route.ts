@@ -89,14 +89,20 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const token = request.cookies.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const user = await verifyToken(token);
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Strict Role Check
-    const isSeller = user.roles?.includes('SELLER') || user.role === 'SELLER';
+    // Strict Role Check - Safe includes
+    const userRoles = user.roles || [];
+    const isSeller = (Array.isArray(userRoles) && userRoles.includes('SELLER')) || user.role === 'SELLER';
     if (!isSeller) {
       return NextResponse.json({ error: 'Must be a SELLER to create products' }, { status: 403 });
     }

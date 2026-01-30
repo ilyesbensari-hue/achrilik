@@ -6,6 +6,11 @@ import { verifyToken } from '@/lib/auth-token';
 export async function GET(request: NextRequest) {
     try {
         const token = request.cookies.get('auth_token')?.value;
+
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const user = await verifyToken(token);
 
         if (!user || user.role !== 'ADMIN') {
