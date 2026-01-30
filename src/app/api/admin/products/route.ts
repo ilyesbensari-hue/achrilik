@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // GET /api/admin/products - Fetch products with filters
 export async function GET(request: NextRequest) {
     try {
+        await requireAdminApi();
         const searchParams = request.nextUrl.searchParams;
         const status = searchParams.get('status');
         const search = searchParams.get('search');

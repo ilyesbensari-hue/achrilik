@@ -1,10 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withCache } from '@/lib/cache';
+import { verifyToken } from '@/lib/auth-token';
 
 // GET /api/admin/stats - Statistiques globales et avancées (OPTIMIZED + CACHED)
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
+        const token = request.cookies.get('auth_token')?.value;
+        const user = await verifyToken(token);
+
+        if (!user || user.role !== 'ADMIN') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         // Use cache wrapper with 5 minute TTL
         const stats = await withCache('admin-stats', async () => {
             // Compter les utilisateurs par rôle - EN PARALLÈLE

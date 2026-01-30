@@ -1,9 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyToken } from '@/lib/auth-token';
 
 // GET /api/admin/users - Liste tous les utilisateurs
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
     try {
+        const token = request.cookies.get('auth_token')?.value;
+        const user = await verifyToken(token);
+
+        if (!user || user.role !== 'ADMIN') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '50');

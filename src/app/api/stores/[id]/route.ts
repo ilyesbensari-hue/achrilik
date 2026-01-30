@@ -8,7 +8,6 @@ export async function GET(
 ) {
     try {
         const id = (await params).id;
-        console.log('Fetching store with ID:', id);
 
         const store = await prisma.store.findUnique({
             where: { id },

@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { userId, cart, deliveryMethod, paymentMethod, address, phone, name, wilaya, city } = body;
 
-        console.log(`[ORDER] Creating order for user ${userId}, items: ${cart?.length}`);
+
 
         if (!userId || !cart || cart.length === 0) {
             return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
             return newOrder;
         });
 
-        console.log(`[ORDER] Order created successfully: ${order.id}`);
+
 
         // ==========================================
         //         EMAIL NOTIFICATIONS (Sync-ish)
@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
 
             // 1. Send Email to Buyer
             if (order.User && order.User.email) {
-                console.log(`[EMAIL] Sending confirmation to buyer: ${order.User.email}`);
+
                 emailPromises.push(
                     sendOrderConfirmation(order.User.email, order)
                         .catch(e => console.error('[EMAIL ERROR] Buyer confirmation failed:', e))
@@ -222,7 +222,7 @@ export async function POST(request: NextRequest) {
 
                 for (const store of stores) {
                     if (store.User && store.User.email) {
-                        console.log(`[EMAIL] Sending notification to seller: ${store.User.email}`);
+
                         emailPromises.push(
                             sendNewOrderNotification(store.User.email, order)
                                 .catch(e => console.error(`[EMAIL ERROR] Seller notification failed for ${store.id}:`, e))
@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
                 new Promise(resolve => setTimeout(resolve, 5000))
             ]);
 
-            console.log(`[ORDER] Email notifications processed`);
+
 
         } catch (emailErr) {
             console.error('[ORDER] Critical error in email dispatch:', emailErr);

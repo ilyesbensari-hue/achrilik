@@ -5,6 +5,7 @@ import { requireAdminApi } from '@/lib/server-auth';
 // GET /api/admin/categories
 export async function GET(request: NextRequest) {
     try {
+        await requireAdminApi();
         const categories = await prisma.category.findMany({
             include: {
                 _count: {

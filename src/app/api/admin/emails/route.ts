@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // GET /api/admin/emails - Get all email templates
 export async function GET() {
     try {
+        await requireAdminApi();
         const templates = await prisma.emailTemplate.findMany({
             orderBy: { name: 'asc' }
         });
@@ -20,6 +22,7 @@ export async function GET() {
 // PUT /api/admin/emails - Update an email template
 export async function PUT(request: NextRequest) {
     try {
+        await requireAdminApi();
         const { name, subject, htmlContent, enabled } = await request.json();
 
         if (!name) {
