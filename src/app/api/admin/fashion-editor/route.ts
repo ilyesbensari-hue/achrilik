@@ -32,7 +32,8 @@ export async function GET(request: Request) {
                 image: p.images.split(',')[0],
                 categoryId: p.categoryId,
                 categoryName: p.Category?.name || 'Non classé',
-                slug: p.Category?.slug
+                slug: p.Category?.slug,
+                status: p.status
             })),
             categories: categories.map(c => ({
                 id: c.id,
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
-        const { updates } = body; // Array of { id, categoryId }
+        const { updates } = body; // Array of { id, categoryId, status }
 
         if (!Array.isArray(updates)) {
             return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
@@ -58,9 +59,13 @@ export async function PUT(request: Request) {
 
         const results = [];
         for (const update of updates) {
+            const data: any = {};
+            if (update.categoryId !== undefined) data.categoryId = update.categoryId;
+            if (update.status !== undefined) data.status = update.status;
+
             const res = await prisma.product.update({
                 where: { id: update.id },
-                data: { categoryId: update.categoryId }
+                data
             });
             results.push(res.id);
         }

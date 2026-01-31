@@ -45,8 +45,8 @@ export default function FashionEditorPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    // Local state: { productId: newCategoryId }
-    const [edits, setEdits] = useState<Record<string, string>>({});
+    // Local state: { productId: { categoryId?: string, status?: string } }
+    const [edits, setEdits] = useState<Record<string, { categoryId?: string, status?: string }>>({});
 
     useEffect(() => {
         fetchData();
@@ -75,12 +75,25 @@ export default function FashionEditorPage() {
     }, [sortedCategories]);
 
     const handleCategoryChange = (productId: string, newCatId: string) => {
-        setEdits(prev => ({ ...prev, [productId]: newCatId }));
+        setEdits(prev => ({
+            ...prev,
+            [productId]: { ...prev[productId], categoryId: newCatId }
+        }));
+    };
+
+    const handleStatusChange = (productId: string, newStatus: string) => {
+        setEdits(prev => ({
+            ...prev,
+            [productId]: { ...prev[productId], status: newStatus }
+        }));
     };
 
     const saveChanges = async () => {
         setSaving(true);
-        const updates = Object.entries(edits).map(([id, categoryId]) => ({ id, categoryId }));
+        const updates = Object.entries(edits).map(([id, changes]) => ({
+            id,
+            ...changes
+        }));
 
         try {
             const res = await fetch('/api/admin/fashion-editor', {
@@ -125,11 +138,12 @@ export default function FashionEditorPage() {
                                 <th className="p-4">Image</th>
                                 <th className="p-4">Produit</th>
                                 <th className="p-4 w-1/3">Sélectionner la Catégorie (Hiérarchie)</th>
+                                <th className="p-4">Statut</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
                             {products.map(p => {
-                                const currentCatId = edits[p.id] !== undefined ? edits[p.id] : p.categoryId;
+                                const currentCatId = edits[p.id]?.categoryId !== undefined ? edits[p.id]!.categoryId : p.categoryId;
                                 const originalCat = catMap.get(p.categoryId);
                                 const currentSelection = catMap.get(currentCatId);
 
@@ -171,6 +185,21 @@ export default function FashionEditorPage() {
                                                     Nouveau: {currentSelection.fullPath}
                                                 </div>
                                             )}
+                                        </td>
+                                        <td className="p-4">
+                                            <select
+                                                className={`border rounded p-2 text-sm font-bold ${(edits[p.id]?.status || p.status) === 'APPROVED'
+                                                        ? 'text-green-700 bg-green-50'
+                                                        : 'text-red-700 bg-red-50'
+                                                    }`}
+                                                value={edits[p.id]?.status || p.status || 'PENDING'}
+                                                onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                                            >
+                                                <option value="APPROVED">En Ligne</option>
+                                                <option value="PENDING">En Attente</option>
+                                                <option value="REJECTED">Rejeté</option>
+                                                <option value="ARCHIVED">Archivé</option>
+                                            </select>
                                         </td>
                                     </tr>
                                 );
