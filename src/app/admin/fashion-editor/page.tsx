@@ -1,7 +1,43 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+
+// Helper to build hierarchy
+const buildHierarchy = (flatCategories: any[]) => {
+    const map = new Map();
+    flatCategories.forEach(c => map.set(c.id, { ...c, children: [] }));
+    const roots: any[] = [];
+
+    flatCategories.forEach(c => {
+        if (c.parentId && map.has(c.parentId)) {
+            map.get(c.parentId).children.push(map.get(c.id));
+        } else {
+            roots.push(map.get(c.id));
+        }
+    });
+
+    // Flatten for dropdown
+    const options: any[] = [];
+    const traverse = (nodes: any[], level = 0, path = '') => {
+        nodes.sort((a, b) => a.name.localeCompare(b.name));
+        for (const node of nodes) {
+            const currentPath = path ? `${path} > ${node.name}` : node.name;
+            options.push({
+                id: node.id,
+                name: node.name,
+                slug: node.slug,
+                level,
+                fullPath: currentPath
+            });
+            if (node.children.length > 0) {
+                traverse(node.children, level + 1, currentPath);
+            }
+        }
+    };
+    traverse(roots);
+    return options;
+};
 
 export default function FashionEditorPage() {
     const [products, setProducts] = useState<any[]>([]);
@@ -9,7 +45,7 @@ export default function FashionEditorPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    // Local state for edits: { productId: newCategoryId }
+    // Local state: { productId: newCategoryId }
     const [edits, setEdits] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -29,6 +65,15 @@ export default function FashionEditorPage() {
         }
     };
 
+    // Memoize sorted options
+    const sortedCategories = useMemo(() => buildHierarchy(categories), [categories]);
+    // Create map for quick lookup of full names
+    const catMap = useMemo(() => {
+        const m = new Map();
+        sortedCategories.forEach(c => m.set(c.id, c));
+        return m;
+    }, [sortedCategories]);
+
     const handleCategoryChange = (productId: string, newCatId: string) => {
         setEdits(prev => ({ ...prev, [productId]: newCatId }));
     };
@@ -46,7 +91,7 @@ export default function FashionEditorPage() {
             if (res.ok) {
                 alert('Sauvegardé avec succès !');
                 setEdits({});
-                fetchData(); // Refresh
+                fetchData();
             } else {
                 alert('Erreur sauvegarde');
             }
@@ -78,37 +123,54 @@ export default function FashionEditorPage() {
                         <thead className="bg-gray-100 border-b">
                             <tr>
                                 <th className="p-4">Image</th>
-                                <th className="p-4">Titre Produit</th>
-                                <th className="p-4">Catégorie Actuelle</th>
-                                <th className="p-4">Changer la Catégorie</th>
+                                <th className="p-4">Produit</th>
+                                <th className="p-4 w-1/3">Sélectionner la Catégorie (Hiérarchie)</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">
                             {products.map(p => {
-                                const currentCatId = edits[p.id] || p.categoryId;
+                                const currentCatId = edits[p.id] !== undefined ? edits[p.id] : p.categoryId;
+                                const originalCat = catMap.get(p.categoryId);
+                                const currentSelection = catMap.get(currentCatId);
+
                                 return (
                                     <tr key={p.id} className={edits[p.id] ? 'bg-yellow-50' : 'hover:bg-gray-50'}>
-                                        <td className="p-4">
-                                            {p.image && <img src={p.image} className="w-12 h-12 object-cover rounded" />}
+                                        <td className="p-4 w-16">
+                                            {p.image ? (
+                                                <img src={p.image} className="w-12 h-12 object-cover rounded" />
+                                            ) : (
+                                                <div className="w-12 h-12 bg-gray-200 rounded" />
+                                            )}
                                         </td>
-                                        <td className="p-4 font-medium">{p.title}</td>
-                                        <td className="p-4 text-gray-500">
-                                            {p.categoryName} <br />
-                                            <span className="text-xs text-gray-400">({p.slug})</span>
+                                        <td className="p-4">
+                                            <div className="font-semibold">{p.title}</div>
+                                            <div className="text-sm text-gray-500 mt-1">
+                                                Actuel: {originalCat ? (
+                                                    <span className="bg-gray-200 px-2 py-0.5 rounded text-gray-700">
+                                                        {originalCat.fullPath}
+                                                    </span>
+                                                ) : <span className="text-red-500">Non classé</span>}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <select
-                                                className="border rounded p-2 w-full max-w-xs"
+                                                className="border border-gray-300 rounded p-2 w-full text-sm font-medium"
                                                 value={currentCatId || ''}
                                                 onChange={(e) => handleCategoryChange(p.id, e.target.value)}
+                                                style={{ minWidth: '300px' }}
                                             >
-                                                <option value="">-- Sans Catégorie --</option>
-                                                {categories.map(c => (
+                                                <option value="">-- Sélectionner une catégorie --</option>
+                                                {sortedCategories.map(c => (
                                                     <option key={c.id} value={c.id}>
-                                                        {c.name} ({c.slug})
+                                                        {'\u00A0'.repeat(c.level * 4)} {c.level > 0 ? '↳ ' : ''}{c.name}
                                                     </option>
                                                 ))}
                                             </select>
+                                            {currentSelection && currentSelection.id !== originalCat?.id && (
+                                                <div className="text-xs text-green-600 mt-1">
+                                                    Nouveau: {currentSelection.fullPath}
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 );
