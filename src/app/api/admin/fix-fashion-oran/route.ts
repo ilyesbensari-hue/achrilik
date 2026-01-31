@@ -16,7 +16,8 @@ export async function GET() {
             return NextResponse.json({ error: 'Store Fashion Oran not found' });
         }
 
-        const products = await prisma.product.findMany({
+        // Cast to any to avoid TS build errors with relations
+        const products: any[] = await prisma.product.findMany({
             where: { storeId: store.id },
             include: { Category: true }
         });
@@ -24,8 +25,6 @@ export async function GET() {
         const categories = await prisma.category.findMany();
         const getCatId = (slug: string) => categories.find(c => c.slug === slug)?.id;
 
-        // Mapping based on common keywords
-        // Keywords are case-insensitive
         const mappings = [
             { keyword: 'Pull', slugs: ['pulls-hommes', 'pulls', 'pull'] },
             { keyword: 'Sweat', slugs: ['sweatshirts-hommes', 'sweatshirts', 'sweats'] },
@@ -44,8 +43,8 @@ export async function GET() {
             { keyword: 'Casquette', slugs: ['accessoires-hommes', 'accessoires', 'casquettes'] },
         ];
 
-        const updates = [];
-        const unmatched = [];
+        const updates: any[] = [];
+        const unmatched: any[] = [];
         const allSlugs = categories.map(c => c.slug);
 
         for (const p of products) {
@@ -69,7 +68,7 @@ export async function GET() {
                 }
             }
 
-            // Fallback: If title matched a keyword but no specific slug found, try generic 'hommes'
+            // Fallback
             if (matchedKw && !newCatId) {
                 const rootId = getCatId('hommes');
                 if (rootId) {
@@ -85,7 +84,6 @@ export async function GET() {
                 });
                 updates.push({ title: p.title, old: p.Category?.slug, new: reason });
             } else if (!p.Category || (matchedKw && !p.Category)) {
-                // Track unmatched only if they don't have a category or if we missed categorizing them despite a keyword
                 unmatched.push({
                     title: p.title,
                     currentSlug: p.Category?.slug || 'null',
@@ -102,7 +100,7 @@ export async function GET() {
             updates,
             debug: {
                 availableSlugs: allSlugs.sort(),
-                unmatchedSamples: unmatched.slice(0, 50) // Show up to 50 failures
+                unmatchedSamples: unmatched.slice(0, 50)
             }
         });
 
