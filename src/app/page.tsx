@@ -4,6 +4,7 @@ import CategorySidebar from '@/components/CategorySidebar';
 import SellerRating from '@/components/SellerRating';
 import ProductGrid from '@/components/ProductGrid';
 import HomeProductsClient from '@/components/HomeProductsClient';
+import HeroBanner from '@/components/HeroBanner';
 import { prisma } from '@/lib/prisma';
 
 // Enable ISR with 60 second revalidation
@@ -137,83 +138,36 @@ export default async function Home(props: { searchParams: Promise<{ search?: str
   return (
     <div className="min-h-screen">
       {/* Hero Banner - Enhanced & Attractive */}
-      <section className="bg-gradient-to-b from-white to-gray-50 pb-12">
-        <div className="container mx-auto px-4 pt-8">
-          {/* Logo Central (Desktop only now, since Mobile has it in header) */}
-          <div className="flex flex-col items-center justify-center mb-8 hidden lg:flex">
-            <Image
-              src="/achrilik-logo.png"
-              alt="Achrilik Logo"
-              width={160}
-              height={66}
-              className="w-40 h-auto object-contain"
-              priority
-            />
-            <p className="text-2xl font-bold text-[#006233] mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>
-              اشرليك
-            </p>
-          </div>
+      {/* Hero Banner - Compact & Dynamic */}
+      <HeroBanner />
 
-          {/* "Stories" Style Categories - Dynamic from DB */}
-          <div className="flex gap-4 overflow-x-auto pb-6 pt-2 snap-x hide-scrollbar justify-start lg:justify-center mb-8">
-            {[
-              { name: 'Top Nouveautés', img: '🔥', bg: 'bg-red-100', link: '/search?q=nouveau' },
-              { name: 'Femmes', img: '👗', bg: 'bg-pink-100', link: '/categories/femme' },
-              { name: 'Hommes', img: '👔', bg: 'bg-blue-100', link: '/categories/homme' },
-              { name: 'Enfants', img: '👶', bg: 'bg-yellow-100', link: '/categories/enfant' },
-              { name: 'Accessoires', img: '🎧', bg: 'bg-purple-100', link: '/categories/accessoires' },
-              { name: 'High-Tech', img: '📱', bg: 'bg-gray-100', link: '/categories/electronique' },
-              { name: 'Promos', img: '🏷️', bg: 'bg-green-100', link: '/search?q=promo' },
-            ].map((item, i) => (
-              <Link
-                key={i}
-                href={item.link}
-                className="flex flex-col items-center gap-2 min-w-[72px] snap-start group"
-              >
-                <div className={`w-[70px] h-[70px] rounded-full p-[3px] bg-gradient-to-tr from-[#006233] to-yellow-400 group-hover:scale-105 transition-transform`}>
-                  <div className={`w-full h-full rounded-full ${item.bg} flex items-center justify-center border-2 border-white text-2xl shadow-sm`}>
-                    {item.img}
-                  </div>
-                </div>
-                <span className="text-xs font-semibold text-gray-700">{item.name}</span>
-              </Link>
-            ))}
-          </div>
-
-          {/* Visual Hero Card */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-[#006233] text-white min-h-[300px] flex items-center">
-
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
-              </svg>
-            </div>
-
-            <div className="relative z-10 w-full grid md:grid-cols-2 items-center gap-8 p-8 md:p-12">
-              <div className="text-center md:text-left space-y-4">
-                <span className="inline-block px-3 py-1 bg-yellow-400 text-[#006233] text-xs font-bold rounded-full uppercase tracking-wider mb-2 animate-bounce">
-                  Nouveau sur Achrilik
-                </span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
-                  La Mode <br />
-                  <span className="text-yellow-300">À Portée de Main</span>
-                </h1>
-                <p className="text-white/90 text-lg font-medium max-w-md mx-auto md:mx-0">
-                  Découvrez les meilleures boutiques d'Oran. Livraison rapide et paiement à la livraison.
-                </p>
-
-              </div>
-              {/* Decorative Image/Element */}
-              <div className="hidden md:flex justify-center items-center">
-                <div className="relative w-64 h-64 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border-4 border-white/20 animate-pulse-slow">
-                  <span className="text-9xl filter drop-shadow-xl">🛍️</span>
+      {/* Categories "Stories" - Compact */}
+      <div className="container mx-auto px-4 mt-6">
+        <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar justify-start lg:justify-center">
+          {[
+            { name: 'Top Nouveautés', img: '🔥', bg: 'bg-red-100', link: '/search?q=nouveau' },
+            { name: 'Femmes', img: '👗', bg: 'bg-pink-100', link: '/categories/femme' },
+            { name: 'Hommes', img: '👔', bg: 'bg-blue-100', link: '/categories/homme' },
+            { name: 'Enfants', img: '👶', bg: 'bg-yellow-100', link: '/categories/enfant' },
+            { name: 'Accessoires', img: '🎧', bg: 'bg-purple-100', link: '/categories/accessoires' },
+            { name: 'High-Tech', img: '📱', bg: 'bg-gray-100', link: '/categories/electronique' },
+            { name: 'Promos', img: '🏷️', bg: 'bg-green-100', link: '/search?q=promo' },
+          ].map((item, i) => (
+            <Link
+              key={i}
+              href={item.link}
+              className="flex flex-col items-center gap-2 min-w-[72px] snap-start group"
+            >
+              <div className={`w-[60px] h-[60px] rounded-full p-[2px] bg-gradient-to-tr from-[#006233] to-yellow-400 group-hover:scale-105 transition-transform`}>
+                <div className={`w-full h-full rounded-full ${item.bg} flex items-center justify-center border-2 border-white text-xl shadow-sm`}>
+                  {item.img}
                 </div>
               </div>
-            </div>
-          </div>
+              <span className="text-[10px] sm:text-xs font-semibold text-gray-700">{item.name}</span>
+            </Link>
+          ))}
         </div>
-      </section>
+      </div>
 
 
 

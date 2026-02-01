@@ -121,7 +121,7 @@ export default function BottomNav() {
             {/* Logo Footer */}
             <div className="flex justify-center pb-1 pt-1">
                 <Image
-                    src="/achrilik-logo.png"
+                    src="/achrilik-logo-final.png"
                     alt="Achrilik"
                     width={80}
                     height={20}

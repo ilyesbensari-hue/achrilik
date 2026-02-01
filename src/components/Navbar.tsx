@@ -68,7 +68,7 @@ export default function Navbar() {
                     {/* Logo - Right */}
                     <Link href="/" className="flex-shrink-0">
                         <Image
-                            src="/achrilik-logo.png"
+                            src="/achrilik-logo-final.png"
                             alt="Achrilik Logo"
                             width={120}
                             height={40}

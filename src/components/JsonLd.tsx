@@ -25,7 +25,7 @@ export function generateOrganizationSchema(baseUrl: string) {
         "@type": "Organization",
         name: "Achrilik",
         url: baseUrl,
-        logo: `${baseUrl}/logo.png`,
+        logo: `${baseUrl}/achrilik-logo-v2.png`,
         description: "Marketplace mode et tendance en Algérie",
         address: {
             "@type": "PostalAddress",

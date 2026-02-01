@@ -79,7 +79,6 @@ export default function RootLayout({
         <PHProvider>
           <Providers>
             <Navbar />
-            <DeliveryBanner />
             <div className="pb-[120px] md:pb-0">
               {children}
             </div>
