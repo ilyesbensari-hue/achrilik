@@ -18,22 +18,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const [sortBy, setSortBy] = useState('');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
     const [selectedWilaya, setSelectedWilaya] = useState<string>('');
-    const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [showFilterPanel, setShowFilterPanel] = useState(false);
+    const [expandedSection, setExpandedSection] = useState<string | null>('categories');
     const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
-    const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
     const [filtersInitialized, setFiltersInitialized] = useState(false);
-
-    // Prevent body scroll when mobile filters are open
-    useEffect(() => {
-        if (showMobileFilters) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [showMobileFilters]);
 
     useEffect(() => {
         Promise.all([
@@ -245,455 +233,310 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header - Clean and Simple */}
+            {/* Header with Filter Button */}
             <div className="bg-white border-b border-gray-200 py-6">
                 <div className="container">
                     <Breadcrumbs items={getBreadcrumbs()} />
 
-                    <div className="mt-4">
-                        <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
-                        <p className="text-sm text-gray-500 mt-1">
-                            {filteredProducts.length} {filteredProducts.length > 1 ? 'produits' : 'produit'}
-                        </p>
-                    </div>
-                </div>
-            </div>
+                    <div className="mt-4 flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
+                            <p className="text-sm text-gray-500 mt-1">
+                                {filteredProducts.length} {filteredProducts.length > 1 ? 'produits' : 'produit'}
+                            </p>
+                        </div>
 
-            <div className="container py-8">
-                {/* If category has children, show tab filter system */}
-                {category.children && category.children.length > 0 ? (
-                    <div className="space-y-6">
-                        {/* Subcategory Tabs Filter */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-bold text-gray-900">Filtrer par sous-catégorie</h2>
-                                {selectedSubcategories.length > 0 && (
-                                    <button
-                                        onClick={() => setSelectedSubcategories([])}
-                                        className="text-sm text-gray-600 hover:text-[#006233] underline"
-                                    >
-                                        Tout afficher
-                                    </button>
+                        {/* Filter Button */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-[#006233] text-white rounded-lg hover:bg-[#004d28] transition-all shadow-md hover:shadow-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                </svg>
+                                <span className="font-semibold">Filtrer</span>
+                                {(selectedSubcategories.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 50000 || selectedWilaya) && (
+                                    <span className="ml-1 px-2 py-0.5 bg-white text-[#006233] rounded-full text-xs font-bold">
+                                        {selectedSubcategories.length + (priceRange[0] !== 0 || priceRange[1] !== 50000 ? 1 : 0) + (selectedWilaya ? 1 : 0)}
+                                    </span>
                                 )}
-                            </div>
+                            </button>
 
-                            {/* Grid layout for subcategories - visible all at once */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                                {category.children.map((child: any) => {
-                                    // Get all descendant IDs for this subcategory (recursive)
-                                    const getAllDescendantIds = (cat: any): string[] => {
-                                        let ids = [cat.id];
-                                        if (cat.children && cat.children.length > 0) {
-                                            cat.children.forEach((c: any) => {
-                                                ids = ids.concat(getAllDescendantIds(c));
-                                            });
-                                        }
-                                        return ids;
-                                    };
+                            {/* Dropdown Filter Panel */}
+                            {showFilterPanel && (
+                                <>
+                                    {/* Backdrop */}
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setShowFilterPanel(false)}
+                                    />
 
-                                    const childDescendantIds = getAllDescendantIds(child);
-                                    const childProducts = products.filter((p: any) => {
-                                        const productCategoryId = p.categoryId || p.Category?.id;
-                                        return childDescendantIds.includes(productCategoryId);
-                                    });
-
-                                    const isSelected = selectedSubcategories.includes(child.id);
-                                    const hasChildren = child.children && child.children.length > 0;
-                                    const isExpanded = expandedCategory === child.id;
-
-                                    return (
-                                        <div key={child.id} className="flex flex-col">
+                                    {/* Panel */}
+                                    <div className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[600px] overflow-y-auto">
+                                        {/* Header */}
+                                        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-xl">
+                                            <h3 className="font-bold text-gray-900">Filtres</h3>
                                             <button
-                                                onClick={() => {
-                                                    // If has children, toggle expansion
-                                                    if (hasChildren) {
-                                                        setExpandedCategory(isExpanded ? null : child.id);
-                                                    }
-                                                    // Also toggle selection
-                                                    if (isSelected) {
-                                                        setSelectedSubcategories(selectedSubcategories.filter(id => id !== child.id));
-                                                    } else {
-                                                        setSelectedSubcategories([...selectedSubcategories, child.id]);
-                                                    }
-                                                }}
-                                                className={`
-                                                    flex flex-col items-center justify-center gap-1 p-4 rounded-xl border-2 font-medium text-sm transition-all min-h-[100px]
-                                                    ${isSelected
-                                                        ? 'bg-[#006233] border-[#006233] text-white shadow-lg'
-                                                        : 'bg-white border-gray-300 text-gray-700 hover:border-[#006233] hover:shadow-md'
-                                                    }
-                                                `}
+                                                onClick={() => setShowFilterPanel(false)}
+                                                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                                             >
-                                                <span className="text-center font-semibold">{child.name}</span>
-                                                <span className={`text-xs ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
-                                                    {childProducts.length} produit{childProducts.length > 1 ? 's' : ''}
-                                                </span>
-                                                {hasChildren && (
+                                                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div className="p-5 space-y-4">
+                                            {/* Categories Accordion */}
+                                            {category.children && category.children.length > 0 && (
+                                                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                    <button
+                                                        onClick={() => setExpandedSection(expandedSection === 'categories' ? null : 'categories')}
+                                                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        <span className="font-semibold text-gray-900">Catégories</span>
+                                                        <svg
+                                                            className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'categories' ? 'rotate-180' : ''}`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </button>
+
+                                                    {expandedSection === 'categories' && (
+                                                        <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
+                                                            {category.children.map((child: any) => {
+                                                                const isSelected = selectedSubcategories.includes(child.id);
+                                                                return (
+                                                                    <div key={child.id}>
+                                                                        <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer group">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={isSelected}
+                                                                                onChange={() => {
+                                                                                    if (isSelected) {
+                                                                                        setSelectedSubcategories(selectedSubcategories.filter(id => id !== child.id));
+                                                                                    } else {
+                                                                                        setSelectedSubcategories([...selectedSubcategories, child.id]);
+                                                                                    }
+                                                                                }}
+                                                                                className="w-4 h-4 text-[#006233] border-gray-300 rounded focus:ring-[#006233]"
+                                                                            />
+                                                                            <span className={`flex-1 text-sm ${isSelected ? 'font-medium text-[#006233]' : 'text-gray-700'}`}>
+                                                                                {child.name}
+                                                                            </span>
+                                                                        </label>
+
+                                                                        {/* Sub-children */}
+                                                                        {child.children && child.children.length > 0 && (
+                                                                            <div className="ml-7 mt-1 space-y-1 border-l-2 border-gray-100 pl-3">
+                                                                                {child.children.map((subChild: any) => {
+                                                                                    const isSubSelected = selectedSubcategories.includes(subChild.id);
+                                                                                    return (
+                                                                                        <label key={subChild.id} className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer">
+                                                                                            <input
+                                                                                                type="checkbox"
+                                                                                                checked={isSubSelected}
+                                                                                                onChange={() => {
+                                                                                                    if (isSubSelected) {
+                                                                                                        setSelectedSubcategories(selectedSubcategories.filter(id => id !== subChild.id));
+                                                                                                    } else {
+                                                                                                        setSelectedSubcategories([...selectedSubcategories, subChild.id]);
+                                                                                                    }
+                                                                                                }}
+                                                                                                className="w-3.5 h-3.5 text-[#006233] border-gray-300 rounded focus:ring-[#006233]"
+                                                                                            />
+                                                                                            <span className={`text-xs ${isSubSelected ? 'font-medium text-[#006233]' : 'text-gray-600'}`}>
+                                                                                                {subChild.name}
+                                                                                            </span>
+                                                                                        </label>
+                                                                                    );
+                                                                                })}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Price Accordion */}
+                                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                <button
+                                                    onClick={() => setExpandedSection(expandedSection === 'price' ? null : 'price')}
+                                                    className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                >
+                                                    <span className="font-semibold text-gray-900">Prix</span>
                                                     <svg
-                                                        className={`w-4 h-4 mt-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                        className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'price' ? 'rotate-180' : ''}`}
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
                                                     >
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                                     </svg>
+                                                </button>
+
+                                                {expandedSection === 'price' && (
+                                                    <div className="p-4 space-y-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="number"
+                                                                placeholder="Min"
+                                                                value={priceRange[0] === 0 ? '' : priceRange[0]}
+                                                                onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
+                                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#006233] focus:border-[#006233]"
+                                                            />
+                                                            <span className="text-gray-400">-</span>
+                                                            <input
+                                                                type="number"
+                                                                placeholder="Max"
+                                                                value={priceRange[1] === 50000 ? '' : priceRange[1]}
+                                                                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 50000])}
+                                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#006233] focus:border-[#006233]"
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {[
+                                                                { label: '< 2000 DA', range: [0, 2000] },
+                                                                { label: '2k - 5k DA', range: [2000, 5000] },
+                                                                { label: '5k - 10k DA', range: [5000, 10000] },
+                                                                { label: '> 10k DA', range: [10000, 50000] },
+                                                            ].map((option, idx) => (
+                                                                <button
+                                                                    key={idx}
+                                                                    onClick={() => setPriceRange(option.range as [number, number])}
+                                                                    className={`px-3 py-2 text-xs rounded-lg border transition-all ${priceRange[0] === option.range[0] && priceRange[1] === option.range[1]
+                                                                            ? 'bg-[#006233] text-white border-[#006233]'
+                                                                            : 'bg-white text-gray-600 border-gray-200 hover:border-[#006233]'
+                                                                        }`}
+                                                                >
+                                                                    {option.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                 )}
-                                            </button>
+                                            </div>
 
-                                            {/* Expanded child subcategories */}
-                                            {hasChildren && isExpanded && child.children && (
-                                                <div className="mt-2 ml-2 pl-3 border-l-2 border-[#006233] space-y-2 animate-fade-in">
-                                                    {child.children.map((grandchild: any) => {
-                                                        // Use recursive function for grandchildren too
-                                                        const getAllDescendantIds = (cat: any): string[] => {
-                                                            let ids = [cat.id];
-                                                            if (cat.children && cat.children.length > 0) {
-                                                                cat.children.forEach((c: any) => {
-                                                                    ids = ids.concat(getAllDescendantIds(c));
-                                                                });
-                                                            }
-                                                            return ids;
-                                                        };
+                                            {/* Wilaya Accordion */}
+                                            {availableWilayas.length > 0 && (
+                                                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                    <button
+                                                        onClick={() => setExpandedSection(expandedSection === 'wilaya' ? null : 'wilaya')}
+                                                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        <span className="font-semibold text-gray-900">Wilaya</span>
+                                                        <svg
+                                                            className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'wilaya' ? 'rotate-180' : ''}`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </button>
 
-                                                        const grandchildDescendantIds = getAllDescendantIds(grandchild);
-                                                        const grandchildProducts = products.filter((p: any) => {
-                                                            const productCategoryId = p.categoryId || p.Category?.id;
-                                                            return grandchildDescendantIds.includes(productCategoryId);
-                                                        });
-                                                        const isGrandchildSelected = selectedSubcategories.includes(grandchild.id);
-
-                                                        return (
-                                                            <button
-                                                                key={grandchild.id}
-                                                                onClick={() => {
-                                                                    if (isGrandchildSelected) {
-                                                                        setSelectedSubcategories(selectedSubcategories.filter(id => id !== grandchild.id));
-                                                                    } else {
-                                                                        setSelectedSubcategories([...selectedSubcategories, grandchild.id]);
-                                                                    }
-                                                                }}
-                                                                className={`
-                                                                    w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all
-                                                                    ${isGrandchildSelected
-                                                                        ? 'bg-[#006233] text-white'
-                                                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                                                                    }
-                                                                `}
-                                                            >
-                                                                {grandchild.name} ({grandchildProducts.length})
-                                                            </button>
-                                                        );
-                                                    })}
+                                                    {expandedSection === 'wilaya' && (
+                                                        <div className="p-4 space-y-2 max-h-60 overflow-y-auto">
+                                                            <label className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="wilaya"
+                                                                    checked={selectedWilaya === ''}
+                                                                    onChange={() => setSelectedWilaya('')}
+                                                                    className="w-4 h-4 text-[#006233] focus:ring-[#006233]"
+                                                                />
+                                                                <span className={`text-sm ${selectedWilaya === '' ? 'font-medium' : 'text-gray-700'}`}>
+                                                                    Toutes
+                                                                </span>
+                                                            </label>
+                                                            {availableWilayas.map((wilaya) => (
+                                                                <label key={wilaya as string} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name="wilaya"
+                                                                        checked={selectedWilaya === wilaya}
+                                                                        onChange={() => setSelectedWilaya(wilaya as string)}
+                                                                        className="w-4 h-4 text-[#006233] focus:ring-[#006233]"
+                                                                    />
+                                                                    <span className={`text-sm ${selectedWilaya === wilaya ? 'font-medium' : 'text-gray-700'}`}>
+                                                                        {wilaya as string}
+                                                                    </span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
-                                    );
-                                })}
-                            </div>
+
+                                        {/* Footer Actions */}
+                                        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3 rounded-b-xl">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedSubcategories([]);
+                                                    setPriceRange([0, 50000]);
+                                                    setSelectedWilaya('');
+                                                }}
+                                                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
+                                                Réinitialiser
+                                            </button>
+                                            <button
+                                                onClick={() => setShowFilterPanel(false)}
+                                                className="flex-1 px-4 py-2.5 bg-[#006233] text-white rounded-lg font-medium hover:bg-[#004d28] transition-colors"
+                                            >
+                                                Appliquer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="container py-8">
+                {/* Products Grid Section */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 min-h-[400px]">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Produits</h2>
+                            <p className="text-sm text-gray-500 mt-1">
+                                <span className="font-semibold text-gray-900">{filteredProducts.length}</span> résultats trouvés
+                            </p>
                         </div>
 
-                        {/* Price Filter */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Filtrer par prix</h3>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="number"
-                                        value={priceRange[0]}
-                                        onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
-                                        className="w-24 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#006233]"
-                                        placeholder="Min"
-                                    />
-                                    <span className="text-gray-500">-</span>
-                                    <input
-                                        type="number"
-                                        value={priceRange[1]}
-                                        onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 50000])}
-                                        className="w-24 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#006233]"
-                                        placeholder="Max"
-                                    />
-                                    <span className="text-sm text-gray-600">DA</span>
-                                </div>
-
-                                {/* Quick price filters */}
-                                <div className="flex gap-2 flex-wrap">
-                                    <button
-                                        onClick={() => setPriceRange([0, 2000])}
-                                        className="px-3 py-1 text-xs border border-gray-300 rounded-full hover:border-[#006233] hover:text-[#006233] transition-colors"
-                                    >
-                                        &lt; 2000 DA
-                                    </button>
-                                    <button
-                                        onClick={() => setPriceRange([2000, 5000])}
-                                        className="px-3 py-1 text-xs border border-gray-300 rounded-full hover:border-[#006233] hover:text-[#006233] transition-colors"
-                                    >
-                                        2000 - 5000 DA
-                                    </button>
-                                    <button
-                                        onClick={() => setPriceRange([5000, 10000])}
-                                        className="px-3 py-1 text-xs border border-gray-300 rounded-full hover:border-[#006233] hover:text-[#006233] transition-colors"
-                                    >
-                                        5000 - 10000 DA
-                                    </button>
-                                    <button
-                                        onClick={() => setPriceRange([10000, 50000])}
-                                        className="px-3 py-1 text-xs border border-gray-300 rounded-full hover:border-[#006233] hover:text-[#006233] transition-colors"
-                                    >
-                                        &gt; 10000 DA
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Products Grid */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-6">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-                                <p className="text-gray-600">
-                                    <span className="font-bold text-gray-900">{filteredProducts.length}</span> produits
-                                    {selectedSubcategories.length > 0 && (
-                                        <span className="text-sm ml-2">
-                                            dans {selectedSubcategories.length} {selectedSubcategories.length > 1 ? 'catégories' : 'catégorie'}
-                                        </span>
-                                    )}
-                                </p>
-
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <div className="relative w-full sm:w-[200px]">
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#006233]"
+                                    className="w-full appearance-none px-4 py-2.5 pr-8 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006233]/20 focus:border-[#006233] cursor-pointer"
                                 >
-                                    <option value="">Trier par</option>
+                                    <option value="">Trier par pertinence</option>
                                     <option value="name">Nom (A-Z)</option>
                                     <option value="price-asc">Prix croissant</option>
                                     <option value="price-desc">Prix décroissant</option>
                                     <option value="wilaya">Wilaya (A-Z)</option>
                                 </select>
-                            </div>
-
-                            {/* Active Filters Tags */}
-                            {(selectedSubcategories.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 50000 || selectedWilaya) && (
-                                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                            </svg>
-                                            Filtres actifs ({
-                                                selectedSubcategories.length +
-                                                (priceRange[0] !== 0 || priceRange[1] !== 50000 ? 1 : 0) +
-                                                (selectedWilaya ? 1 : 0)
-                                            })
-                                        </h3>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedSubcategories([]);
-                                                setPriceRange([0, 50000]);
-                                                setSelectedWilaya('');
-                                            }}
-                                            className="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
-                                        >
-                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                            Effacer tout
-                                        </button>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {/* Subcategory tags */}
-                                        {selectedSubcategories.map(subcatId => {
-                                            const findCategoryById = (cats: any[], id: string): any => {
-                                                for (const cat of cats) {
-                                                    if (cat.id === id) return cat;
-                                                    if (cat.children) {
-                                                        const found = findCategoryById(cat.children, id);
-                                                        if (found) return found;
-                                                    }
-                                                }
-                                                return null;
-                                            };
-                                            const subcat = findCategoryById(allCategories, subcatId);
-                                            return subcat ? (
-                                                <span
-                                                    key={subcatId}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#006233] text-white rounded-full text-xs font-medium"
-                                                >
-                                                    {subcat.name}
-                                                    <button
-                                                        onClick={() => setSelectedSubcategories(selectedSubcategories.filter(id => id !== subcatId))}
-                                                        className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                                                    >
-                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                </span>
-                                            ) : null;
-                                        })}
-
-                                        {/* Price range tag */}
-                                        {(priceRange[0] !== 0 || priceRange[1] !== 50000) && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-full text-xs font-medium">
-                                                {priceRange[0]} - {priceRange[1]} DA
-                                                <button
-                                                    onClick={() => setPriceRange([0, 50000])}
-                                                    className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                                                >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        )}
-
-                                        {/* Wilaya tag */}
-                                        {selectedWilaya && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-full text-xs font-medium">
-                                                📍 {selectedWilaya}
-                                                <button
-                                                    onClick={() => setSelectedWilaya('')}
-                                                    className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                                                >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </span>
-                                        )}
-                                    </div>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </div>
-                            )}
-
-                            <ProductGrid products={filteredProducts} />
+                            </div>
                         </div>
                     </div>
-                ) : (
-                    /* Regular category view with sidebar and filters */
-                    <div className="grid gap-8 lg:grid-cols-[250px_1fr]">
-                        {/* Mobile Filter Button */}
-                        <button
-                            onClick={() => setShowMobileFilters(true)}
-                            className="lg:hidden fixed bottom-24 right-6 z-50 bg-[#006233] text-white w-14 h-14 rounded-xl shadow-2xl flex items-center justify-center hover:bg-[#004d28] transition-all"
-                            aria-label="Filtres"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                            </svg>
-                        </button>
 
-                        {/* Mobile Filter Drawer */}
-                        {showMobileFilters && (
-                            <>
-                                <div
-                                    className="fixed inset-0 bg-black/40 z-40"
-                                    onClick={() => setShowMobileFilters(false)}
-                                />
-                                <div className="fixed inset-y-0 left-0 w-full max-w-sm bg-white z-50 shadow-2xl overflow-y-auto">
-                                    <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-                                        <h3 className="font-bold text-[#006233]">FILTRES</h3>
-                                        <button onClick={() => setShowMobileFilters(false)} className="p-2">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div className="p-4 space-y-6">
-                                        <div>
-                                            <h4 className="font-semibold mb-3">PRIX</h4>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="number"
-                                                    placeholder="Min"
-                                                    value={priceRange[0]}
-                                                    onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])}
-                                                    className="w-full px-3 py-2 border rounded"
-                                                />
-                                                <span>-</span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="Max"
-                                                    value={priceRange[1]}
-                                                    onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
-                                                    className="w-full px-3 py-2 border rounded"
-                                                />
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-2">
-                                                {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()} DA
-                                            </p>
-                                        </div>
-
-                                        {availableWilayas.length > 1 && (
-                                            <div>
-                                                <h4 className="font-semibold mb-3">WILAYA</h4>
-                                                <div className="space-y-2">
-                                                    <label className="flex items-center gap-2">
-                                                        <input
-                                                            type="radio"
-                                                            checked={selectedWilaya === ''}
-                                                            onChange={() => setSelectedWilaya('')}
-                                                        />
-                                                        <span>Toutes</span>
-                                                    </label>
-                                                    {availableWilayas.map((wilaya) => (
-                                                        <label key={wilaya} className="flex items-center gap-2">
-                                                            <input
-                                                                type="radio"
-                                                                checked={selectedWilaya === wilaya}
-                                                                onChange={() => setSelectedWilaya(wilaya)}
-                                                            />
-                                                            <span>{wilaya}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="sticky bottom-0 bg-white border-t p-4 space-y-2">
-                                        <button
-                                            onClick={() => {
-                                                setPriceRange([0, 50000]);
-                                                setSelectedWilaya('');
-                                            }}
-                                            className="w-full py-2 border-2 rounded font-semibold"
-                                        >
-                                            Effacer tout
-                                        </button>
-                                        <button
-                                            onClick={() => setShowMobileFilters(false)}
-                                            className="w-full py-2 bg-gray-900 text-white rounded font-semibold"
-                                        >
-                                            Voir {filteredProducts.length} produits
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Products Section */}
-                        <main>
-                            <div className="bg-white rounded-lg border border-gray-200 p-6">
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-                                    <p className="text-gray-600">
-                                        <span className="font-bold text-gray-900">{filteredProducts.length}</span> produits
-                                    </p>
-
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                        className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#006233]"
-                                    >
-                                        <option value="">Trier par</option>
-                                        <option value="name">Nom (A-Z)</option>
-                                        <option value="price-asc">Prix croissant</option>
-                                        <option value="price-desc">Prix décroissant</option>
-                                        <option value="wilaya">Wilaya (A-Z)</option>
-                                    </select>
-                                </div>
-
-                                <ProductGrid products={filteredProducts} />
-                            </div>
-                        </main>
-                    </div>
-                )}
+                    <ProductGrid products={filteredProducts} />
+                </div>
             </div>
         </div>
     );

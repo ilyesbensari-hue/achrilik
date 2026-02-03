@@ -9,7 +9,7 @@ const PHONE_REGEX = /^(0)(5|6|7)[0-9]{8}$/;
 
 export async function POST(request: Request) {
     try {
-        const { email, password, name, phone } = await request.json();
+        const { email, password, name, phone, address, wilaya, city } = await request.json();
 
         // 1. Strict Validation
         if (!password || password.length < 8) {
@@ -34,6 +34,9 @@ export async function POST(request: Request) {
                 password: hashedPassword,
                 name: name || email.split('@')[0],
                 phone,
+                address: address || null,
+                wilaya: wilaya || null,
+                city: city || null,
                 role: 'BUYER'
             }
         });

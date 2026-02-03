@@ -21,12 +21,15 @@ export default function RegisterPage() {
         const password = formData.get('password');
         const name = formData.get('name');
         const phone = formData.get('phone');
+        const address = formData.get('address');
+        const wilaya = formData.get('wilaya');
+        const city = formData.get('city');
 
         try {
             const response = await fetch('/api/auth/register-v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, name, phone }),
+                body: JSON.stringify({ email, password, name, phone, address, wilaya, city }),
             });
 
             if (response.ok) {
@@ -92,6 +95,38 @@ export default function RegisterPage() {
                                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                                 placeholder="0550123456"
                             />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Adresse (Optionnel)</label>
+                            <input
+                                id="address"
+                                name="address"
+                                type="text"
+                                className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                                placeholder="Cité 123 logts, Rue..."
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label htmlFor="wilaya" className="block text-sm font-medium text-gray-700 mb-1">Wilaya (Optionnel)</label>
+                                <input
+                                    id="wilaya"
+                                    name="wilaya"
+                                    type="text"
+                                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                                    placeholder="Oran"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Commune (Optionnel)</label>
+                                <input
+                                    id="city"
+                                    name="city"
+                                    type="text"
+                                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                                    placeholder="Es Senia"
+                                />
+                            </div>
                         </div>
                         <div className="mb-4">
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Mot de passe (Min. 8 char)</label>

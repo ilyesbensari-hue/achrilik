@@ -91,7 +91,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const body = await request.json();
-    const { title, description, price, images, categoryId, variants, promotionLabel } = body;
+    const {
+      title, description, price, images, categoryId, variants, promotionLabel,
+      cutType, sizeGuide, quality, countryOfManufacture, composition,
+      material, fit, neckline, pattern, careInstructions, brand,
+      isNew, isTrending, isBestSeller  // Ces valeurs ne seront utilisées que si admin
+    } = body;
+
+    // Importer les helpers de badges
+    const { isProductNew, isProductBestSeller } = await import('@/lib/badge-helpers');
+
+    // Calculer les badges selon le rôle
+    const badges = user.role === 'ADMIN' ? {
+      // Admin peut override manuellement
+      isNew: isNew !== undefined ? isNew : existingProduct.isNew,
+      isTrending: isTrending !== undefined ? isTrending : existingProduct.isTrending,
+      isBestSeller: isBestSeller !== undefined ? isBestSeller : existingProduct.isBestSeller
+    } : {
+      // Vendeur: calcul automatique
+      isNew: isProductNew(existingProduct.createdAt),
+      isBestSeller: await isProductBestSeller(id),
+      isTrending: existingProduct.isTrending  // Reste inchangé (admin only)
+    };
 
     // Update product and handle variants safely
     const product = await prisma.$transaction(async (tx) => {
@@ -126,6 +147,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           images,
           categoryId: categoryId || null,
           promotionLabel: promotionLabel || null,
+          cutType: cutType || null,
+          sizeGuide: sizeGuide || null,
+          quality: quality || null,
+          countryOfManufacture: countryOfManufacture || null,
+          composition: composition || null,
+          material: material || null,
+          fit: fit || null,
+          neckline: neckline || null,
+          pattern: pattern || null,
+          careInstructions: careInstructions || null,
+          brand: brand || null,
+          // Badges calculés selon le rôle
+          ...badges,
           Variant: {
             create: variants.map((v: any) => ({
               id: randomBytes(16).toString('hex'),

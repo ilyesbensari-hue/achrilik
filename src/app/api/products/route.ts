@@ -16,12 +16,42 @@ export async function GET(request: NextRequest) {
     };
 
     if (storeId) whereClause.storeId = storeId;
+
+    // Add Category filtering with optional recursive children
+    const categoryId = searchParams.get('categoryId');
+    const includeChildren = searchParams.get('includeChildren') === 'true';
+
+    if (categoryId) {
+      if (includeChildren) {
+        // Fetch all descendant category IDs recursively
+        const getDescendantIds = async (parentId: string): Promise<string[]> => {
+          const children = await prisma.category.findMany({
+            where: { parentId },
+            select: { id: true }
+          });
+
+          let allIds = [parentId];
+          for (const child of children) {
+            const descendants = await getDescendantIds(child.id);
+            allIds = [...allIds, ...descendants];
+          }
+          return allIds;
+        };
+
+        const categoryIds = await getDescendantIds(categoryId);
+        whereClause.categoryId = { in: categoryIds };
+      } else {
+        whereClause.categoryId = categoryId;
+      }
+    }
+
     if (search) {
       whereClause.OR = [
         { title: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } }
       ];
     }
+
 
     const products = await prisma.product.findMany({
       where: whereClause,
@@ -111,7 +141,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, price, images, storeId, categoryId, variants, promotionLabel } = body;
+    const {
+      title,
+      description,
+      price,
+      images,
+      storeId,
+      categoryId,
+      variants,
+      promotionLabel,
+      cutType,
+      sizeGuide,
+      quality,
+      countryOfManufacture,
+      composition
+      // NOTE: isNew, isTrending, isBestSeller sont ignorés - calculés automatiquement
+    } = body;
 
     // Verify Store Ownership (Optional but recommended, requires DB call. For now, we trust the token+role)
     // Ideally: const store = await prisma.store.findUnique({ where: { id: storeId } });
@@ -121,6 +166,13 @@ export async function POST(request: NextRequest) {
     if (!categoryId) {
       return NextResponse.json({ error: 'La catégorie est obligatoire' }, { status: 400 });
     }
+
+    // Badges automatiques lors de la création
+    const badges = {
+      isNew: true,  // Toujours true lors de la création
+      isTrending: false,  // Géré uniquement par admin
+      isBestSeller: false  // Calculé ultérieurement basé sur les ventes
+    };
 
     const product = await prisma.product.create({
       data: {
@@ -133,6 +185,13 @@ export async function POST(request: NextRequest) {
         categoryId,
         status: 'APPROVED', // Auto-approve products so they appear immediately
         promotionLabel: promotionLabel || null,
+        cutType: cutType || null,
+        sizeGuide: sizeGuide || null,
+        quality: quality || null,
+        countryOfManufacture: countryOfManufacture || null,
+        composition: composition || null,
+        // Badges automatiques
+        ...badges,
         Variant: {
           create: variants.map((v: any) => ({
             id: randomBytes(16).toString('hex'),

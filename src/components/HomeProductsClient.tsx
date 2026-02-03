@@ -174,7 +174,7 @@ export default function HomeProductsClient({ products }: HomeProductsClientProps
                         <h2 className="text-2xl sm:text-3xl font-bold mb-1">👔 Vêtements Homme</h2>
                         <p className="text-xs sm:text-sm text-gray-600">Style masculin</p>
                     </div>
-                    <a href="/categories/hommes" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                    <a href="/categories/homme" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
                         Voir tout <span>→</span>
                     </a>
                 </div>
@@ -194,7 +194,7 @@ export default function HomeProductsClient({ products }: HomeProductsClientProps
                         <h2 className="text-2xl sm:text-3xl font-bold mb-1">👗 Vêtements Femme</h2>
                         <p className="text-xs sm:text-sm text-gray-600">Tendances féminines</p>
                     </div>
-                    <a href="/categories/femmes" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                    <a href="/categories/femme" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
                         Voir tout <span>→</span>
                     </a>
                 </div>
@@ -214,7 +214,7 @@ export default function HomeProductsClient({ products }: HomeProductsClientProps
                         <h2 className="text-2xl sm:text-3xl font-bold mb-1">👶 Mode Enfant & Bébé</h2>
                         <p className="text-xs sm:text-sm text-gray-600">Pour les petits</p>
                     </div>
-                    <a href="/categories/enfants" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
+                    <a href="/categories/bebe" className="text-[#006233] font-semibold hover:underline text-sm sm:text-base flex items-center gap-1">
                         Voir tout <span>→</span>
                     </a>
                 </div>

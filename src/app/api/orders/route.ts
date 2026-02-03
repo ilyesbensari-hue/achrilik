@@ -113,12 +113,24 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { userId, cart, deliveryMethod, paymentMethod, address, phone, name, wilaya, city } = body;
+        const {
+            userId, cart, deliveryMethod, paymentMethod,
+            address, phone, name, wilaya, city,
+            deliveryLatitude,
+            deliveryLongitude
+        } = body;
 
 
 
         if (!userId || !cart || cart.length === 0) {
             return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+        }
+
+        // Validation GPS si livraison
+        if (deliveryMethod === 'DELIVERY' && (!deliveryLatitude || !deliveryLongitude)) {
+            return NextResponse.json({
+                error: 'Coordonnées GPS requises pour la livraison à domicile'
+            }, { status: 400 });
         }
 
         if (userId !== user.id) {
@@ -165,6 +177,8 @@ export async function POST(request: NextRequest) {
                     shippingPhone: phone,
                     shippingAddress: address,
                     shippingCity: `${city}, ${wilaya}`,
+                    deliveryLatitude: deliveryLatitude || null,
+                    deliveryLongitude: deliveryLongitude || null,
 
                     OrderItem: {
                         create: cart.map((item: any) => ({

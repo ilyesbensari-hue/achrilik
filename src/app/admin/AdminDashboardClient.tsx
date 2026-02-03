@@ -229,6 +229,16 @@ export default function AdminDashboard() {
                         </div>
                     </a>
                     <a
+                        href="/admin/badges"
+                        className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all"
+                    >
+                        <span className="text-2xl">🏆</span>
+                        <div>
+                            <p className="font-medium text-gray-900">Gestion Badges</p>
+                            <p className="text-sm text-gray-500">NEW, TRENDING, BEST SELLER</p>
+                        </div>
+                    </a>
+                    <a
                         href="/admin/delivery-agents"
                         className="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
                     >

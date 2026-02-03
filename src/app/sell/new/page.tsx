@@ -30,6 +30,42 @@ export default function AddProductPage() {
     // Promotion
     const [promotionLabel, setPromotionLabel] = useState('');
 
+    // Enhanced Product Details - Existing
+    const [cutType, setCutType] = useState('');
+    const [sizeGuide, setSizeGuide] = useState('');
+    const [quality, setQuality] = useState('');
+    const [countryOfManufacture, setCountryOfManufacture] = useState('');
+    const [composition, setComposition] = useState('');
+
+    // NEW: Design Details
+    const [neckline, setNeckline] = useState('');
+    const [pattern, setPattern] = useState('');
+    const [closure, setClosure] = useState('');
+    const [pockets, setPockets] = useState('');
+
+    // NEW: Material & Fit
+    const [material, setMaterial] = useState('');
+    const [fit, setFit] = useState('');
+    const [length, setLength] = useState('');
+
+    // NEW: Care & Brand
+    const [careInstructions, setCareInstructions] = useState('');
+    const [brand, setBrand] = useState('');
+    const [supplierReference, setSupplierReference] = useState('');
+
+    // NEW: Sizes & Dimensions
+    const [availableSizes, setAvailableSizes] = useState<string[]>([]);
+    const [weight, setWeight] = useState('');
+    const [productLength, setProductLength] = useState('');
+    const [width, setWidth] = useState('');
+    const [height, setHeight] = useState('');
+
+    // NEW: Badges & Status
+    const [badges, setBadges] = useState<string[]>([]);
+    const [isNew, setIsNew] = useState(false);
+    const [isTrending, setIsTrending] = useState(false);
+    const [isBestSeller, setIsBestSeller] = useState(false);
+
     useEffect(() => {
         // Fetch categories
         fetch('/api/categories')
@@ -119,7 +155,32 @@ export default function AddProductPage() {
                     images: images.join(','),
                     storeId,
                     variants,
-                    promotionLabel: promotionLabel || null
+                    promotionLabel: promotionLabel || null,
+                    cutType: cutType || null,
+                    sizeGuide: sizeGuide || null,
+                    quality: quality || null,
+                    countryOfManufacture: countryOfManufacture || null,
+                    composition: composition || null,
+                    // NEW FIELDS
+                    neckline: neckline || null,
+                    pattern: pattern || null,
+                    closure: closure || null,
+                    pockets: pockets || null,
+                    material: material || null,
+                    fit: fit || null,
+                    length: length || null,
+                    careInstructions: careInstructions || null,
+                    brand: brand || null,
+                    supplierReference: supplierReference || null,
+                    availableSizes: availableSizes.length > 0 ? availableSizes : null,
+                    weight: weight ? parseFloat(weight) : null,
+                    productLength: productLength ? parseFloat(productLength) : null,
+                    width: width ? parseFloat(width) : null,
+                    height: height ? parseFloat(height) : null,
+                    badges: badges.length > 0 ? badges : null,
+                    isNew,
+                    isTrending,
+                    isBestSeller
                 })
             });
 
@@ -168,6 +229,96 @@ export default function AddProductPage() {
                     <div>
                         <label className="label mb-1 block">Images du produit</label>
                         <ImageUpload onImagesChange={setImages} maxImages={5} />
+                    </div>
+
+                    {/* Enhanced Product Details Section */}
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-blue-200">
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <span>📋</span>
+                            <span>Détails du Produit</span>
+                        </h3>
+
+                        {/* Notice: Produits neufs uniquement */}
+                        <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                            <p className="text-sm text-blue-900 font-medium flex items-start gap-2">
+                                <span className="text-xl">⚠️</span>
+                                <span>
+                                    <strong>Important:</strong> Produits neufs uniquement.
+                                    Les articles d'occasion ne sont pas acceptés sur la plateforme.
+                                </span>
+                            </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Cut Type */}
+                            <div>
+                                <label className="label mb-1 block">Type de coupe (optionnel)</label>
+                                <select
+                                    className="input"
+                                    value={cutType}
+                                    onChange={e => setCutType(e.target.value)}
+                                >
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Slim fit">Slim fit</option>
+                                    <option value="Regular fit">Regular fit</option>
+                                    <option value="Oversized">Oversized</option>
+                                    <option value="Coupe droite">Coupe droite</option>
+                                    <option value="Coupe ajustée">Coupe ajustée</option>
+                                    <option value="Coupe ample">Coupe ample</option>
+                                </select>
+                            </div>
+
+                            {/* Size Guide */}
+                            <div>
+                                <label className="label mb-1 block">Guide des tailles (optionnel)</label>
+                                <textarea
+                                    className="input h-20 py-2"
+                                    placeholder="Ex: Taille normalement, prenez votre taille habituelle"
+                                    value={sizeGuide}
+                                    onChange={e => setSizeGuide(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Quality */}
+                                <div>
+                                    <label className="label mb-1 block">Qualité produit (optionnel)</label>
+                                    <select
+                                        className="input"
+                                        value={quality}
+                                        onChange={e => setQuality(e.target.value)}
+                                    >
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Standard">Standard</option>
+                                        <option value="Premium">Premium</option>
+                                        <option value="Luxe">Luxe</option>
+                                    </select>
+                                </div>
+
+                                {/* Country of Manufacture */}
+                                <div>
+                                    <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="Ex: Algérie, Turquie, France..."
+                                        value={countryOfManufacture}
+                                        onChange={e => setCountryOfManufacture(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Composition */}
+                            <div>
+                                <label className="label mb-1 block">Composition produit (optionnel)</label>
+                                <textarea
+                                    className="input h-20 py-2"
+                                    placeholder="Ex: 100% Coton, 80% Polyester 20% Élasthanne..."
+                                    value={composition}
+                                    onChange={e => setComposition(e.target.value)}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Promotion Label */}

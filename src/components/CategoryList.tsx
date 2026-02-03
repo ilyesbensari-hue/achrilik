@@ -26,11 +26,12 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 interface CategoryListProps {
-    variant?: 'sidebar' | 'mobile';
+    variant?: 'sidebar' | 'mobile' | 'desktop';
     onNavigate?: () => void;
 }
 
 export default function CategoryList({ variant = 'mobile', onNavigate }: CategoryListProps) {
+    const isDesktopDropdown = variant === 'desktop';
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -66,7 +67,7 @@ export default function CategoryList({ variant = 'mobile', onNavigate }: Categor
     }
 
     return (
-        <div className="space-y-1">
+        <div className={isDesktopDropdown ? "py-2" : "space-y-1"}>
             {!loading && categories.length === 0 && (
                 <div className="p-4 text-center text-gray-500 text-sm">
                     Aucune catégorie disponible
@@ -94,18 +95,38 @@ function CategoryItem({
     onNavigate
 }: {
     category: Category;
-    variant: 'sidebar' | 'mobile';
+    variant: 'sidebar' | 'mobile' | 'desktop';
     depth: number;
     onNavigate?: () => void;
 }) {
     const [expanded, setExpanded] = useState(false);
     const hasChildren = category.children && category.children.length > 0;
+    const isDesktopDropdown = variant === 'desktop';
 
     const isSidebar = variant === 'sidebar';
     const textColor = isSidebar ? 'text-white' : 'text-gray-900';
 
     // Indentation for children
     const paddingLeft = depth === 0 ? '1rem' : `${depth * 1.5 + 1}rem`;
+    
+    // Desktop dropdown styling
+    if (isDesktopDropdown && depth === 0) {
+        return (
+            <Link
+                href={`/categories/${category.slug}`}
+                onClick={onNavigate}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+                <span className="text-2xl">{CATEGORY_ICONS[category.name] || '✨'}</span>
+                <span className="text-sm font-medium text-gray-900">
+                    {category.name}
+                </span>
+                {category._count?.products > 0 && (
+                    <span className="ml-auto text-xs text-gray-400">({category._count.products})</span>
+                )}
+            </Link>
+        );
+    }
 
     return (
         <div className={`border-b border-gray-100 last:border-none ${depth > 0 ? 'bg-gray-50/50' : ''}`}>

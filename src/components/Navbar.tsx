@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import Logo from '@/components/ui/Logo';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
 import { useAuth } from '@/context/AuthContext';
@@ -46,100 +47,161 @@ export default function Navbar() {
             ? 'bg-white/95 backdrop-blur-md shadow-md'
             : 'bg-white border-b'
             }`}>
-            <div className="container flex items-center justify-between h-16 px-4 gap-4">
-                {/* Hamburger Menu - Left */}
-                <button
-                    onClick={() => setMobileMenuOpen(true)}
-                    className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-                    aria-label="Menu"
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
+            <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 gap-3">
 
-                {/* Search Bar - Center (visible on both mobile and desktop) */}
-                <div className="flex-1 max-w-md md:max-w-2xl mx-4">
-                    <SearchBar />
+                {/* --- MOBILE LAYOUT (md:hidden) --- */}
+                <div className="flex md:hidden items-center justify-between w-full gap-3">
+                    {/* 1. Logo (Left) */}
+                    <Link href="/" className="flex-shrink-0">
+                        <div className="relative h-8 w-20">
+                            <Logo width={80} height={32} />
+                        </div>
+                    </Link>
+
+                    {/* 2. Search (Center) */}
+                    <div className="flex-1">
+                        <SearchBar />
+                    </div>
+
+                    {/* 3. Icons (Right) */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                        {/* Cart */}
+                        <Link href="/cart" className="relative p-1 text-gray-700">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 h-3 w-3 bg-[#C62828] rounded-full border border-white"></span>
+                            )}
+                        </Link>
+                    </div>
                 </div>
 
-                {/* Right Side: Logo + Actions */}
-                <div className="flex items-center gap-2 md:gap-4">
-                    {/* Logo - Right */}
+
+                {/* --- DESKTOP LAYOUT (hidden md:flex) --- */}
+                <div className="hidden md:flex items-center justify-between w-full gap-4">
+                    {/* Logo */}
                     <Link href="/" className="flex-shrink-0">
-                        <Image
-                            src="/achrilik-logo-final.png"
-                            alt="Achrilik Logo"
-                            width={120}
-                            height={40}
-                            className="h-8 md:h-10 w-auto object-contain"
-                            priority
-                        />
+                        <Logo width={120} height={40} className="h-10 w-auto" />
                     </Link>
 
-                    {/* Account - Hidden on Mobile */}
-                    {user ? (
-                        <Link href="/profile" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative group">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    {/* Categories Dropdown */}
+                    <div className="relative group flex-shrink-0">
+                        <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[#006233] font-medium transition-colors">
+                            Catégories
+                            <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
-                        </Link>
-                    ) : (
-                        <div className="hidden lg:flex items-center gap-3">
-                            <Link href="/login" className="text-sm font-bold text-gray-700 hover:text-[#006233]">
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        <div className="absolute left-0 top-full mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <CategoryList variant="desktop" />
+                        </div>
+                    </div>
+
+                    {/* Search - Centered with max width */}
+                    <div className="flex-1 flex justify-center px-4">
+                        <div className="w-full max-w-2xl">
+                            <SearchBar />
+                        </div>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                        {/* Authentication: Login Button or User Dropdown */}
+                        {!user ? (
+                            /* Login Button for non-authenticated users */
+                            <Link
+                                href="/login"
+                                className="px-4 py-2 text-sm font-medium text-[#006233] border border-[#006233] rounded-lg hover:bg-[#006233] hover:text-white transition-colors"
+                            >
                                 Connexion
                             </Link>
-                            <Link href="/register" className="btn btn-primary text-xs px-4 py-2">
-                                S'inscrire
-                            </Link>
-                        </div>
-                    )}
+                        ) : (
+                            /* User Dropdown for authenticated users */
+                            <div className="relative group">
+                                <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-[#006233] text-white flex items-center justify-center text-sm font-bold">
+                                        {user.name[0].toUpperCase()}
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">{user.name}</span>
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
 
-                    {/* Desktop: Devenir Vendeur CTA for BUYERS (Non-Sellers) */}
-                    {user && user.role !== 'SELLER' && !user.roles?.includes('SELLER') && (
-                        <Link
-                            href="/become-seller"
-                            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white text-sm font-medium rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-sm"
-                        >
-                            <span>🚀</span>
-                            Devenir Vendeur
-                        </Link>
-                    )}
+                                {/* User Dropdown Menu */}
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2 z-50">
+                                    <Link
+                                        href="/profile"
+                                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        <span className="text-sm font-medium text-gray-700">Mon Profil</span>
+                                    </Link>
 
-                    {/* Desktop: Seller Dashboard for SELLERS */}
-                    {user && (user.role === 'SELLER' || user.roles?.includes('SELLER')) && (
-                        <Link
-                            href="/sell"
-                            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-[#006233] text-white text-sm font-medium rounded-lg hover:bg-[#004d28] transition-all shadow-sm"
-                        >
-                            <span>🏪</span>
-                            Ma Boutique
-                        </Link>
-                    )}
+                                    {user.role === 'SELLER' && (
+                                        <Link
+                                            href="/sell"
+                                            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <span className="text-lg">🏪</span>
+                                            <span className="text-sm font-medium text-gray-700">Ma Boutique</span>
+                                        </Link>
+                                    )}
 
-                    {/* Wishlist Link - Desktop */}
-                    <Link href="/wishlist" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        {wishlistCount > 0 && (
-                            <span className="absolute top-0 right-0 w-5 h-5 bg-[#D21034] text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white animate-scale-in">
-                                {wishlistCount}
-                            </span>
+                                    {user.role === 'ADMIN' && (
+                                        <Link
+                                            href="/admin"
+                                            className="flex items-center gap-3 px-4 py-3 bg-purple-50 hover:bg-purple-100 transition-colors"
+                                        >
+                                            <span className="text-lg">👑</span>
+                                            <span className="text-sm font-bold text-purple-700">Admin Panel</span>
+                                        </Link>
+                                    )}
+
+                                    <div className="border-t border-gray-100 my-2"></div>
+
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left"
+                                    >
+                                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        <span className="text-sm font-medium text-red-600">Déconnexion</span>
+                                    </button>
+                                </div>
+                            </div>
                         )}
-                    </Link>
 
-                    {/* Cart - Hidden on Mobile */}
-                    <Link href="/cart" className="hidden lg:flex p-2 text-gray-700 hover:text-[#006233] transition-colors relative">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                        {cartCount > 0 && (
-                            <span className="absolute top-0 right-0 w-5 h-5 bg-[#D21034] text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white animate-scale-in">
-                                {cartCount}
-                            </span>
-                        )}
-                    </Link>
+                        {/* Wishlist Icon */}
+                        <Link href="/wishlist" className="p-2 text-gray-700 hover:text-[#006233] relative transition-colors">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            {wishlistCount > 0 && (
+                                <span className="absolute top-0 right-0 w-5 h-5 bg-[#D21034] text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white">
+                                    {wishlistCount}
+                                </span>
+                            )}
+                        </Link>
+
+                        {/* Cart Icon */}
+                        <Link href="/cart" className="p-2 text-gray-700 hover:text-[#006233] relative transition-colors">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            {cartCount > 0 && (
+                                <span className="absolute top-0 right-0 w-5 h-5 bg-[#D21034] text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    </div>
                 </div>
             </div>
 

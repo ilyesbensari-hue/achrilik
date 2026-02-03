@@ -217,8 +217,8 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                 </div>
                             )}
 
-                            {/* Dashboard link for SELLERS */}
-                            {(user.role === 'SELLER' || user.roles?.includes('SELLER')) && !isEditing && store && (
+                            {/* Dashboard link for SELLERS - ALWAYS show for sellers */}
+                            {(user.role === 'SELLER' || user.roles?.includes('SELLER')) && !isEditing && (
                                 <div className="w-full pt-2 border-t mt-2 space-y-2">
                                     {/* Dashboard Link */}
                                     <Link href="/sell" className="btn w-full bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2">
@@ -226,6 +226,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     </Link>
                                 </div>
                             )}
+
 
                             {/* Dashboard link for ADMINS */}
                             {user.role === 'ADMIN' && !isEditing && (

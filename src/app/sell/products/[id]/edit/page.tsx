@@ -21,8 +21,27 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [images, setImages] = useState<string[]>([]);
     const [promotionLabel, setPromotionLabel] = useState('');
 
+    // Enhanced Product Details
+    const [cutType, setCutType] = useState('');
+    const [sizeGuide, setSizeGuide] = useState('');
+    const [quality, setQuality] = useState('');
+    const [countryOfManufacture, setCountryOfManufacture] = useState('');
+    const [composition, setComposition] = useState('');
+
+    // Badges
+    // NOTE: isNew, isTrending, isBestSeller states removed - managed automatically
+
+    // NEW: Additional Product Details
+    const [material, setMaterial] = useState('');
+    const [fit, setFit] = useState('');
+    const [neckline, setNeckline] = useState('');
+    const [pattern, setPattern] = useState('');
+    const [careInstructions, setCareInstructions] = useState('');
+    const [brand, setBrand] = useState('');
+
     // Variants
     const [variants, setVariants] = useState<{ size: string, color: string, stock: number }[]>([]);
+
 
     // Variant Input
     const [vSize, setVSize] = useState('M');
@@ -69,6 +88,19 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setCategoryId(data.categoryId || '');
                 setImages(data.images.split(','));
                 setPromotionLabel(data.promotionLabel || '');
+                setCutType(data.cutType || '');
+                setSizeGuide(data.sizeGuide || '');
+                setQuality(data.quality || '');
+                setCountryOfManufacture(data.countryOfManufacture || '');
+                setComposition(data.composition || '');
+                // NEW: Load additional fields
+                setMaterial(data.material || '');
+                setFit(data.fit || '');
+                setNeckline(data.neckline || '');
+                setPattern(data.pattern || '');
+                setCareInstructions(data.careInstructions || '');
+                setBrand(data.brand || '');
+                // NOTE: Badges ne sont plus chargés ni modifiables par les vendeurs
                 setVariants(data.Variant.map((v: any) => ({
                     size: v.size,
                     color: v.color,
@@ -114,6 +146,19 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     images: images.join(','),
                     categoryId: categoryId || null,
                     promotionLabel: promotionLabel || null,
+                    cutType: cutType || null,
+                    sizeGuide: sizeGuide || null,
+                    quality: quality || null,
+                    countryOfManufacture: countryOfManufacture || null,
+                    composition: composition || null,
+                    // NEW: Additional fields
+                    material: material || null,
+                    fit: fit || null,
+                    neckline: neckline || null,
+                    pattern: pattern || null,
+                    careInstructions: careInstructions || null,
+                    brand: brand || null,
+                    // NOTE: Badges ne sont plus envoyés - calculés côté serveur
                     variants
                 })
             });
@@ -201,6 +246,90 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             </div>
                         )}
                     </div>
+
+                    {/* Enhanced Product Details Section */}
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                        <h3 className="font-bold mb-2 flex items-center gap-2">
+                            <span>📋</span>
+                            Détails du produit (optionnel)
+                        </h3>
+                        <p className="text-xs text-gray-600 mb-4">
+                            Ces informations aident vos clients à faire le bon choix
+                        </p>
+
+                        <div className="space-y-4">
+                            {/* Cut Type */}
+                            <div>
+                                <label className="label mb-1 block">Type de coupe (optionnel)</label>
+                                <select
+                                    className="input"
+                                    value={cutType}
+                                    onChange={e => setCutType(e.target.value)}
+                                >
+                                    <option value="">Sélectionner...</option>
+                                    <option value="Slim fit">Slim fit</option>
+                                    <option value="Regular fit">Regular fit</option>
+                                    <option value="Oversized">Oversized</option>
+                                    <option value="Coupe droite">Coupe droite</option>
+                                    <option value="Coupe ajustée">Coupe ajustée</option>
+                                    <option value="Coupe ample">Coupe ample</option>
+                                </select>
+                            </div>
+
+                            {/* Size Guide */}
+                            <div>
+                                <label className="label mb-1 block">Guide des tailles (optionnel)</label>
+                                <textarea
+                                    className="input h-20 py-2"
+                                    placeholder="Ex: Taille normalement, prenez votre taille habituelle"
+                                    value={sizeGuide}
+                                    onChange={e => setSizeGuide(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Quality */}
+                                <div>
+                                    <label className="label mb-1 block">Qualité produit (optionnel)</label>
+                                    <select
+                                        className="input"
+                                        value={quality}
+                                        onChange={e => setQuality(e.target.value)}
+                                    >
+                                        <option value="">Sélectionner...</option>
+                                        <option value="Standard">Standard</option>
+                                        <option value="Premium">Premium</option>
+                                        <option value="Luxe">Luxe</option>
+                                    </select>
+                                </div>
+
+                                {/* Country of Manufacture */}
+                                <div>
+                                    <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        placeholder="Ex: Algérie, Turquie, France..."
+                                        value={countryOfManufacture}
+                                        onChange={e => setCountryOfManufacture(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Composition */}
+                            <div>
+                                <label className="label mb-1 block">Composition produit (optionnel)</label>
+                                <textarea
+                                    className="input h-20 py-2"
+                                    placeholder="Ex: 100% Coton, 80% Polyester 20% Élasthanne..."
+                                    value={composition}
+                                    onChange={e => setComposition(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* NOTE: Section "Badges Produit" retirée - badges gérés automatiquement */}
 
                     <div>
                         <label className="label mb-1 block">Images du produit</label>

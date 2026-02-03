@@ -1,254 +1,388 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import CategorySidebar from '@/components/CategorySidebar';
-import SellerRating from '@/components/SellerRating';
-import ProductGrid from '@/components/ProductGrid';
-import HomeProductsClient from '@/components/HomeProductsClient';
+import HeroVideoBanner from '@/components/home/HeroVideoBanner';
+import Footer from '@/components/layout/Footer';
+import CategoryCircles from '@/components/home/CategoryCircles';
+import ClothingProductSections from '@/components/home/ClothingProductSections';
+import BottomNav from '@/components/home/BottomNav';
+import MobileHeader from '@/components/home/MobileHeader';
+import Navbar from '@/components/Navbar';
 import HeroBanner from '@/components/HeroBanner';
+import JsonLd, { generateOrganizationSchema } from '@/components/JsonLd';
 import { prisma } from '@/lib/prisma';
 
-// Enable ISR with 60 second revalidation
-export const revalidate = 60;
+export const metadata = {
+  title: 'Achrilik - Shopping en Ligne Algérie | Mode, Tech & Maison',
+  description: 'Découvrez les meilleures offres en Algérie. Livraison 58 Wilayas, Paiement à la livraison.',
+};
 
-async function getProductsAndStores(search?: string) {
+// Fetch top-level categories
+async function getTopLevelCategories() {
   try {
-    const where: any = {};
-    const storeWhere: any = {};
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
-      ];
-
-      storeWhere.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { city: { contains: search, mode: 'insensitive' } },
-        { address: { contains: search, mode: 'insensitive' } }
-      ];
-    }
-
-    // 1. Fetch raw data with LIMITS to prevent over-fetching
-    const [productsRaw, storesRaw] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        take: 50, // Reduced from 100 for better performance
-        include: {
-          Store: true,
-          Variant: true,
-          Category: {
-            include: {
-              Category: true
-            }
-          },
-          Review: true,
-        },
-        orderBy: { createdAt: 'desc' }
-      }),
-      search ? prisma.store.findMany({
-        where: storeWhere,
-        take: 50, // Limit stores in search results
-        include: {
-          Product: {
-            include: {
-              Review: true
-            }
-          },
-          _count: {
-            select: { Product: true }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      }) : []
-    ]);
-
-    // 2. Get all unique store IDs
-    const storeIds = new Set([
-      ...productsRaw.map(p => p.storeId),
-      ...storesRaw.map(s => s.id)
-    ]);
-
-    // 3. Fetch reviews for these stores (single optimized query)
-    const reviewsForStores = await prisma.review.findMany({
+    const categories = await prisma.category.findMany({
       where: {
-        Product: {
-          storeId: { in: Array.from(storeIds) }
-        }
+        parentId: null,
       },
-      select: {
-        rating: true,
-        Product: {
-          select: { storeId: true }
-        }
-      }
+      orderBy: {
+        name: 'asc'
+      },
+      take: 8
     });
-
-    // 4. Aggregate ratings in memory (fast and efficient)
-    const storeRatingsMap = new Map<string, { total: number; count: number }>();
-    reviewsForStores.forEach(r => {
-      const sid = r.Product.storeId;
-      const current = storeRatingsMap.get(sid) || { total: 0, count: 0 };
-      storeRatingsMap.set(sid, {
-        total: current.total + r.rating,
-        count: current.count + 1
-      });
-    });
-
-    // 5. Enrich Products with store ratings
-    const products = productsRaw.map(p => {
-      const stats = storeRatingsMap.get(p.storeId) || { total: 0, count: 0 };
-      const avg = stats.count > 0 ? stats.total / stats.count : 0;
-      return {
-        ...p,
-        store: {
-          ...p.Store,
-          averageRating: avg,
-          reviewCount: stats.count
-        }
-      };
-    });
-
-    // 6. Enrich Stores with ratings
-    const stores = storesRaw.map(s => {
-      const stats = storeRatingsMap.get(s.id) || { total: 0, count: 0 };
-      const avg = stats.count > 0 ? stats.total / stats.count : 0;
-      return {
-        ...s,
-        averageRating: avg,
-        reviewCount: stats.count
-      };
-    });
-
-    return { products, stores };
+    return categories;
   } catch (error) {
-    console.error('Failed to fetch products and stores', error);
-    return { products: [], stores: [] };
+    console.error('Failed to fetch categories:', error);
+    return [];
   }
 }
 
-export default async function Home(props: { searchParams: Promise<{ search?: string }> }) {
-  const searchParams = await props.searchParams;
-  const search = searchParams.search;
-  const { products, stores } = await getProductsAndStores(search);
+// Fetch active banners for promotions carousel
+async function getActiveBanners() {
+  try {
+    const banners = await prisma.banner.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' }
+    });
+    return banners;
+  } catch (error) {
+    console.error('Failed to fetch banners:', error);
+    return [];
+  }
+}
 
-  // Split products into featured/new for better display
-  const featuredProducts = products.slice(0, 8);
+// Fetch featured products for promotions banner
+async function getFeaturedProducts() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'APPROVED',
+        OR: [
+          { promotionLabel: { not: null } },
+          { discountPrice: { not: null } }
+        ]
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 3
+    });
+
+    return products.map(p => {
+      const images = p.images ? p.images.split(',') : [];
+      return {
+        id: p.id,
+        title: p.title,
+        image: images[0] || '/placeholder-product.png',
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch featured products:', error);
+    return [];
+  }
+}
+
+// Helper function to map products
+function mapProducts(products: any[]) {
+  return products.map(p => {
+    const images = p.images ? p.images.split(',') : [];
+    return {
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      discountPrice: p.discountPrice,
+      promotionLabel: p.promotionLabel,
+      image: images[0] || '/placeholder-product.png',
+      categoryName: p.Category?.name || 'Produit',
+      createdAt: p.createdAt,
+    };
+  });
+}
+
+// Fetch best sellers (top products by creation date)
+async function getBestSellers() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'APPROVED',
+      },
+      include: {
+        Category: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 12
+    });
+
+    return mapProducts(products);
+  } catch (error) {
+    console.error('Failed to fetch best sellers:', error);
+    return [];
+  }
+}
+
+// Fetch new arrivals (newest products)
+async function getNewArrivals() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'APPROVED',
+      },
+      include: {
+        Category: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 12
+    });
+
+    return mapProducts(products);
+  } catch (error) {
+    console.error('Failed to fetch new arrivals:', error);
+    return [];
+  }
+}
+
+// Fetch promotions (products with active discounts or promotion labels)
+async function getPromotions() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'APPROVED',
+        OR: [
+          {
+            discountPrice: {
+              not: null
+            }
+          },
+          {
+            promotionLabel: {
+              not: null
+            }
+          }
+        ]
+      },
+      include: {
+        Category: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 12
+    });
+
+    // Filter to include:
+    // 1. Products with valid discountPrice < price
+    // 2. Products with promotionLabel (even without discount)
+    const filteredProducts = products.filter(p => {
+      const hasDiscount = p.discountPrice && p.discountPrice < p.price;
+      const hasPromoLabel = p.promotionLabel && p.promotionLabel.trim() !== '';
+      return hasDiscount || hasPromoLabel;
+    });
+
+    return mapProducts(filteredProducts);
+  } catch (error) {
+    console.error('Failed to fetch promotions:', error);
+    return [];
+  }
+}
+
+// Helper: Recursively get all descendant category IDs
+async function getAllDescendantCategoryIds(categoryId: string): Promise<string[]> {
+  const childCategories = await prisma.category.findMany({
+    where: { parentId: categoryId },
+    select: { id: true }
+  });
+
+  if (childCategories.length === 0) {
+    return [categoryId];
+  }
+
+  // Recursively get descendants of each child
+  const descendantIds = await Promise.all(
+    childCategories.map(child => getAllDescendantCategoryIds(child.id))
+  );
+
+  // Flatten and include current category
+  return [categoryId, ...descendantIds.flat()];
+}
+
+// Helper: Get products for a category and ALL its descendants (recursive)
+async function getCategoryProducts(categoryId: string, limit: number = 8) {
+  try {
+    // Get all descendant category IDs recursively
+    const categoryIds = await getAllDescendantCategoryIds(categoryId);
+
+    // Fetch products in these categories
+    const products = await prisma.product.findMany({
+      where: {
+        categoryId: { in: categoryIds },
+        status: 'APPROVED'
+      },
+      include: {
+        Category: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: limit
+    });
+
+    return mapProducts(products);
+  } catch (error) {
+    console.error(`Failed to fetch products for category ${categoryId}:`, error);
+    return [];
+  }
+}
+
+// Fetch clothing sections (Femme, Homme, Enfants, Bébé) with products
+async function getClothingSections() {
+  try {
+    // Real category IDs from database (verified Feb 2026)
+    const sections = [
+      { id: 'cat-femme', name: 'Femme', slug: 'femme' },
+      { id: 'cat-homme', name: 'Homme', slug: 'homme' },
+      { id: 'cat-enfant', name: 'Enfant', slug: 'enfant' },
+      { id: '622ae9b199c9dee17a62024bf5792e35', name: 'Bébé', slug: 'bebe' }
+    ];
+
+    const sectionsWithProducts = await Promise.all(
+      sections.map(async (section) => {
+        const products = await getCategoryProducts(section.id, 8);
+        return {
+          id: section.id,
+          name: section.name,
+          slug: section.slug,
+          products
+        };
+      })
+    );
+
+    return sectionsWithProducts;
+  } catch (error) {
+    console.error('Failed to fetch clothing sections:', error);
+    return [];
+  }
+}
+
+// Fetch Maroquinerie products
+async function getMaroquinerieProducts() {
+  try {
+    const categoryId = '457821bfaeb8bde0ffb13fb010b41b88'; // Real ID from database
+    return await getCategoryProducts(categoryId, 8);
+  } catch (error) {
+    console.error('Failed to fetch maroquinerie products:', error);
+    return [];
+  }
+}
+
+// Fetch Accessoires products
+async function getAccessoiresProducts() {
+  try {
+    const categoryId = '0f24e9b613932b9a4ebd0cf4c0cf7bb2'; // Real ID from database
+    return await getCategoryProducts(categoryId, 8);
+  } catch (error) {
+    console.error('Failed to fetch accessoires products:', error);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const [
+    banners,
+    categories,
+    featuredProducts,
+    bestSellers,
+    newArrivals,
+    promotions,
+    clothingSections,
+    maroquinerieProducts,
+    accessoiresProducts
+  ] = await Promise.all([
+    getActiveBanners(),
+    getTopLevelCategories(),
+    getFeaturedProducts(),
+    getBestSellers(),
+    getNewArrivals(),
+    getPromotions(),
+    getClothingSections(),
+    getMaroquinerieProducts(),
+    getAccessoiresProducts()
+  ]);
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Banner - Enhanced & Attractive */}
-      {/* Hero Banner - Compact & Dynamic */}
-      <HeroBanner />
+    <main className="min-h-screen bg-white">
+      <JsonLd data={generateOrganizationSchema('https://achrilik.com')} />
 
-      {/* Categories "Stories" - Compact */}
-      <div className="container mx-auto px-4 mt-6">
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar justify-start lg:justify-center">
-          {[
-            { name: 'Top Nouveautés', img: '🔥', bg: 'bg-red-100', link: '/search?q=nouveau' },
-            { name: 'Femmes', img: '👗', bg: 'bg-pink-100', link: '/categories/femme' },
-            { name: 'Hommes', img: '👔', bg: 'bg-blue-100', link: '/categories/homme' },
-            { name: 'Enfants', img: '👶', bg: 'bg-yellow-100', link: '/categories/enfant' },
-            { name: 'Accessoires', img: '🎧', bg: 'bg-purple-100', link: '/categories/accessoires' },
-            { name: 'High-Tech', img: '📱', bg: 'bg-gray-100', link: '/categories/electronique' },
-            { name: 'Promos', img: '🏷️', bg: 'bg-green-100', link: '/search?q=promo' },
-          ].map((item, i) => (
-            <Link
-              key={i}
-              href={item.link}
-              className="flex flex-col items-center gap-2 min-w-[72px] snap-start group"
-            >
-              <div className={`w-[60px] h-[60px] rounded-full p-[2px] bg-gradient-to-tr from-[#006233] to-yellow-400 group-hover:scale-105 transition-transform`}>
-                <div className={`w-full h-full rounded-full ${item.bg} flex items-center justify-center border-2 border-white text-xl shadow-sm`}>
-                  {item.img}
-                </div>
-              </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-gray-700">{item.name}</span>
-            </Link>
-          ))}
+      {/* Content - Responsive for both mobile and desktop */}
+      <div className="pb-20 md:pb-8">
+
+        {/* 1. Hero Video Banner - Compact (max 450px) */}
+        <HeroVideoBanner />
+
+        {/* 2. Category Circles */}
+        <CategoryCircles />
+
+        {/* 3. Promotions */}
+        <ClothingProductSections
+          sections={[{
+            id: 'promotions',
+            name: 'Promotions',
+            slug: 'promotions',
+            products: promotions
+          }]}
+        />
+
+        {/* 4. Best Sellers */}
+        <ClothingProductSections
+          sections={[{
+            id: 'best-sellers',
+            name: 'Best Sellers',
+            slug: 'best-sellers',
+            products: bestSellers
+          }]}
+        />
+
+        {/* 5. Nouveautés */}
+        <ClothingProductSections
+          sections={[{
+            id: 'nouveautes',
+            name: 'Nouveautés',
+            slug: 'nouveautes',
+            products: newArrivals
+          }]}
+        />
+
+        {/* 6. Vêtements Sections (Femme, Homme, Enfants, Bébé) */}
+        <ClothingProductSections sections={clothingSections} />
+
+        {/* 7. Maroquinerie */}
+        <ClothingProductSections
+          sections={[{
+            id: 'maroquinerie',
+            name: 'Maroquinerie',
+            slug: 'maroquinerie',
+            products: maroquinerieProducts
+          }]}
+        />
+
+        {/* 8. Accessoires */}
+        <ClothingProductSections
+          sections={[{
+            id: 'accessoires',
+            name: 'Accessoires',
+            slug: 'accessoires',
+            products: accessoiresProducts
+          }]}
+        />
+
+        {/* 9. Footer */}
+        <Footer />
+
+        {/* 10. Bottom Navigation - Mobile Only */}
+        <div className="md:hidden">
+          <BottomNav />
         </div>
       </div>
 
-
-
-      {/* Main Layout with Sidebar */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* Left Sidebar */}
-          <CategorySidebar />
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            {/* Products by Category or Search */}
-            {search ? (
-              <section className="pb-20">
-                <h2 className="text-3xl font-black mb-10">Résultats pour "{search}"</h2>
-
-                {/* Stores Results */}
-                {stores.length > 0 && (
-                  <div className="mb-12">
-                    <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                      <span>🏪</span> Vendeurs trouvés ({stores.length})
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                      {stores.map((store: any) => (
-                        <Link
-                          href={`/stores/${store.id}`}
-                          key={store.id}
-                          className="block p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-[#006233] hover:shadow-lg transition-all group"
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h4 className="text-lg font-bold group-hover:text-[#006233] transition-colors">{store.name}</h4>
-                              <div className="mt-1">
-                                <SellerRating rating={store.averageRating || 0} count={store.reviewCount || 0} size="sm" />
-                              </div>
-                            </div>
-                            <span className="text-2xl">🏪</span>
-                          </div>
-                          {store.description && (
-                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{store.description}</p>
-                          )}
-                          <div className="space-y-1 text-sm">
-                            {store.city && (
-                              <div className="flex items-center gap-2 text-gray-700">
-                                <span>📍</span>
-                                <span>{store.city}</span>
-                              </div>
-                            )}
-                            {store.address && (
-                              <div className="flex items-center gap-2 text-gray-600 text-xs">
-                                <span>{store.address}</span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 text-[#006233] font-medium mt-3">
-                              <span>📦</span>
-                              <span>{store._count.Product} produit{store._count.Product > 1 ? 's' : ''}</span>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Products Results */}
-                {products.length === 0 && stores.length === 0 ? (
-                  <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                    <p className="text-gray-500 text-lg mb-4">Aucun résultat trouvé.</p>
-                  </div>
-                ) : products.length > 0 ? (
-                  <>
-                    <ProductGrid products={products} title="👕 Produits trouvés" />
-                  </>
-                ) : null}
-              </section>
-            ) : (
-              <HomeProductsClient products={products} />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    </main>
   );
 }

@@ -9,9 +9,9 @@ export async function GET(request: NextRequest) {
         const categories = await prisma.category.findMany({
             include: {
                 _count: {
-                    select: { Product: true }
+                    select: { products: true }
                 },
-                other_Category: true // Subcategories
+                children: true // Subcategories
             },
             orderBy: { name: 'asc' }
         });

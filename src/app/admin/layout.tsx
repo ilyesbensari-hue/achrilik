@@ -95,6 +95,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <span>⚡</span>
                         <span>Éditeur Fast</span>
                     </Link>
+                    <Link
+                        href="/admin/banners"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/banners' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                            }`}
+                    >
+                        <span>🎨</span>
+                        <span>Banners Promo</span>
+                    </Link>
 
                     {/* Delivery Management */}
                     <div className="pt-4 mt-4 border-t border-slate-700">

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import NavbarWrapper from "@/components/NavbarWrapper";
 import DeliveryBanner from "@/components/DeliveryBanner";
-import BottomNav from "@/components/BottomNav";
 import ToastContainer from "@/components/ToastContainer";
 import { PHProvider } from "@/providers/PosthogProvider";
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -22,6 +21,12 @@ export const metadata: Metadata = {
     email: false,
     address: false,
     telephone: false,
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
   },
   openGraph: {
     title: "Achrilik - Mode & Tendance Algérie",
@@ -78,11 +83,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <PHProvider>
           <Providers>
-            <Navbar />
+            <NavbarWrapper />
             <div className="pb-[120px] md:pb-0">
               {children}
             </div>
-            <BottomNav />
             <ToastContainer />
           </Providers>
         </PHProvider>

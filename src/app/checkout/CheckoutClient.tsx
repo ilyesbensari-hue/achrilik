@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useClientInfo } from '@/hooks/useClientInfo';
+import { useFormValidation } from '@/hooks/useFormValidation';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 const StoreMap = dynamic(() => import('@/components/StoreMap'), { ssr: false });
+const MapAddressPicker = dynamic(() => import('@/components/MapAddressPicker'), { ssr: false });
 
 interface CheckoutClientProps {
     initialUser: any;
@@ -18,48 +22,123 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CIB' | 'DAHABIA'>('CASH');
     const [stores, setStores] = useState<any[]>([]);
 
-    // User Details
+    // User Details - Extended avec email, prenom, nom, GPS
     const [formData, setFormData] = useState({
-        name: '',
-        phone: '',
+        email: '',
+        prenom: '',
+        nom: '',
+        telephone: '',
         wilaya: '',
         city: '',
-        address: ''
+        address: '',
+        latitude: null as number | null,
+        longitude: null as number | null
     });
 
+    // Hooks de persistance et validation
+    const { clientInfo, isLoading: clientLoading, saveClientInfo } = useClientInfo();
+    const {
+        errors,
+        touched,
+        validateField,
+        handleBlur,
+        handleChange: validateChange,
+        autoCorrect,
+        validateAll
+    } = useFormValidation();
+    const { loadDraft, clearDraft } = useAutoSave(formData, true);
+
     useEffect(() => {
-        // Load Cart
+        // 1. Load Cart
         const storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
         setCart(storedCart);
         const t = storedCart.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
         setTotal(t);
 
-        // Pre-fill form with user data if available
-        if (initialUser) {
+        // 2. Vérifier brouillon (sessionStorage)
+        const draft = loadDraft();
+        if (draft && draft.email) {
+            const shouldRestore = confirm(
+                '📝 Un brouillon a été trouvé. Voulez-vous restaurer vos informations?'
+            );
+            if (shouldRestore) {
+                setFormData(draft);
+                // Ne pas charger depuis clientInfo si brouillon restauré
+                return;
+            } else {
+                clearDraft();
+            }
+        }
+
+        // 3. Charger depuis clientInfo (DB ou localStorage)
+        if (clientLoading) return; // Attendre chargement
+
+        if (clientInfo && clientInfo.email) {
             setFormData({
-                name: initialUser.name || '',
-                phone: initialUser.phone || '',
+                email: clientInfo.email || '',
+                prenom: clientInfo.prenom || '',
+                nom: clientInfo.nom || '',
+                telephone: clientInfo.telephone || '',
+                wilaya: clientInfo.adresses?.[0]?.wilaya || '',
+                city: clientInfo.adresses?.[0]?.ville || '',
+                address: clientInfo.adresses?.[0]?.rue || '',
+                latitude: null,
+                longitude: null
+            });
+        } else if (initialUser) {
+            // 4. Fallback: Pre-fill depuis initialUser
+            const [prenom, ...nomParts] = (initialUser.name || '').split(' ');
+            setFormData({
+                email: initialUser.email || '',
+                prenom: prenom || '',
+                nom: nomParts.join(' ') || '',
+                telephone: initialUser.phone || '',
                 wilaya: initialUser.wilaya || '',
                 city: initialUser.city || '',
-                address: initialUser.address || ''
+                address: initialUser.address || '',
+                latitude: null,
+                longitude: null
             });
         }
 
-        // Fetch Stores if pickup
+        // 5. Fetch Stores
         fetch('/api/stores/locations')
             .then(res => res.json())
-            .then(data => {
-                // Filter stores relevant to cart? Or just show all?
-                // For simplicity, show all stores where user can pickup.
-                // Optionally filter by stores present in cart if strictly per-store pickup.
-                // Let's show all for now or filter if cart has items.
-                setStores(data);
-            })
+            .then(data => setStores(data))
             .catch(e => console.error(e));
-    }, [initialUser]);
+    }, [initialUser, clientInfo, clientLoading, loadDraft, clearDraft]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // Auto-correction (format téléphone, capitalize noms, clean email)
+        const correctedValue = autoCorrect(name, value);
+
+        // Update formData
+        setFormData({ ...formData, [name]: correctedValue });
+
+        // Validation temps réel (si champ déjà touché)
+        validateChange(name, correctedValue);
+    };
+
+    /**
+     * Handler pour onBlur - validation au départ du champ
+     */
+    const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        handleBlur(name, value);
+    };
+
+    /**
+     * Handler pour sélection GPS depuis MapAddressPicker
+     */
+    const handleLocationSelect = (lat: number, lng: number, address: string) => {
+        setFormData(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            address: address // Auto-fill depuis reverse geocoding
+        }));
     };
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,6 +148,44 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         setIsSubmitting(true);
 
         try {
+            // 1. Valider formulaire complet
+            const requiredFields = deliveryMethod === 'DELIVERY'
+                ? ['email', 'prenom', 'nom', 'telephone', 'address', 'wilaya', 'city']
+                : ['email', 'prenom', 'nom', 'telephone'];
+
+            const isValid = validateAll(formData, requiredFields);
+
+            if (!isValid) {
+                alert('⚠️ Veuillez corriger les erreurs dans le formulaire');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 2. Validation GPS si livraison à domicile
+            if (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude)) {
+                alert('📍 Veuillez pointer votre adresse exacte sur la carte Google Maps');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // 2. Sauvegarder informations client (DB + localStorage)
+            await saveClientInfo({
+                email: formData.email,
+                prenom: formData.prenom,
+                nom: formData.nom,
+                telephone: formData.telephone,
+                adresses: deliveryMethod === 'DELIVERY' ? [{
+                    id: Date.now().toString(),
+                    type: 'principale',
+                    rue: formData.address,
+                    ville: formData.city,
+                    code_postal: '',
+                    wilaya: formData.wilaya,
+                    isDefault: true
+                }] : []
+            });
+
+            // 3. Créer commande
             const res = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -77,7 +194,14 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                     cart,
                     deliveryMethod,
                     paymentMethod,
-                    ...formData
+                    name: `${formData.prenom} ${formData.nom}`.trim(),
+                    phone: formData.telephone,
+                    email: formData.email,
+                    address: formData.address,
+                    wilaya: formData.wilaya,
+                    city: formData.city,
+                    deliveryLatitude: formData.latitude,
+                    deliveryLongitude: formData.longitude
                 })
             });
 
@@ -88,13 +212,14 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 throw new Error(data.error || 'Erreur lors de la commande');
             }
 
-            // Success Visual Feedback
+            // 4. Success Visual Feedback
             alert("✅ Commande confirmée avec succès ! Vous allez être redirigé vers vos commandes.");
 
-            // Clear Cart
+            // 5. Clear Cart + Draft
             localStorage.removeItem('cart');
+            clearDraft();
 
-            // Redirect
+            // 6. Redirect
             window.location.href = '/profile';
 
         } catch (error: any) {
@@ -154,7 +279,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 </div>
                                 <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg">
                                     <span className="text-gray-600">📱 Téléphone:</span>
-                                    <span className="font-semibold text-gray-900">{formData.phone || initialUser.phone}</span>
+                                    <span className="font-semibold text-gray-900">{formData.telephone || initialUser.phone}</span>
                                 </div>
                                 {formData.address && (
                                     <div className="flex items-start gap-2 bg-white/60 p-3 rounded-lg">
@@ -235,27 +360,125 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                             <div className="mt-6 space-y-4 animate-fade-in">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Nom complet</label>
-                                        <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Votre nom" required />
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Prénom</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="prenom"
+                                                value={formData.prenom}
+                                                onChange={handleChange}
+                                                onBlur={handleFieldBlur}
+                                                className={`w-full rounded-lg pr-10 ${touched.prenom
+                                                    ? errors.prenom?.isValid === false
+                                                        ? 'border-red-500 focus:ring-red-500'
+                                                        : errors.prenom?.isValid === true
+                                                            ? 'border-green-500 focus:ring-green-500'
+                                                            : 'border-gray-300'
+                                                    : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Ahmed"
+                                                required
+                                            />
+                                            {touched.prenom && errors.prenom && (
+                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-lg ${errors.prenom.isValid ? 'text-green-500' : 'text-red-500'
+                                                    }`}>
+                                                    {errors.prenom.isValid ? '✅' : '❌'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {touched.prenom && errors.prenom && !errors.prenom.isValid && (
+                                            <p className="text-xs text-red-600 mt-1">{errors.prenom.message}</p>
+                                        )}
                                     </div>
                                     <div>
-                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Téléphone</label>
-                                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="05..." required />
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Nom</label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="nom"
+                                                value={formData.nom}
+                                                onChange={handleChange}
+                                                onBlur={handleFieldBlur}
+                                                className={`w-full rounded-lg pr-10 ${touched.nom
+                                                    ? errors.nom?.isValid === false
+                                                        ? 'border-red-500 focus:ring-red-500'
+                                                        : errors.nom?.isValid === true
+                                                            ? 'border-green-500 focus:ring-green-500'
+                                                            : 'border-gray-300'
+                                                    : 'border-gray-300'
+                                                    }`}
+                                                placeholder="Benali"
+                                                required
+                                            />
+                                            {touched.nom && errors.nom && (
+                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-lg ${errors.nom.isValid ? 'text-green-500' : 'text-red-500'
+                                                    }`}>
+                                                    {errors.nom.isValid ? '✅' : '❌'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {touched.nom && errors.nom && !errors.nom.isValid && (
+                                            <p className="text-xs text-red-600 mt-1">{errors.nom.message}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Email</label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="exemple@email.com" required />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block flex items-center gap-1.5">
+                                            Téléphone
+                                            {formData.telephone && (
+                                                <span className="text-xs font-normal text-green-600">✓ Confirmé depuis inscription</span>
+                                            )}
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="telephone"
+                                            value={formData.telephone}
+                                            readOnly
+                                            className="w-full rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed font-medium text-gray-700"
+                                            placeholder="06 XX XX XX XX"
+                                            title="Numéro pré-rempli depuis votre inscription"
+                                        />
                                     </div>
                                 </div>
                                 <div>
                                     <label className="text-sm font-bold text-gray-700 mb-1 block">Adresse</label>
-                                    <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Cité 123 logts..." required />
+                                    <input type="text" name="address" value={formData.address} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Cité 123 logts..." required />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Wilaya</label>
-                                        <input type="text" name="wilaya" value={formData.wilaya} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Oran" required />
+                                        <input type="text" name="wilaya" value={formData.wilaya} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Oran" required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Commune</label>
-                                        <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Es Senia" required />
+                                        <input type="text" name="city" value={formData.city} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Es Senia" required />
                                     </div>
+                                </div>
+
+                                {/* GPS Map Picker - NOUVEAU */}
+                                <div className="mt-6">
+                                    <label className="text-sm font-bold text-gray-700 mb-2 block">
+                                        📍 Pointez votre adresse exacte sur la carte *
+                                    </label>
+                                    <MapAddressPicker
+                                        onLocationSelect={handleLocationSelect}
+                                        initialLat={formData.latitude || undefined}
+                                        initialLng={formData.longitude || undefined}
+                                    />
+                                    {formData.latitude && formData.longitude && (
+                                        <div className="mt-3 text-xs text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 flex items-start gap-2">
+                                            <span className="text-lg">✅</span>
+                                            <div>
+                                                <strong>Position confirmée</strong><br />
+                                                Coordonnées: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -286,13 +509,38 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-4">
-                                    <label className="text-sm font-bold text-gray-700 mb-1 block">Nom complet (pour le retrait)</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Votre nom" required />
+                                <div className="mt-4 grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Prénom</label>
+                                        <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Ahmed" required />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Nom</label>
+                                        <input type="text" name="nom" value={formData.nom} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Benali" required />
+                                    </div>
                                 </div>
-                                <div className="mt-2">
-                                    <label className="text-sm font-bold text-gray-700 mb-1 block">Téléphone</label>
-                                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="05..." required />
+                                <div className="mt-2 grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Email</label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="exemple@email.com" required />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-700 mb-1 block flex items-center gap-1.5">
+                                            Téléphone
+                                            {formData.telephone && (
+                                                <span className="text-xs font-normal text-green-600">✓ Confirmé depuis inscription</span>
+                                            )}
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="telephone"
+                                            value={formData.telephone}
+                                            readOnly
+                                            className="w-full rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed font-medium text-gray-700"
+                                            placeholder="06 XX XX XX XX"
+                                            title="Numéro pré-rempli depuis votre inscription"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -373,7 +621,14 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
 
                         <button
                             onClick={handleSubmit}
-                            disabled={!formData.name || !formData.phone || isSubmitting}
+                            disabled={
+                                !formData.email ||
+                                !formData.prenom ||
+                                !formData.nom ||
+                                !formData.telephone ||
+                                (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.wilaya || !formData.city)) ||
+                                isSubmitting
+                            }
                             className={`w-full btn btn-primary mt-6 py-4 text-lg font-bold shadow-xl shadow-green-100 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                         >
                             {isSubmitting ? 'TRAITEMENT...' : 'CONFIRMER LA COMMANDE'}

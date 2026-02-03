@@ -26,15 +26,54 @@ model AdminLog {
   @@index([targetType])
 }
 
+model Banner {
+  id         String   @id @default(cuid())
+  title      String
+  subtitle   String?
+  image      String
+  videoUrl   String?  // NEW: Support vidéo/animation
+  link       String?
+  buttonText String   @default("Voir l'offre")
+  isActive   Boolean  @default(true)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model Category {
-  id             String     @id
-  name           String
-  slug           String     @unique
-  parentId       String?
-  createdAt      DateTime   @default(now())
-  Category       Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
-  other_Category Category[] @relation("CategoryToCategory")
-  Product        Product[]
+  id          String     @id @default(cuid())
+  name        String     // Ex: "T-Shirts & Polos"
+  slug        String     @unique // Ex: "tshirts-polos"
+  description String?
+  image       String?    // URL image catégorie
+  icon        String?    // Emoji ou icône
+  
+  // Hiérarchie (3 niveaux: Vêtements > Homme > T-Shirts)
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryHierarchy")
+  
+  // Ordre d'affichage
+  order       Int        @default(0)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String[] // Array de mots-clés
+  
+  // Statut
+  isActive    Boolean    @default(true)
+  isFeatured  Boolean    @default(false)
+  
+  // Relations
+  products    Product[]
+  
+  // Timestamps
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  @@index([parentId])
+  @@index([slug])
 }
 
 model EmailTemplate {
@@ -49,13 +88,12 @@ model EmailTemplate {
 }
 
 model Order {
-  id                  String      @id
+  id                  String         @id
   userId              String
-  status              OrderStatus @default(PENDING)
   total               Float
   paymentMethod       String
   deliveryType        String
-  createdAt           DateTime    @default(now())
+  createdAt           DateTime       @default(now())
   estimatedDelivery   DateTime?
   notes               String?
   shippingAddress     String?
@@ -70,32 +108,27 @@ model Order {
   amountReceived      Float?
   deliveryPersonName  String?
   deliveryPersonPhone String?
-  isPaid              Boolean     @default(false)
+  isPaid              Boolean        @default(false)
   paidAt              DateTime?
   cancellationReason  String?
-  Store               Store?      @relation(fields: [storeId], references: [id])
-  User                User        @relation(fields: [userId], references: [id])
-  OrderItem           OrderItem[]
-  
-  // Suivi livraison manuel
-  trackingUrl         String?
-  deliveryStatus      DeliveryStatus @default(PENDING)
-  shippingWilaya      String?
-  
-  // COD
+  status              OrderStatus    @default(PENDING)
   codAmount           Float?
-  codReceived         Boolean     @default(false)
-  codReceivedAt       DateTime?
+  codReceived         Boolean        @default(false)
   codReceivedAmount   Float?
-  paymentReceipt      String?
-  
-  // Notes vendeur
-  sellerNotes         String?
-  lastUpdatedBy       String?
+  codReceivedAt       DateTime?
+  deliveryStatus      DeliveryStatus @default(PENDING)
   lastUpdatedAt       DateTime?
-  
-  // Relation avec système de livraison
+  lastUpdatedBy       String?
+  paymentReceipt      String?
+  sellerNotes         String?
+  shippingWilaya      String?
+  deliveryLatitude    Float?         // GPS coordinates for delivery
+  deliveryLongitude   Float?         // GPS coordinates for delivery
+  trackingUrl         String?
   delivery            Delivery?
+  Store               Store?         @relation(fields: [storeId], references: [id])
+  User                User           @relation(fields: [userId], references: [id])
+  OrderItem           OrderItem[]
 
   @@index([createdAt])
   @@index([isPaid])
@@ -132,7 +165,7 @@ model PasswordResetToken {
 }
 
 model Product {
-  id              String     @id
+  id              String     @id @default(cuid())
   title           String
   description     String
   price           Int
@@ -142,13 +175,70 @@ model Product {
   status          String     @default("PENDING")
   rejectionReason String?
   createdAt       DateTime   @default(now())
-  dimensions      String?
+  
+  // CARACTÉRISTIQUES DÉTAILLÉES
+  // Matière & Composition
+  material        String?    // Ex: "100% Coton Bio"
+  composition     String?    // Détails composition
+  
+  // Coupe & Style
+  cutType         String?    // Ex: "Slim Fit", "Regular Fit"
+  fit             String?    // Ex: "Ajusté", "Ample"
+  length          String?    // Ex: "Manches courtes", "Longueur genou"
+  
+  // Détails de Design
+  neckline        String?    // Ex: "Col rond", "Col V", "Col chemise"
+  pattern         String?    // Ex: "Uni", "Rayé", "Imprimé"
+  closure         String?    // Ex: "Boutons", "Zip", "Élastique"
+  pockets         String?    // Ex: "2 poches latérales"
+  
+  // Entretien
+  careInstructions String?   // Ex: "Lavage machine 30°, Ne pas repasser"
+  
+  // Origine & Fabrication
+  countryOfManufacture String? // Pays de fabrication
+  brand           String?    // Ex: "Achrilik Original"
+  supplierReference String?  // Référence fournisseur
+  
+  // Qualité
+  quality         String?    // Ex: "Standard", "Premium", "Luxe"
+  
+  // Guide des Tailles
+  sizeGuide       String?    // JSON ou texte
+  availableSizes  String[]   // Ex: ["S", "M", "L", "XL"]
+  
+  // Dimensions & Poids (pour livraison)
+  dimensions      String?    // Texte libre (legacy)
+  weight          Float?     // En kg
+  productLength   Float?     // En cm (renamed from 'length' to avoid conflict)
+  width           Float?     // En cm
+  height          Float?     // En cm
+  
+  // Promotion & Pricing
   discountPrice   Float?
-  fit             String?
-  material        String?
   promotionLabel  String?
+  
+  // Specs & Warranty
   technicalSpecs  String?
   warranty        String?
+  
+  // BADGES & LABELS
+  badges          String[]   // Ex: ["Nouveauté", "Éco-responsable", "Made in Algeria"]
+  isNew           Boolean    @default(false)
+  isTrending      Boolean    @default(false)
+  isBestSeller    Boolean    @default(false)
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  keywords        String[]   @default([])
+  
+  // STATISTIQUES
+  viewCount       Int        @default(0)
+  favoriteCount   Int        @default(0)
+  salesCount      Int        @default(0)
+  
+  // RELATIONS
   AdminLog        AdminLog[]
   Category        Category?  @relation(fields: [categoryId], references: [id])
   Store           Store      @relation(fields: [storeId], references: [id])
@@ -163,44 +253,64 @@ model Product {
 }
 
 model Review {
-  id        String   @id
-  rating    Int
-  comment   String?
-  images    String?
-  userId    String
-  productId String
-  createdAt DateTime @default(now())
-  Product   Product  @relation(fields: [productId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
+  id                 String    @id @default(cuid())
+  
+  // Relations
+  productId          String
+  userId             String
+  
+  // Contenu avis
+  rating             Int       // 1-5
+  title              String?   // Titre de l'avis
+  comment            String?   // Commentaire
+  
+  // Photos client (array d'URLs)
+  images             String?   // Legacy: single string
+  photos             String[]  @default([]) // New: array of URLs
+  
+  // Vérification
+  isVerifiedPurchase Boolean   @default(false)
+  
+  // Réponse vendeur
+  sellerResponse     String?
+  sellerResponseDate DateTime?
+  
+  // Utilité
+  helpfulCount       Int       @default(0)
+  
+  // Timestamps
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  // Relations
+  Product            Product   @relation(fields: [productId], references: [id])
+  User               User      @relation(fields: [userId], references: [id])
 
   @@index([productId])
   @@index([userId])
 }
 
 model Store {
-  id                      String          @id
-  name                    String
-  description             String?
-  ownerId                 String          @unique
-  latitude                Float?
-  longitude               Float?
-  address                 String?
-  city                    String?
-  phone                   String?
-  hours                   String?
-  clickCollect            Boolean         @default(true)
-  createdAt               DateTime        @default(now())
-  verified                Boolean         @default(false)
-  verifiedAt              DateTime?
-  verifiedBy              String?
-  
-  // Prestataire par défaut
-  defaultDeliveryAgentId  String?
-  defaultDeliveryAgent    DeliveryAgent?  @relation(fields: [defaultDeliveryAgentId], references: [id])
-  
-  Order                   Order[]
-  Product                 Product[]
-  User                    User            @relation(fields: [ownerId], references: [id])
+  id                     String         @id
+  name                   String
+  description            String?
+  ownerId                String         @unique
+  latitude               Float?
+  longitude              Float?
+  address                String?
+  city                   String?
+  phone                  String?
+  hours                  String?
+  clickCollect           Boolean        @default(true)
+  createdAt              DateTime       @default(now())
+  verified               Boolean        @default(false)
+  verifiedAt             DateTime?
+  verifiedBy             String?
+  defaultDeliveryAgentId String?
+  Order                  Order[]
+  Product                Product[]
+  defaultDeliveryAgent   DeliveryAgent? @relation(fields: [defaultDeliveryAgentId], references: [id])
+  User                   User           @relation(fields: [ownerId], references: [id])
 }
 
 model SystemSettings {
@@ -220,32 +330,54 @@ model User {
   email              String               @unique
   password           String
   name               String?
-  role               String               @default("BUYER") // Deprecated, use roles
-  roles              Role[]               @default([BUYER])
+  role               String               @default("BUYER")
   address            String?
-  city               String?
-  wilaya             String?
   phone              String?
   createdAt          DateTime             @default(now())
+  city               String?
+  roles              Role[]               @default([BUYER])
+  wilaya             String?
+  latitude           Float?               // GPS coordinates
+  longitude          Float?               // GPS coordinates
   AdminLog           AdminLog[]
+  DeliveryAgent      DeliveryAgent?
   Order              Order[]
   PasswordResetToken PasswordResetToken[]
   Review             Review[]
   Store              Store?
   Wishlist           Wishlist[]
-  DeliveryAgent      DeliveryAgent?
 }
 
 model Variant {
-  id        String      @id
-  productId String
-  size      String
-  color     String
-  stock     Int
-  OrderItem OrderItem[]
-  Product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id              String      @id @default(cuid())
+  productId       String
+  
+  // SKU unique par variant
+  sku             String?     @unique // Ex: "ACH-HOM-TSH-001-M-NOIR"
+  
+  // Attributs du variant
+  size            String      // Ex: "M", "42", "L"
+  color           String      // Ex: "Noir"
+  colorHex        String?     // Ex: "#000000"
+  colorImage      String?     // URL image de ce variant
+  
+  // Stock & Prix
+  stock           Int
+  priceAdjustment Float?      // Prix supplémentaire si variant plus cher
+  
+  // Statut
+  isAvailable     Boolean     @default(true)
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  // Relations
+  OrderItem       OrderItem[]
+  Product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+  @@index([sku])
 }
 
 model Wishlist {
@@ -259,6 +391,52 @@ model Wishlist {
   @@unique([userId, productId])
   @@index([productId])
   @@index([userId])
+}
+
+model DeliveryAgent {
+  id              String     @id
+  userId          String     @unique
+  provider        String
+  vehicleType     String?
+  licenseNumber   String?
+  wilayasCovered  String[]
+  isActive        Boolean    @default(true)
+  isVerified      Boolean    @default(false)
+  totalDeliveries Int        @default(0)
+  successRate     Float      @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deliveries      Delivery[]
+  user            User       @relation(fields: [userId], references: [id])
+  stores          Store[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([provider])
+}
+
+model Delivery {
+  id               String         @id
+  orderId          String         @unique
+  agentId          String?
+  assignedAt       DateTime?
+  status           DeliveryStatus @default(PENDING)
+  trackingNumber   String?
+  trackingUrl      String?
+  codAmount        Float?
+  codCollected     Boolean        @default(false)
+  codCollectedAt   DateTime?
+  codTransferred   Boolean        @default(false)
+  codTransferredAt DateTime?
+  agentNotes       String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  agent            DeliveryAgent? @relation(fields: [agentId], references: [id])
+  order            Order          @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([agentId])
+  @@index([status])
 }
 
 enum OrderStatus {
@@ -286,69 +464,4 @@ enum Role {
   SELLER
   DELIVERY_AGENT
   ADMIN
-}
-
-model DeliveryAgent {
-  id              String     @id
-  userId          String     @unique
-  user            User       @relation(fields: [userId], references: [id])
-  
-  // Informations livreur
-  provider        String     // "YALIDINE", "ECOLOG", "INDEPENDENT"
-  vehicleType     String?    // "MOTO", "VOITURE", "CAMIONNETTE"
-  licenseNumber   String?
-  wilayasCovered  String[]   // ["Oran", "Alger", ...]
-  
-  // Statut
-  isActive        Boolean    @default(true)
-  isVerified      Boolean    @default(false)
-  
-  // Statistiques
-  totalDeliveries Int        @default(0)
-  successRate     Float      @default(0)
-  
-  // Relations
-  deliveries      Delivery[]
-  stores          Store[]    // Magasins qui utilisent ce prestataire par défaut
-  
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  
-  @@index([userId])
-  @@index([isActive])
-  @@index([provider])
-}
-
-model Delivery {
-  id                String           @id
-  orderId           String           @unique
-  order             Order            @relation(fields: [orderId], references: [id])
-  
-  // Assignation livreur
-  agentId           String?
-  agent             DeliveryAgent?   @relation(fields: [agentId], references: [id])
-  assignedAt        DateTime?
-  
-  // Statut et tracking
-  status            DeliveryStatus   @default(PENDING)
-  trackingNumber    String?
-  trackingUrl       String?
-  
-  // COD (Cash on Delivery)
-  codAmount         Float?
-  codCollected      Boolean          @default(false)
-  codCollectedAt    DateTime?
-  codTransferred    Boolean          @default(false)
-  codTransferredAt  DateTime?
-  
-  // Notes livreur
-  agentNotes        String?
-  
-  // Timestamps
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  
-  @@index([orderId])
-  @@index([agentId])
-  @@index([status])
 }

@@ -559,6 +559,22 @@ textarea {
   }
 }
 
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 0.8s ease-out forwards;
+}
+
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out forwards;
 }
@@ -620,6 +636,20 @@ img {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Scrollbar hide utility for horizontal scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
 
 /* ========================================
    ZALANDO-INSPIRED PRODUCT CARDS
@@ -972,4 +1002,27 @@ img {
 
 .shadow-2xl {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Promotional messages scrolling animation */
+@keyframes scroll-messages {
+
+  0%,
+  33% {
+    transform: translateY(0);
+  }
+
+  33.33%,
+  66% {
+    transform: translateY(-33.33%);
+  }
+
+  66.66%,
+  100% {
+    transform: translateY(-66.66%);
+  }
+}
+
+.animate-scroll-messages {
+  animation: scroll-messages 9s ease-in-out infinite;
 }
