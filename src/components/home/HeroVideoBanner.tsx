@@ -27,35 +27,72 @@ export default function HeroVideoBanner() {
     const [loading, setLoading] = useState(true);
     const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-    // Load banners from API or use default
+    // Load banners from API
     useEffect(() => {
-        // Fetch from API when ready
-        // fetch('/api/hero-banners')
-        //   .then(res => res.json())
-        //   .then(data => {
-        //     setBanners(data);
-        //     setLoading(false);
-        //   });
-
-        // For now, use default banner
-        const defaultBanner: HeroBanner = {
-            id: 'default-1',
-            title_fr: 'Achrilik Marketplace',
-            title_ar: 'أشريليك ماركت بليس',
-            subtitle_fr: 'Mode Algérienne, Livrée Chez Vous',
-            subtitle_ar: 'الموضة الجزائرية، يتم توصيلها إليك',
-            cta_text_fr: 'Découvrir',
-            cta_text_ar: 'اكتشف',
-            cta_link: '/categories',
-            thumbnail_url: '/achrilik-logo-final.png',
-            text_position: 'center',
-            overlay_opacity: 35,
-            display_duration: 6000,
-            priority: 1
-        };
-
-        setBanners([defaultBanner]);
-        setLoading(false);
+        fetch('/api/admin/banners?activeOnly=true')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    // Map admin banners to HeroBanner format
+                    const mappedBanners: HeroBanner[] = data.map((banner: any) => ({
+                        id: banner.id,
+                        title_fr: banner.title,
+                        title_ar: banner.title, // Fallback to FR if no AR
+                        subtitle_fr: banner.subtitle || '',
+                        subtitle_ar: banner.subtitle || '',
+                        cta_text_fr: banner.buttonText || "Voir l'offre",
+                        cta_text_ar: banner.buttonText || "عرض",
+                        cta_link: banner.link || '/categories',
+                        video_url: banner.videoUrl || undefined,
+                        thumbnail_url: banner.image || '/achrilik-logo-final.png',
+                        text_position: 'center' as const,
+                        overlay_opacity: 35,
+                        display_duration: 6000,
+                        priority: banner.order || 1
+                    }));
+                    setBanners(mappedBanners);
+                } else {
+                    // Fallback to default banner if no admin banners
+                    const defaultBanner: HeroBanner = {
+                        id: 'default-1',
+                        title_fr: 'Achrilik Marketplace',
+                        title_ar: 'أشريليك ماركت بليس',
+                        subtitle_fr: 'Mode Algérienne, Livrée Chez Vous',
+                        subtitle_ar: 'الموضة الجزائرية، يتم توصيلها إليك',
+                        cta_text_fr: 'Découvrir',
+                        cta_text_ar: 'اكتشف',
+                        cta_link: '/categories',
+                        thumbnail_url: '/achrilik-logo-final.png',
+                        text_position: 'center',
+                        overlay_opacity: 35,
+                        display_duration: 6000,
+                        priority: 1
+                    };
+                    setBanners([defaultBanner]);
+                }
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching banners:', error);
+                // Load default banner on error
+                const defaultBanner: HeroBanner = {
+                    id: 'default-1',
+                    title_fr: 'Achrilik Marketplace',
+                    title_ar: 'أشريليك ماركت بليس',
+                    subtitle_fr: 'Mode Algérienne, Livrée Chez Vous',
+                    subtitle_ar: 'الموضة الجزائرية، يتم توصيلها إليك',
+                    cta_text_fr: 'Découvrir',
+                    cta_text_ar: 'اكتشف',
+                    cta_link: '/categories',
+                    thumbnail_url: '/achrilik-logo-final.png',
+                    text_position: 'center',
+                    overlay_opacity: 35,
+                    display_duration: 6000,
+                    priority: 1
+                };
+                setBanners([defaultBanner]);
+                setLoading(false);
+            });
     }, []);
 
     // Auto-advance slides

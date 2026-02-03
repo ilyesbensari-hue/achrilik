@@ -310,7 +310,7 @@ export default function BannersManagementPage() {
 
                             {/* Right Column - Image Upload */}
                             <div>
-                                <label className="block text-sm font-medium mb-2">Image du Banner *</label>
+                                <label className="block text-sm font-medium mb-2">Image du Banner</label>
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                                     {imagePreview ? (
                                         <div className="space-y-2">
@@ -399,7 +399,7 @@ export default function BannersManagementPage() {
                                         )}
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Si vidéo fournie, elle remplacera l'image sur la bannière
+                                        ⚠️ <strong>Vous devez fournir soit une image, soit une vidéo (au moins l'un des deux)</strong>. Si les deux sont fournis, la vidéo sera affichée en priorité.
                                     </p>
                                 </div>
                             </div>
