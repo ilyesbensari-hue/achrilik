@@ -36,17 +36,19 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { title, subtitle, image, link, buttonText, isActive, order } = body;
+        const { title, subtitle, image, videoUrl, link, buttonText, isActive, order } = body;
 
-        if (!title || !image) {
-            return NextResponse.json({ error: 'Title and image are required' }, { status: 400 });
+        // Require either image OR videoUrl
+        if (!title || (!image && !videoUrl)) {
+            return NextResponse.json({ error: 'Title and image/video are required' }, { status: 400 });
         }
 
         const banner = await prisma.banner.create({
             data: {
                 title,
                 subtitle: subtitle || null,
-                image,
+                image: image || '',
+                videoUrl: videoUrl || null,
                 link: link || null,
                 buttonText: buttonText || "Voir l'offre",
                 isActive: isActive ?? true,
@@ -77,7 +79,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { id, title, subtitle, image, link, buttonText, isActive, order } = body;
+        const { id, title, subtitle, image, videoUrl, link, buttonText, isActive, order } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'Banner ID is required' }, { status: 400 });
@@ -88,7 +90,8 @@ export async function PUT(request: NextRequest) {
             data: {
                 ...(title && { title }),
                 ...(subtitle !== undefined && { subtitle }),
-                ...(image && { image }),
+                ...(image !== undefined && { image }),
+                ...(videoUrl !== undefined && { videoUrl }),
                 ...(link !== undefined && { link }),
                 ...(buttonText && { buttonText }),
                 ...(isActive !== undefined && { isActive }),

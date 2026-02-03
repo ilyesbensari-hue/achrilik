@@ -78,15 +78,15 @@ export default function BannersManagementPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file size (50MB max for video)
-        if (file.size > 50 * 1024 * 1024) {
-            alert('Vidéo trop grande (max 50MB)');
+        // Validate file size (10MB max for video - Vercel limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Vidéo trop grande (max 10MB pour éviter timeout serveur)');
             return;
         }
 
         // Validate file type
-        if (!file.type.match(/video\/(mp4|webm)/)) {
-            alert('Format vidéo non supporté. Utilisez MP4 ou WebM.');
+        if (!file.type.match(/video\/(mp4|webm)/) && !file.type.match(/image\/gif/)) {
+            alert('Format non supporté. Utilisez MP4, WebM ou GIF animé.');
             return;
         }
 
@@ -103,8 +103,14 @@ export default function BannersManagementPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        if (!formData.title || !formData.image) {
-            alert('Titre et image sont requis');
+        // Validation: Titre + (Image OU Vidéo)
+        if (!formData.title) {
+            alert('Le titre est requis');
+            return;
+        }
+
+        if (!formData.image && !formData.videoUrl) {
+            alert('Vous devez uploader soit une image, soit une vidéo');
             return;
         }
 
@@ -123,13 +129,15 @@ export default function BannersManagementPage() {
             if (res.ok) {
                 await fetchBanners();
                 resetForm();
-                alert(editingBanner ? 'Banner modifié!' : 'Banner créé!');
+                alert(editingBanner ? 'Banner modifié avec succès!' : 'Banner créé avec succès!');
             } else {
-                alert('Erreur lors de la sauvegarde');
+                const errorData = await res.json();
+                console.error('API Error:', errorData);
+                alert(`Erreur: ${errorData.error || 'Impossible de sauvegarder le banner'}`);
             }
         } catch (error) {
             console.error('Error saving banner:', error);
-            alert('Erreur serveur');
+            alert('Erreur serveur: vérifiez la taille des fichiers (Image: max 5MB, Vidéo: max 10MB)');
         }
     }
 
