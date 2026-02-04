@@ -36,20 +36,27 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 }
                 const user = JSON.parse(userStr);
 
-                // Fetch all orders for this user and filter (simple security check)
-                // In a real app, the API should allow fetching a specific order by ID checking ownership
-                const res = await fetch(`/api/orders?userId=${user.id}`);
-                if (!res.ok) throw new Error('Failed to fetch');
+                // Fetch specific order by ID
+                const res = await fetch(`/api/orders/${id}`);
 
-                const orders = await res.json();
-                const foundOrder = orders.find((o: any) => o.id === id);
-
-                if (foundOrder) {
-                    setOrder(foundOrder);
-                } else {
+                if (res.status === 404) {
                     alert('Commande introuvable');
                     router.push('/profile');
+                    return;
                 }
+
+                if (!res.ok) throw new Error('Failed to fetch order');
+
+                const foundOrder = await res.json();
+
+                // Security check: Verify ownership if not handled by API
+                if (foundOrder.userId !== user.id && user.role !== 'ADMIN') {
+                    console.error('Unauthorized access attempt');
+                    router.push('/profile');
+                    return;
+                }
+
+                setOrder(foundOrder);
             } catch (error) {
                 console.error(error);
                 alert('Erreur technique');

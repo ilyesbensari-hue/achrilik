@@ -50,25 +50,24 @@ export default function SellerOrdersPage() {
     }, [router]);
 
     const updateStatus = async (orderId: string, newStatus: string) => {
-        console.log('[updateStatus] Starting status update', { orderId, newStatus });
+
 
         if (!confirm(`Changer le statut en "${newStatus}" ?`)) {
-            console.log('[updateStatus] User cancelled confirmation');
             return;
         }
 
         try {
-            console.log('[updateStatus] Sending PATCH request to /api/orders/' + orderId);
+
             const res = await fetch(`/api/orders/${orderId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
             });
 
-            console.log('[updateStatus] Response received', { status: res.status, ok: res.ok });
+
 
             if (res.ok) {
-                console.log('[updateStatus] Status updated successfully, updating local state');
+
                 const updatedOrder = await res.json();
                 setOrders(orders.map(o => o.id === orderId ? updatedOrder : o));
                 alert(`Commande mise à jour : ${newStatus}`);

@@ -1,13 +1,24 @@
-import HeroVideoBanner from '@/components/home/HeroVideoBanner';
-import Footer from '@/components/layout/Footer';
+import dynamic from 'next/dynamic';
 import CategoryCircles from '@/components/home/CategoryCircles';
-import ClothingProductSections from '@/components/home/ClothingProductSections';
-import BottomNav from '@/components/home/BottomNav';
 import MobileHeader from '@/components/home/MobileHeader';
 import Navbar from '@/components/Navbar';
-import HeroBanner from '@/components/HeroBanner';
 import JsonLd, { generateOrganizationSchema } from '@/components/JsonLd';
 import { prisma } from '@/lib/prisma';
+
+// Lazy load heavy components
+const HeroVideoBanner = dynamic(() => import('@/components/home/HeroVideoBanner'), {
+  loading: () => <div className="h-96 bg-gradient-to-r from-emerald-50 to-green-50 animate-pulse" />,
+});
+
+const Footer = dynamic(() => import('@/components/layout/Footer'), {
+  loading: () => <div className="h-64 bg-gray-50" />,
+});
+
+const ClothingProductSections = dynamic(() => import('@/components/home/ClothingProductSections'), {
+  loading: () => <div className="h-96 bg-white animate-pulse" />,
+});
+
+const BottomNav = dynamic(() => import('@/components/home/BottomNav'));
 
 export const metadata = {
   title: 'Achrilik - Shopping en Ligne Algérie | Mode, Tech & Maison',
@@ -102,8 +113,19 @@ async function getBestSellers() {
       where: {
         status: 'APPROVED',
       },
-      include: {
-        Category: true,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        discountPrice: true,
+        promotionLabel: true,
+        images: true,
+        createdAt: true,
+        Category: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc'
@@ -125,8 +147,19 @@ async function getNewArrivals() {
       where: {
         status: 'APPROVED',
       },
-      include: {
-        Category: true,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        discountPrice: true,
+        promotionLabel: true,
+        images: true,
+        createdAt: true,
+        Category: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc'
@@ -160,8 +193,19 @@ async function getPromotions() {
           }
         ]
       },
-      include: {
-        Category: true,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        discountPrice: true,
+        promotionLabel: true,
+        images: true,
+        createdAt: true,
+        Category: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc'
@@ -217,8 +261,19 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
         categoryId: { in: categoryIds },
         status: 'APPROVED'
       },
-      include: {
-        Category: true,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        discountPrice: true,
+        promotionLabel: true,
+        images: true,
+        createdAt: true,
+        Category: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc'

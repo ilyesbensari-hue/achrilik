@@ -1,44 +1,56 @@
-
 import { useState, useEffect } from 'react';
+import useSWR from 'swr';
+
+// Fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export function useWishlistCount() {
-    const [wishlistCount, setWishlistCount] = useState(0);
+    const [userId, setUserId] = useState<string | null>(null);
 
+    // Get user ID from localStorage on mount (client-side only)
     useEffect(() => {
-        const updateCount = () => {
-            const userSession = localStorage.getItem('user');
-            if (userSession) {
-                try {
-                    const user = JSON.parse(userSession);
-                    fetch(`/api/wishlist?userId=${user.id}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                setWishlistCount(data.products.length);
-                            }
-                        })
-                        .catch(console.error);
-                } catch (e) {
-                    console.error(e);
-                }
-            } else {
-                const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                setWishlistCount(wishlist.length);
+        if (typeof window === 'undefined') return;
+
+        const userSession = localStorage.getItem('user');
+        if (userSession) {
+            try {
+                const user = JSON.parse(userSession);
+                setUserId(user.id);
+            } catch (e) {
+                console.error('Failed to parse user session', e);
             }
-        };
-
-        // Initial fetch
-        updateCount();
-
-        // Listen for updates
-        window.addEventListener('wishlistUpdate', updateCount);
-        window.addEventListener('storage', updateCount);
-
-        return () => {
-            window.removeEventListener('wishlistUpdate', updateCount);
-            window.removeEventListener('storage', updateCount);
-        };
+        }
     }, []);
 
-    return wishlistCount;
+    // Use SWR for data fetching with deduplication
+    const { data, error } = useSWR(
+        userId ? `/api/wishlist?userId=${userId}` : null,
+        fetcher,
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 10000, // 10 seconds deduplication
+            refreshInterval: 30000, // Refresh every 30 seconds
+        }
+    );
+
+    // Listen for custom wishlist update events
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const handleUpdate = () => {
+            // SWR will automatically revalidate due to mutate
+        };
+
+        window.addEventListener('wishlistUpdate', handleUpdate);
+        return () => window.removeEventListener('wishlistUpdate', handleUpdate);
+    }, []);
+
+    // Return count from API data or fallback to localStorage
+    if (error || !userId) {
+        if (typeof window === 'undefined') return 0;
+        const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        return wishlist.length;
+    }
+
+    return data?.products?.length || 0;
 }

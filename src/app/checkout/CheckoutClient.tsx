@@ -76,12 +76,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         setFormData({ ...formData, [name]: value });
     };
 
-    /**
-     * Handler pour onBlur - validation au départ du champ (retiré temporarily)
-     */
-    const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        // Validation disabled for now
-    };
+
 
     /**
      * Handler pour sélection GPS depuis MapAddressPicker
@@ -115,18 +110,9 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 return;
             }
 
-            // GPS warning if not provided
+            // GPS warning if not provided (Non-blocking now)
             if (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude)) {
-                const confirmWithoutGPS = confirm(
-                    '⚠️ Position GPS non trouvée.\n\n' +
-                    'Votre commande sera traitée avec l\'adresse textuelle uniquement.\n' +
-                    'Cela peut rallonger le délai de livraison.\n\n' +
-                    'Continuer sans GPS ?'
-                );
-                if (!confirmWithoutGPS) {
-                    setIsSubmitting(false);
-                    return;
-                }
+                console.warn("Commande sans GPS - Adresse textuelle uniquement");
             }
 
             // Create order
@@ -389,7 +375,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 {/* GPS Map Picker - LEAFLET (OPENSTREETMAP) */}
                                 <div className="mt-6">
                                     <label className="text-sm font-bold text-gray-700 mb-2 block">
-                                        📍 Pointez votre adresse exacte sur la carte *
+                                        📍 Pointez votre adresse exacte sur la carte (Optionnel)
                                     </label>
                                     <LeafletAddressPicker
                                         onLocationSelect={(loc) => handleLocationSelect(loc.coordinates.lat, loc.coordinates.lng, loc.address)}
@@ -438,17 +424,17 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 <div className="mt-4 grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Prénom</label>
-                                        <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Ahmed" required />
+                                        <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Ahmed" required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Nom</label>
-                                        <input type="text" name="nom" value={formData.nom} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="Benali" required />
+                                        <input type="text" name="nom" value={formData.nom} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="Benali" required />
                                     </div>
                                 </div>
                                 <div className="mt-2 grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Email</label>
-                                        <input type="email" name="email" value={formData.email} onChange={handleChange} onBlur={handleFieldBlur} className="w-full rounded-lg border-gray-300" placeholder="exemple@email.com" required />
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border-gray-300" placeholder="exemple@email.com" required />
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block flex items-center gap-1.5">
@@ -545,14 +531,23 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                             </div>
                         </div>
 
-                        {/* Phone Confirmation */}
+                        {/* Phone & Address Confirmation */}
                         <div className="mt-6 bg-blue-50 p-4 rounded-xl border border-blue-200">
-                            <p className="text-sm text-blue-800 mb-1">📞 Confirmation du numéro :</p>
+                            <p className="text-sm text-blue-800 mb-1">📞 Confirmation du contact :</p>
                             <p className="text-xl font-black text-blue-900 tracking-wider">
                                 {formData.telephone || '...'}
                             </p>
-                            <p className="text-xs text-blue-600 mt-1">
-                                Nous vous appellerons sur ce numéro pour confirmer.
+                            {deliveryMethod === 'DELIVERY' && (
+                                <>
+                                    <div className="my-2 border-t border-blue-200"></div>
+                                    <p className="text-sm text-blue-800 mb-1">📍 Confirmation de l'adresse :</p>
+                                    <p className="text-sm font-bold text-blue-900 leading-tight">
+                                        {formData.address ? `${formData.address}, ${formData.city}, ${formData.wilaya}` : '...'}
+                                    </p>
+                                </>
+                            )}
+                            <p className="text-xs text-blue-600 mt-2">
+                                Vérifiez ces informations avant de confirmer.
                             </p>
                         </div>
 
@@ -564,7 +559,6 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 !formData.nom ||
                                 !formData.telephone ||
                                 (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.wilaya || !formData.city)) ||
-                                (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude)) || // Block if no pin
                                 isSubmitting
                             }
                             className={`w-full btn btn-primary mt-6 py-4 text-lg font-bold shadow-xl shadow-green-100 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}

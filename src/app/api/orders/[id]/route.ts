@@ -28,6 +28,7 @@ export async function GET(
                                         id: true,
                                         title: true,
                                         storeId: true,
+                                        images: true,
                                     },
                                 },
                             },
