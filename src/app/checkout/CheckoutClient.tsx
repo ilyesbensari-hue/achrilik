@@ -19,6 +19,11 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CIB' | 'DAHABIA'>('CASH');
     const [stores, setStores] = useState<any[]>([]);
 
+    // --- Derived State for Stores & Pickup ---
+    const cartStoreIds = new Set(cart.map((item: any) => item.storeId).filter(Boolean));
+    const relevantStores = stores.filter(store => cartStoreIds.has(store.id));
+    const pickupAvailable = cartStoreIds.size > 0 && relevantStores.every(s => s.clickCollect !== false);
+
     // User Details - Extended avec email, prenom, nom, GPS
     const [formData, setFormData] = useState({
         email: '',
@@ -180,17 +185,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
 
     // ... (Store filtering logic remains the same)
 
-    // --- Derived State for Stores & Pickup ---
-    const cartStoreIds = new Set(cart.map((item: any) => item.storeId).filter(Boolean));
-    const relevantStores = stores.filter(store => cartStoreIds.has(store.id));
 
-    // Pickup is available ONLY if:
-    // 1. All items belong to stores (no platform-only items if that's a thing)
-    // 2. All involved stores support click & collect
-    // 3. (Optional business rule) All items come from the SAME store? 
-    //    -> For now, let's say "multi-store pickup" is complicated, so maybe just check if all support it.
-    //    -> Or, simplistically: if we have stores and they all allow pickup.
-    const pickupAvailable = cartStoreIds.size > 0 && relevantStores.every(s => s.clickCollect !== false);
 
 
     return (
