@@ -161,11 +161,19 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 return;
             }
 
-            // 2. Validation GPS si livraison à domicile
+            // 2. Validation GPS si livraison à domicile (OPTIONNEL si Maps fail)
+            // Si Google Maps fail, on permet la commande en mode dégradé avec adresse textuelle uniquement
             if (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude)) {
-                alert('📍 Veuillez pointer votre adresse exacte sur la carte Google Maps');
-                setIsSubmitting(false);
-                return;
+                const confirmWithoutGPS = confirm(
+                    '⚠️ Position GPS non trouvée.\n\n' +
+                    'Votre commande sera traitée avec l\'adresse textuelle uniquement.\n' +
+                    'Cela peut rallonger le délai de livraison.\n\n' +
+                    'Continuer sans GPS ?'
+                );
+                if (!confirmWithoutGPS) {
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             // 2. Sauvegarder informations client (DB + localStorage)
