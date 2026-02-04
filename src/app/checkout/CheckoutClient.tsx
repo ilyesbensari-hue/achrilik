@@ -448,7 +448,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                             value={formData.telephone}
                                             readOnly
                                             className="w-full rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed font-medium text-gray-700"
-                                            placeholder="Votre numéro de téléphone"
+                                            placeholder="Ex: 0661234567"
                                             title="Numéro pré-rempli depuis votre inscription"
                                         />
                                     </div>
