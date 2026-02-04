@@ -18,6 +18,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CIB' | 'DAHABIA'>('CASH');
     const [stores, setStores] = useState<any[]>([]);
+    const [isMapError, setIsMapError] = useState(false);
 
     // User Details - Extended avec email, prenom, nom, GPS
     const [formData, setFormData] = useState({
@@ -108,8 +109,8 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 return;
             }
 
-            // GPS warning if not provided
-            if (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude)) {
+            // GPS warning if not provided (SKIP if map error)
+            if (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude) && !isMapError) {
                 const confirmWithoutGPS = confirm(
                     '⚠️ Position GPS non trouvée.\n\n' +
                     'Votre commande sera traitée avec l\'adresse textuelle uniquement.\n' +
@@ -369,6 +370,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                         onLocationSelect={handleLocationSelect}
                                         initialLat={formData.latitude || undefined}
                                         initialLng={formData.longitude || undefined}
+                                        onLoadError={() => setIsMapError(true)}
                                     />
                                     {formData.latitude && formData.longitude && (
                                         <div className="mt-3 text-xs text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 flex items-start gap-2">
@@ -519,6 +521,17 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                             </div>
                         </div>
 
+                        {/* Phone Confirmation */}
+                        <div className="mt-6 bg-blue-50 p-4 rounded-xl border border-blue-200">
+                            <p className="text-sm text-blue-800 mb-1">📞 Confirmation du numéro :</p>
+                            <p className="text-xl font-black text-blue-900 tracking-wider">
+                                {formData.telephone || '...'}
+                            </p>
+                            <p className="text-xs text-blue-600 mt-1">
+                                Nous vous appellerons sur ce numéro pour confirmer.
+                            </p>
+                        </div>
+
                         <button
                             onClick={handleSubmit}
                             disabled={
@@ -527,6 +540,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 !formData.nom ||
                                 !formData.telephone ||
                                 (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.wilaya || !formData.city)) ||
+                                (deliveryMethod === 'DELIVERY' && !isMapError && (!formData.latitude || !formData.longitude)) || // Block if map works but no pin (optional strictness)
                                 isSubmitting
                             }
                             className={`w-full btn btn-primary mt-6 py-4 text-lg font-bold shadow-xl shadow-green-100 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}

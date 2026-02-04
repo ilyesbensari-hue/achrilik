@@ -14,19 +14,26 @@ const ORAN_CENTER = { lat: 35.6976, lng: -0.6337 };
 export default function MapAddressPicker({
     onLocationSelect,
     initialLat,
-    initialLng
-}: MapAddressPickerProps) {
+    initialLng,
+    onLoadError
+}: MapAddressPickerProps & { onLoadError?: () => void }) {
     const [markerPosition, setMarkerPosition] = useState({
         lat: initialLat || ORAN_CENTER.lat,
         lng: initialLng || ORAN_CENTER.lng
     });
     const [mapCenter, setMapCenter] = useState(markerPosition);
     const [isGettingLocation, setIsGettingLocation] = useState(false);
+    const [internalLoadError, setInternalLoadError] = useState(false);
 
     const { isLoaded, loadError } = useJsApiLoader({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
         libraries: ['places']
     });
+
+    if (loadError && !internalLoadError) {
+        setInternalLoadError(true);
+        if (onLoadError) onLoadError();
+    }
 
     const reverseGeocode = useCallback((position: { lat: number; lng: number }) => {
         if (typeof google === 'undefined') return;
@@ -86,10 +93,12 @@ export default function MapAddressPicker({
         );
     };
 
-    if (loadError) {
+    if (loadError || internalLoadError) {
         return (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                ❌ Erreur de chargement de Google Maps. Veuillez rafraîchir la page.
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm">
+                <p className="font-bold mb-1">⚠️ Carte indisponible</p>
+                <p>La carte ne peut pas être chargée (Erreur de configuration). <br />
+                    <strong>Pas de panique !</strong> Vous pouvez quand même passer commande en remplissant votre adresse manuellement ci-dessus.</p>
             </div>
         );
     }
