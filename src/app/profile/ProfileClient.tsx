@@ -53,11 +53,17 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
             try {
                 // 1. Fetch Buyer Orders (orders placed BY this user)
                 fetch(`/api/orders?userId=${initialUser.id}`)
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error('Erreur lors du chargement des commandes');
+                        return res.json();
+                    })
                     .then(data => {
                         if (Array.isArray(data)) setOrders(data);
                     })
-                    .catch(console.error);
+                    .catch(err => {
+                        console.error('Erreur orders:', err);
+                        alert('⚠️ Impossible de charger vos commandes. Veuillez rafraîchir la page.');
+                    });
 
                 // 2. Check if user has a store (for dashboard button display)
                 if (initialUser.role === 'SELLER') {

@@ -34,52 +34,95 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
     }, [colors, selectedColor]);
 
     const handleAddToCart = () => {
-        // Check role
-
-
-        // Validate selection
-        if (sizes.length > 1 && !selectedSize) {
-            showToast('Veuillez sélectionner une taille', 'error');
+        // Basic validation with detailed error messages
+        if (sizes.length > 0 && !selectedSize) {
+            const sizeList = sizes.join(', ');
+            showToast(
+                `⚠️ Veuillez sélectionner une taille`,
+                'error',
+                { duration: 4000 }
+            );
             return;
         }
-        if (colors.length > 1 && !selectedColor) {
-            showToast('Veuillez sélectionner une couleur', 'error');
-            return;
-        }
-        if (!selectedSize || !selectedColor) {
-            showToast('Erreur: Aucune variante disponible', 'error');
+        if (colors.length > 0 && !selectedColor) {
+            const colorList = colors.join(', ');
+            showToast(
+                `⚠️ Veuillez sélectionner une couleur`,
+                'error',
+                { duration: 4000 }
+            );
             return;
         }
 
-        const variant = product.Variant.find((v: any) => v.size === selectedSize && v.color === selectedColor);
+        // Find variant
+        const variant = product.Variant.find((v: any) =>
+            (!sizes.length || v.size === selectedSize) &&
+            (!colors.length || v.color === selectedColor)
+        );
+
         if (!variant) {
-            showToast('Combinaison indisponible', 'error');
-            return;
-        }
-        if (variant.stock < quantity) {
-            showToast(`Stock insuffisant (${variant.stock} disponibles)`, 'error');
+            showToast('❌ Combinaison taille/couleur indisponible', 'error');
             return;
         }
 
+        // Check stock with detailed message
+        if (variant.stock === 0) {
+            showToast(
+                `❌ Cette variante est en rupture de stock`,
+                'error',
+                { duration: 5000 }
+            );
+            return;
+        }
+
+        if (variant.stock < quantity) {
+            showToast(
+                `⚠️ Stock insuffisant: seulement ${variant.stock} article(s) disponible(s)`,
+                'error',
+                { duration: 5000 }
+            );
+            return;
+        }
+
+        // Check if already in cart
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const existingItem = cart.find((item: any) =>
+            item.productId === product.id &&
+            item.variantId === variant.id
+        );
+
+        if (existingItem) {
+            showToast(
+                `ℹ️ Ce produit est déjà dans votre panier`,
+                'warning',
+                {
+                    label: 'Voir le panier',
+                    onClick: () => router.push('/cart'),
+                    duration: 4000
+                }
+            );
+            return;
+        }
+
+        // Add to cart
         const cartItem = {
             productId: product.id,
             title: product.title,
             price: product.price,
             variantId: variant.id,
-            size: selectedSize,
-            color: selectedColor,
+            size: selectedSize || sizes[0] || 'N/A',
+            color: selectedColor || colors[0] || 'N/A',
             image: images[0],
             storeId: product.storeId,
             stock: variant.stock,
             quantity
         };
 
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         cart.push(cartItem);
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('storage'));
 
-        showToast('Produit ajouté au panier', 'success', {
+        showToast('✅ Produit ajouté au panier', 'success', {
             label: 'Voir le panier',
             onClick: () => router.push('/cart')
         });

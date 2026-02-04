@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { useClientInfo } from '@/hooks/useClientInfo';
-import { useFormValidation } from '@/hooks/useFormValidation';
-import { useAutoSave } from '@/hooks/useAutoSave';
 
 const StoreMap = dynamic(() => import('@/components/StoreMap'), { ssr: false });
 const MapAddressPicker = dynamic(() => import('@/components/MapAddressPicker'), { ssr: false });
@@ -35,58 +32,17 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         longitude: null as number | null
     });
 
-    // Hooks de persistance et validation
-    const { clientInfo, isLoading: clientLoading, saveClientInfo } = useClientInfo();
-    const {
-        errors,
-        touched,
-        validateField,
-        handleBlur,
-        handleChange: validateChange,
-        autoCorrect,
-        validateAll
-    } = useFormValidation();
-    const { loadDraft, clearDraft } = useAutoSave(formData, true);
+
 
     useEffect(() => {
-        // 1. Load Cart
+        // Load Cart
         const storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
         setCart(storedCart);
         const t = storedCart.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
         setTotal(t);
 
-        // 2. Vérifier brouillon (sessionStorage)
-        const draft = loadDraft();
-        if (draft && draft.email) {
-            const shouldRestore = confirm(
-                '📝 Un brouillon a été trouvé. Voulez-vous restaurer vos informations?'
-            );
-            if (shouldRestore) {
-                setFormData(draft);
-                // Ne pas charger depuis clientInfo si brouillon restauré
-                return;
-            } else {
-                clearDraft();
-            }
-        }
-
-        // 3. Charger depuis clientInfo (DB ou localStorage)
-        if (clientLoading) return; // Attendre chargement
-
-        if (clientInfo && clientInfo.email) {
-            setFormData({
-                email: clientInfo.email || '',
-                prenom: clientInfo.prenom || '',
-                nom: clientInfo.nom || '',
-                telephone: clientInfo.telephone || '',
-                wilaya: clientInfo.adresses?.[0]?.wilaya || '',
-                city: clientInfo.adresses?.[0]?.ville || '',
-                address: clientInfo.adresses?.[0]?.rue || '',
-                latitude: null,
-                longitude: null
-            });
-        } else if (initialUser) {
-            // 4. Fallback: Pre-fill depuis initialUser
+        // Pre-fill from initialUser
+        if (initialUser) {
             const [prenom, ...nomParts] = (initialUser.name || '').split(' ');
             setFormData({
                 email: initialUser.email || '',
@@ -101,32 +57,23 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
             });
         }
 
-        // 5. Fetch Stores
+        // Fetch Stores
         fetch('/api/stores/locations')
             .then(res => res.json())
             .then(data => setStores(data))
             .catch(e => console.error(e));
-    }, [initialUser, clientInfo, clientLoading, loadDraft, clearDraft]);
+    }, [initialUser]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-
-        // Auto-correction (format téléphone, capitalize noms, clean email)
-        const correctedValue = autoCorrect(name, value);
-
-        // Update formData
-        setFormData({ ...formData, [name]: correctedValue });
-
-        // Validation temps réel (si champ déjà touché)
-        validateChange(name, correctedValue);
+        setFormData({ ...formData, [name]: value });
     };
 
     /**
-     * Handler pour onBlur - validation au départ du champ
+     * Handler pour onBlur - validation au départ du champ (retiré temporarily)
      */
     const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        handleBlur(name, value);
+        // Validation disabled for now
     };
 
     /**
@@ -148,21 +95,20 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         setIsSubmitting(true);
 
         try {
-            // 1. Valider formulaire complet
-            const requiredFields = deliveryMethod === 'DELIVERY'
-                ? ['email', 'prenom', 'nom', 'telephone', 'address', 'wilaya', 'city']
-                : ['email', 'prenom', 'nom', 'telephone'];
-
-            const isValid = validateAll(formData, requiredFields);
-
-            if (!isValid) {
-                alert('⚠️ Veuillez corriger les erreurs dans le formulaire');
+            // Basic validation
+            if (!formData.email || !formData.prenom || !formData.nom || !formData.telephone) {
+                alert('⚠️ Veuillez remplir tous les champs obligatoires');
                 setIsSubmitting(false);
                 return;
             }
 
-            // 2. Validation GPS si livraison à domicile (OPTIONNEL si Maps fail)
-            // Si Google Maps fail, on permet la commande en mode dégradé avec adresse textuelle uniquement
+            if (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.wilaya || !formData.city)) {
+                alert('⚠️ Veuillez remplir l\'adresse de livraison complète');
+                setIsSubmitting(false);
+                return;
+            }
+
+            // GPS warning if not provided
             if (deliveryMethod === 'DELIVERY' && (!formData.latitude || !formData.longitude)) {
                 const confirmWithoutGPS = confirm(
                     '⚠️ Position GPS non trouvée.\n\n' +
@@ -176,24 +122,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 }
             }
 
-            // 2. Sauvegarder informations client (DB + localStorage)
-            await saveClientInfo({
-                email: formData.email,
-                prenom: formData.prenom,
-                nom: formData.nom,
-                telephone: formData.telephone,
-                adresses: deliveryMethod === 'DELIVERY' ? [{
-                    id: Date.now().toString(),
-                    type: 'principale',
-                    rue: formData.address,
-                    ville: formData.city,
-                    code_postal: '',
-                    wilaya: formData.wilaya,
-                    isDefault: true
-                }] : []
-            });
-
-            // 3. Créer commande
+            // Create order
             const res = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -220,12 +149,11 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 throw new Error(data.error || 'Erreur lors de la commande');
             }
 
-            // 4. Success Visual Feedback
+            // Success!
             alert("✅ Commande confirmée avec succès ! Vous allez être redirigé vers vos commandes.");
 
-            // 5. Clear Cart + Draft
+            // Clear Cart
             localStorage.removeItem('cart');
-            clearDraft();
 
             // 6. Redirect
             window.location.href = '/profile';
@@ -369,65 +297,29 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Prénom</label>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                name="prenom"
-                                                value={formData.prenom}
-                                                onChange={handleChange}
-                                                onBlur={handleFieldBlur}
-                                                className={`w-full rounded-lg pr-10 ${touched.prenom
-                                                    ? errors.prenom?.isValid === false
-                                                        ? 'border-red-500 focus:ring-red-500'
-                                                        : errors.prenom?.isValid === true
-                                                            ? 'border-green-500 focus:ring-green-500'
-                                                            : 'border-gray-300'
-                                                    : 'border-gray-300'
-                                                    }`}
-                                                placeholder="Ahmed"
-                                                required
-                                            />
-                                            {touched.prenom && errors.prenom && (
-                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-lg ${errors.prenom.isValid ? 'text-green-500' : 'text-red-500'
-                                                    }`}>
-                                                    {errors.prenom.isValid ? '✅' : '❌'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {touched.prenom && errors.prenom && !errors.prenom.isValid && (
-                                            <p className="text-xs text-red-600 mt-1">{errors.prenom.message}</p>
-                                        )}
+                                        <input
+                                            type="text"
+                                            name="prenom"
+                                            value={formData.prenom}
+                                            onChange={handleChange}
+                                            onBlur={handleFieldBlur}
+                                            className="w-full rounded-lg border-gray-300"
+                                            placeholder="Ahmed"
+                                            required
+                                        />
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Nom</label>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                name="nom"
-                                                value={formData.nom}
-                                                onChange={handleChange}
-                                                onBlur={handleFieldBlur}
-                                                className={`w-full rounded-lg pr-10 ${touched.nom
-                                                    ? errors.nom?.isValid === false
-                                                        ? 'border-red-500 focus:ring-red-500'
-                                                        : errors.nom?.isValid === true
-                                                            ? 'border-green-500 focus:ring-green-500'
-                                                            : 'border-gray-300'
-                                                    : 'border-gray-300'
-                                                    }`}
-                                                placeholder="Benali"
-                                                required
-                                            />
-                                            {touched.nom && errors.nom && (
-                                                <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-lg ${errors.nom.isValid ? 'text-green-500' : 'text-red-500'
-                                                    }`}>
-                                                    {errors.nom.isValid ? '✅' : '❌'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {touched.nom && errors.nom && !errors.nom.isValid && (
-                                            <p className="text-xs text-red-600 mt-1">{errors.nom.message}</p>
-                                        )}
+                                        <input
+                                            type="text"
+                                            name="nom"
+                                            value={formData.nom}
+                                            onChange={handleChange}
+                                            onBlur={handleFieldBlur}
+                                            className="w-full rounded-lg border-gray-300"
+                                            placeholder="Benali"
+                                            required
+                                        />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">

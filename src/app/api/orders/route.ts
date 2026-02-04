@@ -126,12 +126,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
         }
 
-        // Validation GPS si livraison
-        if (deliveryMethod === 'DELIVERY' && (!deliveryLatitude || !deliveryLongitude)) {
-            return NextResponse.json({
-                error: 'Coordonnées GPS requises pour la livraison à domicile'
-            }, { status: 400 });
-        }
+        // GPS coordinates are optional but highly recommended
+        // Frontend (CheckoutClient.tsx L112-123) already prompts user with confirm() if GPS is missing
+        // Delivery agents can use textual address (wilaya, city, address) as fallback
 
         if (userId !== user.id) {
             return NextResponse.json({ error: 'Forbidden: Cannot place order for another user' }, { status: 403 });
