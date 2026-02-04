@@ -201,7 +201,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 <div className="space-y-8">
 
                     {/* User Info Confirmation / Edit */}
-                    {initialUser && !isEditing && (
+                    {initialUser && !isEditing && formData.telephone && formData.address && (
                         <section className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl shadow-sm border-2 border-green-200 relative animate-fade-in">
                             <button
                                 onClick={() => setIsEditing(true)}
@@ -300,7 +300,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                         )}
 
                         {/* Delivery Form - Editable */}
-                        {deliveryMethod === 'DELIVERY' && (isEditing || !initialUser) && (
+                        {deliveryMethod === 'DELIVERY' && (isEditing || !initialUser || !formData.telephone || !formData.address) && (
                             <div className="mt-6 space-y-4 animate-fade-in bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative">
                                 {initialUser && (
                                     <button
@@ -371,27 +371,29 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                         <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]" placeholder="Es Senia" required />
                                     </div>
                                 </div>
+                            </div>
+                        )}
 
-                                {/* GPS Map Picker - LEAFLET (OPENSTREETMAP) */}
-                                <div className="mt-6">
-                                    <label className="text-sm font-bold text-gray-700 mb-2 block">
-                                        📍 Pointez votre adresse exacte sur la carte (Optionnel)
-                                    </label>
-                                    <LeafletAddressPicker
-                                        onLocationSelect={(loc) => handleLocationSelect(loc.coordinates.lat, loc.coordinates.lng, loc.address)}
-                                        initialLat={formData.latitude || undefined}
-                                        initialLng={formData.longitude || undefined}
-                                    />
-                                    {formData.latitude && formData.longitude && (
-                                        <div className="mt-3 text-xs text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 flex items-start gap-2">
-                                            <span className="text-lg">✅</span>
-                                            <div>
-                                                <strong>Position confirmée</strong><br />
-                                                Coordonnées: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
-                                            </div>
+                        {/* GPS Map Picker - Always visible in DELIVERY mode */}
+                        {deliveryMethod === 'DELIVERY' && (
+                            <div className="mt-6 animate-fade-in bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                                <label className="text-sm font-bold text-gray-700 mb-2 block">
+                                    📍 Pointez votre adresse exacte sur la carte (Optionnel)
+                                </label>
+                                <LeafletAddressPicker
+                                    onLocationSelect={(loc) => handleLocationSelect(loc.coordinates.lat, loc.coordinates.lng, loc.address)}
+                                    initialLat={formData.latitude || undefined}
+                                    initialLng={formData.longitude || undefined}
+                                />
+                                {formData.latitude && formData.longitude && (
+                                    <div className="mt-3 text-xs text-green-700 bg-green-50 p-3 rounded-lg border border-green-200 flex items-start gap-2">
+                                        <span className="text-lg">✅</span>
+                                        <div>
+                                            <strong>Position confirmée</strong><br />
+                                            Coordonnées: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
