@@ -39,8 +39,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             const sizeList = sizes.join(', ');
             showToast(
                 `⚠️ Veuillez sélectionner une taille`,
-                'error',
-                { duration: 4000 }
+                'error'
             );
             return;
         }
@@ -48,8 +47,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             const colorList = colors.join(', ');
             showToast(
                 `⚠️ Veuillez sélectionner une couleur`,
-                'error',
-                { duration: 4000 }
+                'error'
             );
             return;
         }
@@ -69,8 +67,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         if (variant.stock === 0) {
             showToast(
                 `❌ Cette variante est en rupture de stock`,
-                'error',
-                { duration: 5000 }
+                'error'
             );
             return;
         }
@@ -78,8 +75,7 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         if (variant.stock < quantity) {
             showToast(
                 `⚠️ Stock insuffisant: seulement ${variant.stock} article(s) disponible(s)`,
-                'error',
-                { duration: 5000 }
+                'error'
             );
             return;
         }
@@ -94,11 +90,10 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
         if (existingItem) {
             showToast(
                 `ℹ️ Ce produit est déjà dans votre panier`,
-                'warning',
+                'info',
                 {
                     label: 'Voir le panier',
-                    onClick: () => router.push('/cart'),
-                    duration: 4000
+                    onClick: () => router.push('/cart')
                 }
             );
             return;
