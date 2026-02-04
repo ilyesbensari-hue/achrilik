@@ -1,19 +1,42 @@
-import * as tf from '@tensorflow/tfjs';
-import * as mobilenet from '@tensorflow-models/mobilenet';
-
-let model: mobilenet.MobileNet | null = null;
+// IMPORTANT: TensorFlow.js est importé dynamiquement pour éviter les crashes
+// La recherche visuelle est désactivée par défaut
+let model: any | null = null;
 
 /**
- * Charge le modèle MobileNet (une seule fois)
+ * Charge le modèle MobileNet (une seule fois) - avec lazy loading
+ * DÉSACTIVÉ PAR DÉFAUT pour éviter les crashes navigateur
  */
-export async function loadModel(): Promise<mobilenet.MobileNet> {
+export async function loadModel(): Promise<any> {
+    // Feature flag: désactiver si pas explicitement activé
+    if (typeof window === 'undefined') {
+        console.warn('[VisualSearch] Server-side - returning null');
+        return null;
+    }
+
+    if (!process.env.NEXT_PUBLIC_ENABLE_VISUAL_SEARCH || process.env.NEXT_PUBLIC_ENABLE_VISUAL_SEARCH !== 'true') {
+        console.warn('[VisualSearch] Feature disabled via NEXT_PUBLIC_ENABLE_VISUAL_SEARCH');
+        return null;
+    }
+
     if (model) return model;
 
-    console.log('Loading MobileNet model...');
-    model = await mobilenet.load();
-    console.log('MobileNet model loaded!');
+    console.log('[VisualSearch] Loading TensorFlow.js and MobileNet (lazy)...');
 
-    return model;
+    try {
+        // Lazy import pour éviter de charger au démarrage
+        const [tf, mobilenet] = await Promise.all([
+            import('@tensorflow/tfjs'),
+            import('@tensorflow-models/mobilenet')
+        ]);
+
+        model = await mobilenet.load();
+        console.log('[VisualSearch] MobileNet model loaded successfully!');
+
+        return model;
+    } catch (error) {
+        console.error('[VisualSearch] Failed to load model:', error);
+        return null;
+    }
 }
 
 /**
@@ -25,6 +48,11 @@ export async function extractImageFeatures(
     imageElement: HTMLImageElement
 ): Promise<number[]> {
     const loadedModel = await loadModel();
+
+    if (!loadedModel) {
+        console.error('[VisualSearch] Model not available - cannot extract features');
+        throw new Error('Visual search is disabled. Please enable NEXT_PUBLIC_ENABLE_VISUAL_SEARCH');
+    }
 
     // Extraire les features (activation de la dernière couche avant classification)
     const activation = loadedModel.infer(imageElement, true);
