@@ -275,11 +275,11 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                             <div className="space-y-2 text-sm">
                                 <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg">
                                     <span className="text-gray-600">📧 Email:</span>
-                                    <span className="font-semibold text-gray-900">{initialUser.email}</span>
+                                    <span className="font-semibold text-gray-900">{formData.email || initialUser.email}</span>
                                 </div>
                                 <div className="flex items-center gap-2 bg-white/60 p-3 rounded-lg">
                                     <span className="text-gray-600">📱 Téléphone:</span>
-                                    <span className="font-semibold text-gray-900">{formData.telephone || initialUser.phone}</span>
+                                    <span className="font-semibold text-gray-900">{formData.telephone || initialUser.phone || 'Non renseigné'}</span>
                                 </div>
                                 {formData.address && (
                                     <div className="flex items-start gap-2 bg-white/60 p-3 rounded-lg">
@@ -440,7 +440,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                             value={formData.telephone}
                                             readOnly
                                             className="w-full rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed font-medium text-gray-700"
-                                            placeholder="06 XX XX XX XX"
+                                            placeholder="Votre numéro de téléphone"
                                             title="Numéro pré-rempli depuis votre inscription"
                                         />
                                     </div>
@@ -537,7 +537,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                             value={formData.telephone}
                                             readOnly
                                             className="w-full rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed font-medium text-gray-700"
-                                            placeholder="06 XX XX XX XX"
+                                            placeholder="Votre numéro de téléphone"
                                             title="Numéro pré-rempli depuis votre inscription"
                                         />
                                     </div>
