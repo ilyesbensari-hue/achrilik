@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Dynamic imports for Leaflet components to avoid SSR issues
