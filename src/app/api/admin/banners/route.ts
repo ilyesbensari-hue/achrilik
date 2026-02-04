@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
+import { withCache } from '@/lib/cache';
+import cache from '@/lib/cache';
 
 // GET - Fetch all banners (or only active ones for public)
 export async function GET(request: NextRequest) {
@@ -8,10 +10,20 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const activeOnly = searchParams.get('activeOnly') === 'true';
 
-        const banners = await prisma.banner.findMany({
-            where: activeOnly ? { isActive: true } : undefined,
-            orderBy: { order: 'asc' },
-        });
+        // Use cache for active banners (public data)
+        // Cache for 60 seconds to balance freshness and performance
+        const cacheKey = activeOnly ? 'banners:active' : 'banners:all';
+
+        const banners = await withCache(
+            cacheKey,
+            async () => {
+                return await prisma.banner.findMany({
+                    where: activeOnly ? { isActive: true } : undefined,
+                    orderBy: { order: 'asc' },
+                });
+            },
+            activeOnly ? 60 : 30 // 60s for active, 30s for all
+        );
 
         return NextResponse.json(banners);
     } catch (error) {
@@ -56,6 +68,10 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // Clear banner cache after creation
+        cache.delete('banners:active');
+        cache.delete('banners:all');
+
         return NextResponse.json(banner, { status: 201 });
     } catch (error) {
         console.error('Failed to create banner:', error);
@@ -99,6 +115,10 @@ export async function PUT(request: NextRequest) {
             },
         });
 
+        // Clear banner cache after update
+        cache.delete('banners:active');
+        cache.delete('banners:all');
+
         return NextResponse.json(banner);
     } catch (error) {
         console.error('Failed to update banner:', error);
@@ -131,6 +151,10 @@ export async function DELETE(request: NextRequest) {
         await prisma.banner.delete({
             where: { id },
         });
+
+        // Clear banner cache after deletion
+        cache.delete('banners:active');
+        cache.delete('banners:all');
 
         return NextResponse.json({ message: 'Banner deleted successfully' });
     } catch (error) {
