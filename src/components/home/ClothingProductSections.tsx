@@ -50,6 +50,15 @@ function ProductSection({ section }: { section: SubcategorySection }) {
         setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
     };
 
+    // Check scroll on mount and when products load
+    useEffect(() => {
+        // Delay to ensure DOM is fully rendered
+        const timer = setTimeout(() => {
+            checkScroll();
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [section.products]);
+
     const scroll = (direction: 'left' | 'right') => {
         if (!scrollContainerRef.current) return;
         const scrollAmount = 300;
