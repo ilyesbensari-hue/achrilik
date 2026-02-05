@@ -42,7 +42,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         prenom: '',
         nom: '',
         telephone: '',
-        wilaya: '',
+        wilaya: 'Oran', // Fixed to Oran - only delivery location supported
         city: '',
         address: '',
         latitude: null as number | null,
@@ -68,7 +68,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 prenom: prenom || '',
                 nom: nomParts.join(' ') || '',
                 telephone: initialUser.phone || '',
-                wilaya: initialUser.wilaya || '',
+                wilaya: 'Oran', // Always set to Oran regardless of user profile
                 city: initialUser.city || '',
                 address: initialUser.address || '',
                 latitude: initialUser.latitude || null, // Use saved GPS if available
@@ -97,10 +97,10 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         }
     };
 
-    // Recalculate delivery fee when cart or wilaya changes
+    // Recalculate delivery fee when cart changes (wilaya is always Oran)
     useEffect(() => {
-        if (cart.length > 0 && formData.wilaya && deliveryMethod === 'DELIVERY') {
-            calculateDeliveryFee(cart, formData.wilaya)
+        if (cart.length > 0 && deliveryMethod === 'DELIVERY') {
+            calculateDeliveryFee(cart, 'Oran') // Always calculate for Oran delivery
                 .then(result => {
                     setDeliveryFee(result.totalFee);
                     setDeliveryFeeDetails(result);
@@ -110,7 +110,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                     setDeliveryFee(500); // Fallback
                 });
         }
-    }, [cart, formData.wilaya, deliveryMethod]);
+    }, [cart, deliveryMethod]);
 
 
 
@@ -148,8 +148,8 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
 
             if (deliveryMethod === 'DELIVERY') {
                 if (!formData.address) newErrors.address = "L'adresse de livraison est obligatoire";
-                if (!formData.wilaya) newErrors.wilaya = "La wilaya est obligatoire";
                 if (!formData.city) newErrors.city = "La commune est obligatoire";
+                // wilaya is automatically set to Oran, no need to validate
             }
 
             // If there are errors, display them and stop submission
@@ -362,7 +362,12 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                         ✕ Annuler
                                     </button>
                                 )}
-                                <h3 className="font-bold text-gray-900 mb-4">Informations de livraison</h3>
+                                <h3 className="font-bold text-gray-900 mb-4">Informations de livraison à Oran</h3>
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                    <p className="text-xs text-blue-800">
+                                        📍 <strong>Livraison uniquement à Oran</strong> pour le moment
+                                    </p>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Prénom</label>
@@ -442,7 +447,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-bold text-gray-700 mb-1 block">Adresse</label>
+                                    <label className="text-sm font-bold text-gray-700 mb-1 block">Adresse complète</label>
                                     <input
                                         type="text"
                                         name="address"
@@ -459,43 +464,23 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                         </p>
                                     )}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Wilaya</label>
-                                        <input
-                                            type="text"
-                                            name="wilaya"
-                                            value={formData.wilaya}
-                                            onChange={handleChange}
-                                            data-has-error={!!errors.wilaya}
-                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.wilaya ? 'border-red-500 bg-red-50' : ''}`}
-                                            placeholder="Oran"
-                                            required
-                                        />
-                                        {errors.wilaya && (
-                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                                                <span>⚠️</span> {errors.wilaya}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-700 mb-1 block">Commune</label>
-                                        <input
-                                            type="text"
-                                            name="city"
-                                            value={formData.city}
-                                            onChange={handleChange}
-                                            data-has-error={!!errors.city}
-                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.city ? 'border-red-500 bg-red-50' : ''}`}
-                                            placeholder="Es Senia"
-                                            required
-                                        />
-                                        {errors.city && (
-                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                                                <span>⚠️</span> {errors.city}
-                                            </p>
-                                        )}
-                                    </div>
+                                <div>
+                                    <label className="text-sm font-bold text-gray-700 mb-1 block">Commune (Oran)</label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleChange}
+                                        data-has-error={!!errors.city}
+                                        className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.city ? 'border-red-500 bg-red-50' : ''}`}
+                                        placeholder="Ex: Es Senia, Bir El Djir, Oran Centre..."
+                                        required
+                                    />
+                                    {errors.city && (
+                                        <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                            <span>⚠️</span> {errors.city}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -504,7 +489,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                         {deliveryMethod === 'DELIVERY' && (
                             <div className="mt-6 animate-fade-in bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                 <label className="text-sm font-bold text-gray-700 mb-2 block">
-                                    📍 Pointez votre adresse exacte sur la carte (Optionnel)
+                                    📍 Pointez votre adresse exacte à Oran (Optionnel)
                                 </label>
                                 <LeafletAddressPicker
                                     onLocationSelect={(loc) => handleLocationSelect(loc.coordinates.lat, loc.coordinates.lng, loc.address)}
@@ -708,7 +693,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 !formData.prenom ||
                                 !formData.nom ||
                                 !formData.telephone ||
-                                (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.wilaya || !formData.city)) ||
+                                (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.city)) ||
                                 isSubmitting
                             }
                             className={`w-full btn btn-primary mt-6 py-4 text-lg font-bold shadow-xl shadow-green-100 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
