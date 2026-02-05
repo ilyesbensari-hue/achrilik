@@ -39,11 +39,11 @@ export default function HeroVideoBanner() {
                         const mappedBanners: HeroBanner[] = data.map((banner: any) => ({
                             id: banner.id,
                             title_fr: banner.title,
-                            title_ar: banner.title, // Fallback to FR if no AR
+                            title_ar: banner.title_ar || banner.title, // Use AR field or fallback to FR
                             subtitle_fr: banner.subtitle || '',
-                            subtitle_ar: banner.subtitle || '',
+                            subtitle_ar: banner.subtitle_ar || banner.subtitle || '',
                             cta_text_fr: banner.buttonText || "Voir l'offre",
-                            cta_text_ar: banner.buttonText || "عرض",
+                            cta_text_ar: banner.buttonText_ar || "شاهد العرض",
                             cta_link: banner.link || '/categories',
                             video_url: banner.videoUrl || undefined,
                             thumbnail_url: banner.image || '/achrilik-logo-final.png',
