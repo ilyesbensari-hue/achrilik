@@ -103,6 +103,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <span>🎨</span>
                         <span>Banners Promo</span>
                     </Link>
+                    <Link
+                        href="/admin/vendors"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/vendors' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                            }`}
+                    >
+                        <span>🏪</span>
+                        <span>Vendeurs</span>
+                    </Link>
 
                     {/* Delivery Management */}
                     <div className="pt-4 mt-4 border-t border-slate-700">
