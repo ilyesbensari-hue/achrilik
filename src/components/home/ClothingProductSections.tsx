@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
@@ -66,6 +66,8 @@ function ProductSection({ section }: { section: SubcategorySection }) {
             left: direction === 'left' ? -scrollAmount : scrollAmount,
             behavior: 'smooth'
         });
+        // Check scroll state after animation completes
+        setTimeout(checkScroll, 350);
     };
 
     return (
@@ -87,10 +89,10 @@ function ProductSection({ section }: { section: SubcategorySection }) {
                 {canScrollLeft && (
                     <button
                         onClick={() => scroll('left')}
-                        className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all hover:scale-110"
+                        className="flex absolute left-2 md:left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-10 md:h-10 items-center justify-center bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all hover:scale-110"
                         aria-label="Scroll left"
                     >
-                        <ChevronLeft className="h-5 w-5 text-gray-700" strokeWidth={2.5} />
+                        <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-gray-700" strokeWidth={2.5} />
                     </button>
                 )}
 
@@ -98,10 +100,10 @@ function ProductSection({ section }: { section: SubcategorySection }) {
                 {canScrollRight && (
                     <button
                         onClick={() => scroll('right')}
-                        className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all hover:scale-110"
+                        className="flex absolute right-2 md:right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-10 md:h-10 items-center justify-center bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-all hover:scale-110"
                         aria-label="Scroll right"
                     >
-                        <ChevronRight className="h-5 w-5 text-gray-700" strokeWidth={2.5} />
+                        <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-gray-700" strokeWidth={2.5} />
                     </button>
                 )}
 
