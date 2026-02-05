@@ -82,19 +82,19 @@ export default function CategoryCircles() {
 
     return (
         <div className="mb-8 px-4 md:px-8 lg:px-12 xl:px-16">
-            <div className="flex md:grid md:grid-cols-6 lg:grid-cols-9 gap-4 md:gap-6 lg:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-hide md:max-w-7xl md:mx-auto">
+            <div className="flex md:grid md:grid-cols-6 lg:grid-cols-9 gap-5 md:gap-8 overflow-x-auto md:overflow-visible pb-6 md:pb-0 pt-2 px-1 scrollbar-hide md:max-w-7xl md:mx-auto">
                 {sections.map((section) => {
                     const Icon = section.icon;
                     return (
                         <Link
                             href={section.href}
                             key={section.slug}
-                            className="flex flex-col items-center gap-2 group flex-shrink-0 md:flex-shrink min-w-[72px] md:min-w-0"
+                            className="flex flex-col items-center gap-2.5 group flex-shrink-0 md:flex-shrink min-w-[76px] md:min-w-0"
                         >
-                            <div className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl lg:rounded-3xl ${section.bgColor} flex items-center justify-center transform transition-all duration-300 group-hover:scale-105 group-active:scale-95 shadow-[0_8px_16px_-6px_rgba(0,0,0,0.05)] group-hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.10)]`}>
-                                <Icon className={`h-7 w-7 md:h-10 md:w-10 lg:h-12 lg:w-12 ${section.iconColor}`} strokeWidth={1.5} />
+                            <div className={`w-[72px] h-[72px] md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl md:rounded-[20px] lg:rounded-3xl ${section.bgColor} flex items-center justify-center transform transition-all duration-300 group-hover:scale-105 group-active:scale-95 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.15)]`}>
+                                <Icon className={`h-8 w-8 md:h-9 md:w-9 lg:h-11 lg:w-11 ${section.iconColor}`} strokeWidth={1.5} />
                             </div>
-                            <span className="text-[11px] md:text-xs lg:text-sm font-medium text-gray-700 text-center leading-tight tracking-wide group-hover:text-gray-900 transition-colors">
+                            <span className="text-[11px] md:text-xs lg:text-sm font-medium text-gray-600 text-center leading-tight tracking-[0.01em] group-hover:text-gray-900 transition-colors">
                                 {section.name}
                             </span>
                         </Link>

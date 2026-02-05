@@ -229,10 +229,10 @@ export default function HeroVideoBanner() {
                 </div>
             )}
 
-            {/* Language Toggle */}
+            {/* Language Toggle - Glassmorphism */}
             <button
                 onClick={() => setCurrentLang(prev => prev === 'fr' ? 'ar' : 'fr')}
-                className="absolute top-4 right-4 z-20 px-4 py-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white text-sm font-medium hover:bg-white/30 transition-all"
+                className="absolute top-4 right-4 z-20 px-3 py-1.5 bg-black/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[11px] font-bold tracking-wide hover:bg-black/30 transition-all shadow-lg active:scale-95"
                 aria-label="Changer de langue"
             >
                 {currentLang === 'fr' ? 'العربية' : 'FR'}
