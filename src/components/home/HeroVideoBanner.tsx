@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HeroBanner {
     id: string;
@@ -141,6 +142,14 @@ export default function HeroVideoBanner() {
     const subtitle = currentLang === 'ar' && banner.subtitle_ar ? banner.subtitle_ar : banner.subtitle_fr;
     const ctaText = currentLang === 'ar' && banner.cta_text_ar ? banner.cta_text_ar : banner.cta_text_fr;
 
+    const goToNextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % banners.length);
+    };
+
+    const goToPrevSlide = () => {
+        setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
+    };
+
     return (
         <section
             className="relative w-full mx-3 mt-4 mb-6 max-w-md md:max-w-7xl md:mx-auto overflow-hidden rounded-2xl shadow-xl h-[400px] md:h-[500px] lg:h-[600px]"
@@ -215,6 +224,26 @@ export default function HeroVideoBanner() {
                     </Link>
                 </div>
             </div>
+
+            {/* Navigation Arrows - Desktop Only */}
+            {banners.length > 1 && (
+                <>
+                    <button
+                        onClick={goToPrevSlide}
+                        className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 rounded-full hover:bg-white/30 transition-all hover:scale-110 shadow-lg"
+                        aria-label="Bannière précédente"
+                    >
+                        <ChevronLeft className="h-5 w-5 text-white" strokeWidth={2.5} />
+                    </button>
+                    <button
+                        onClick={goToNextSlide}
+                        className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 rounded-full hover:bg-white/30 transition-all hover:scale-110 shadow-lg"
+                        aria-label="Bannière suivante"
+                    >
+                        <ChevronRight className="h-5 w-5 text-white" strokeWidth={2.5} />
+                    </button>
+                </>
+            )}
 
             {/* Navigation Dots */}
             {banners.length > 1 && (
