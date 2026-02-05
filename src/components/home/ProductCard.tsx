@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import WishlistButton from '@/components/WishlistButton';
 
 interface ProductCardProps {
     product: {
@@ -51,6 +52,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                         {product.promotionLabel}
                     </span>
                 )}
+
+                {/* Wishlist Button */}
+                <div className="absolute bottom-2 right-2 z-10">
+                    <WishlistButton productId={product.id} size="sm" />
+                </div>
+
                 <div className="relative w-full h-full">
                     <Image
                         src={product.image}
