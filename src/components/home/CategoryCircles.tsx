@@ -91,8 +91,8 @@ export default function CategoryCircles() {
                             key={section.slug}
                             className="flex flex-col items-center gap-2.5 group flex-shrink-0 md:flex-shrink min-w-[76px] md:min-w-0"
                         >
-                            <div className={`w-[72px] h-[72px] md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl md:rounded-[20px] lg:rounded-3xl ${section.bgColor} flex items-center justify-center transform transition-all duration-300 group-hover:scale-105 group-active:scale-95 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_20px_-8px_rgba(0,0,0,0.15)]`}>
-                                <Icon className={`h-8 w-8 md:h-9 md:w-9 lg:h-11 lg:w-11 ${section.iconColor}`} strokeWidth={1.5} />
+                            <div className={`w-[72px] h-[72px] md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl md:rounded-[20px] lg:rounded-3xl ${section.bgColor} flex items-center justify-center transform transition-all duration-300 group-hover:scale-105 group-active:scale-95 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] group-hover:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.12)] ring-1 ring-black/5 group-hover:ring-black/10`}>
+                                <Icon className={`h-8 w-8 md:h-9 md:w-9 lg:h-11 lg:w-11 ${section.iconColor} drop-shadow-sm`} strokeWidth={1.5} />
                             </div>
                             <span className="text-[11px] md:text-xs lg:text-sm font-medium text-gray-600 text-center leading-tight tracking-[0.01em] group-hover:text-gray-900 transition-colors">
                                 {section.name}

@@ -194,17 +194,24 @@ export default function HeroVideoBanner() {
 
                     <Link
                         href={banner.cta_link}
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg animate-fade-in-up delay-200"
+                        className="group relative inline-flex items-center gap-2 px-8 py-3 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-50 transition-all hover:scale-105 shadow-[0_4px_14px_0_rgba(255,255,255,0.39)] overflow-hidden animate-fade-in-up delay-200"
                     >
-                        {ctaText}
-                        <svg
-                            className={`w-5 h-5 ${currentLang === 'ar' ? 'rotate-180' : ''}`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <span className="relative z-10 flex items-center gap-2">
+                            {ctaText}
+                            <svg
+                                className={`w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 ${currentLang === 'ar' ? 'rotate-180 group-hover:-translate-x-1' : ''}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </span>
+
+                        {/* Shine Effect */}
+                        <div
+                            className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-0 pointer-events-none"
+                        />
                     </Link>
                 </div>
             </div>
@@ -261,6 +268,12 @@ export default function HeroVideoBanner() {
 
         .delay-200 {
           animation-delay: 0.2s;
+        }
+
+        @keyframes shimmer {
+          100% {
+            transform: translateX(100%);
+          }
         }
       `}</style>
         </section>
