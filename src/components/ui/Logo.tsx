@@ -7,15 +7,44 @@ interface LogoProps {
     className?: string;
     width?: number;
     height?: number;
-    showText?: boolean; // For future use if splittable
+    showText?: boolean;
+    isHeader?: boolean; // New prop for header usage
 }
 
-export default function Logo({ className = '', width = 120, height = 40 }: LogoProps) {
+export default function Logo({ className = '', width = 120, height = 40, isHeader = false }: LogoProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Return a simplified, stable version for headers
+    if (isHeader) {
+        return (
+            <div className={`relative flex items-center justify-center select-none cursor-pointer group ${className}`}>
+                <div className="relative z-10 transition-transform duration-300 group-hover:scale-105 active:scale-95">
+                    <Image
+                        src="/logo-achrilik.png"
+                        alt="Achrilik - اشريليك"
+                        width={width}
+                        height={height}
+                        className="object-contain"
+                        priority
+                    />
+
+                    {/* Subtle Shine Effect for Header */}
+                    <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-700"
+                        style={{
+                            background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.8) 45%, rgba(255,255,255,0.0) 50%, transparent 54%)',
+                            backgroundSize: '200% 100%',
+                            animation: 'logo-shine-slide 2s infinite'
+                        }}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div
@@ -50,8 +79,7 @@ export default function Logo({ className = '', width = 120, height = 40 }: LogoP
                         priority
                     />
 
-                    {/* Shimmer Overlay (Masked to image bounds roughly via overflow-hidden on parent if possible, but here we just use a gleam on top) */}
-                    {/* Since it's a transparent PNG, a simpler approach for "shine" is a white radial gradient passing over */}
+                    {/* Shimmer Overlay */}
                     <div
                         className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-700"
                         style={{

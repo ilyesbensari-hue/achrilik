@@ -25,9 +25,7 @@ export default function MobileHeader() {
             <div className="flex items-center justify-between px-4 h-16 gap-4">
                 {/* Logo & Bilingual Brand */}
                 <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
-                    <div className="relative h-10 w-24 group-active:scale-95 transition-transform">
-                        <Logo width={96} height={40} />
-                    </div>
+                    <Logo width={100} height={42} isHeader={true} />
                 </Link>
 
                 {/* Search Bar - Wider and Cleaner */}
