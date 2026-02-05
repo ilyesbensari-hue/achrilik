@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,6 +84,15 @@ export async function PUT(request: Request) {
             });
             results.push(res.id);
         }
+
+        // Revalidate all product-related pages to reflect changes immediately
+        revalidatePath('/admin/products');
+        revalidatePath('/admin/products/bulk');
+        revalidatePath('/api/products');
+        revalidatePath('/api/admin/products');
+
+        // Revalidate category pages (frontend will update automatically)
+        revalidatePath('/categories/[slug]', 'page');
 
         return NextResponse.json({ success: true, updated: results.length });
 

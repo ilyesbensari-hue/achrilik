@@ -13,7 +13,7 @@ interface Product {
     status: string;
     rejectionReason: string | null;
     createdAt: string;
-    category: {
+    Category: {
         name: string;
     } | null;
     Store: {
@@ -197,7 +197,7 @@ export default function AdminProductsPage() {
                                         <Image src={product.images.split(',')[0]} width={48} height={48} alt={product.title} className="object-cover rounded" />
                                         <div>
                                             <p className="font-medium text-gray-900">{product.title}</p>
-                                            <p className="text-sm text-gray-500">{product.category?.name || 'Sans catégorie'}</p>
+                                            <p className="text-sm text-gray-500">{product.Category?.name || 'Sans catégorie'}</p>
                                         </div>
                                     </div>
                                 </td>
