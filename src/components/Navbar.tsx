@@ -53,9 +53,7 @@ export default function Navbar() {
                 <div className="flex md:hidden items-center justify-between w-full gap-3">
                     {/* 1. Logo (Left) */}
                     <Link href="/" className="flex-shrink-0">
-                        <div className="relative h-8 w-20">
-                            <Logo width={80} height={32} />
-                        </div>
+                        <Logo width={80} height={32} isHeader={true} />
                     </Link>
 
                     {/* 2. Search (Center) */}

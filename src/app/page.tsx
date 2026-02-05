@@ -370,7 +370,7 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50/30 via-white to-white">
       <JsonLd data={generateOrganizationSchema('https://achrilik.com')} />
 
       {/* Content - Responsive for both mobile and desktop */}
