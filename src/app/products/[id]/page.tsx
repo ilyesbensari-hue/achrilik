@@ -139,6 +139,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                             </Link>
                         </div>
 
+                        {/* Storage City Badge - if outside Oran */}
+                        {product.Store.storageCity && product.Store.storageCity !== 'Oran' && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg border border-amber-200 text-xs font-medium">
+                                <span>📦</span>
+                                <span>Stocké à {product.Store.storageCity}</span>
+                            </div>
+                        )}
+
                         {/* Title & Price */}
                         <div>
                             <div className="flex justify-between items-start gap-4">

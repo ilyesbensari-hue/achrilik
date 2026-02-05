@@ -299,6 +299,7 @@ model Store {
   longitude              Float?
   address                String?
   city                   String?
+  storageCity            String?        @db.VarChar(100) // Ville où les produits sont stockés physiquement
   phone                  String?
   hours                  String?
   clickCollect           Boolean        @default(true)
@@ -448,6 +449,21 @@ enum OrderStatus {
   CANCELLED
 }
 
+// Configuration des frais de livraison gérés par l'admin
+model DeliveryFeeConfig {
+  id                     String   @id @default(cuid())
+  fromCity               String   @db.VarChar(100)  // Ville de stockage (ex: "Oran")
+  toWilaya               String   @db.VarChar(100)  // Wilaya de destination (ex: "Oran", "Alger", "Autre")
+  baseFee                Int      @default(500)     // Frais de base en DA
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@unique([fromCity, toWilaya])
+  @@index([fromCity])
+  @@index([toWilaya])
+}
+
 enum DeliveryStatus {
   PENDING
   ACCEPTED
@@ -465,3 +481,4 @@ enum Role {
   DELIVERY_AGENT
   ADMIN
 }
+

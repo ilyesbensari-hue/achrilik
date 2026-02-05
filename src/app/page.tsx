@@ -292,6 +292,8 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
 async function getClothingSections() {
   try {
     // Real category IDs from database (verified Feb 2026)
+    // NOTE: 'Bébé' is a subcategory of 'Enfant', so we use its ID directly.
+    // The getCategoryProducts function handles recursive descendant lookup automatically.
     const sections = [
       { id: 'cat-femme', name: 'Femme', slug: 'femme' },
       { id: 'cat-homme', name: 'Homme', slug: 'homme' },
@@ -301,6 +303,9 @@ async function getClothingSections() {
 
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
+        // getCategoryProducts already includes all descendant categories recursively
+        // This works for both top-level categories (Femme, Homme, Enfant)
+        // AND subcategories (Bébé is a child of Enfant)
         const products = await getCategoryProducts(section.id, 8);
         return {
           id: section.id,
@@ -311,7 +316,8 @@ async function getClothingSections() {
       })
     );
 
-    return sectionsWithProducts;
+    // Filter out sections with no products to avoid empty sections on homepage
+    return sectionsWithProducts.filter(section => section.products.length > 0);
   } catch (error) {
     console.error('Failed to fetch clothing sections:', error);
     return [];

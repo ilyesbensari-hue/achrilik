@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
+import { Trash2, MapPin, Store as StoreIcon, ShoppingBag, CreditCard, Wallet, Package } from 'lucide-react';
+import { calculateDeliveryFee } from '@/lib/deliveryFeeCalculator';
+
+const LeafletAddressPicker = dynamic(
+    () => import('@/components/LeafletAddressPicker'),
+    {
+        ssr: false,
+        loading: () => <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">Chargement de la carte...</div>
+    }
+);
 
 const StoreMap = dynamic(() => import('@/components/StoreMap'), { ssr: false });
-const LeafletAddressPicker = dynamic(() => import('@/components/LeafletAddressPicker'), { ssr: false });
 
 interface CheckoutClientProps {
     initialUser: any;
@@ -18,6 +28,8 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
     const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CIB' | 'DAHABIA'>('CASH');
     const [stores, setStores] = useState<any[]>([]);
+    const [deliveryFee, setDeliveryFee] = useState(500);
+    const [deliveryFeeDetails, setDeliveryFeeDetails] = useState<any>(null);
 
     // --- Derived State for Stores & Pickup ---
     const cartStoreIds = new Set(cart.map((item: any) => item.storeId).filter(Boolean));
@@ -74,7 +86,31 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+
+        // Clear error for this field when user starts typing
+        if (errors[name]) {
+            setErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
     };
+
+    // Recalculate delivery fee when cart or wilaya changes
+    useEffect(() => {
+        if (cart.length > 0 && formData.wilaya && deliveryMethod === 'DELIVERY') {
+            calculateDeliveryFee(cart, formData.wilaya)
+                .then(result => {
+                    setDeliveryFee(result.totalFee);
+                    setDeliveryFeeDetails(result);
+                })
+                .catch(error => {
+                    console.error('Error calculating delivery fee:', error);
+                    setDeliveryFee(500); // Fallback
+                });
+        }
+    }, [cart, formData.wilaya, deliveryMethod]);
 
 
 
@@ -91,22 +127,38 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     };
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setErrors({}); // Clear previous errors
 
         try {
-            // Basic validation
-            if (!formData.email || !formData.prenom || !formData.nom || !formData.telephone) {
-                alert('⚠️ Veuillez remplir tous les champs obligatoires');
-                setIsSubmitting(false);
-                return;
+            // Validation with detailed error messages
+            const newErrors: { [key: string]: string } = {};
+
+            if (!formData.email) newErrors.email = "L'email est obligatoire";
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "L'email n'est pas valide";
+
+            if (!formData.prenom) newErrors.prenom = "Le prénom est obligatoire";
+            if (!formData.nom) newErrors.nom = "Le nom est obligatoire";
+            if (!formData.telephone) newErrors.telephone = "Le numéro de téléphone est obligatoire";
+            else if (!/^(0)(5|6|7)[0-9]{8}$/.test(formData.telephone)) newErrors.telephone = "Numéro invalide (format: 0XXXXXXXXX)";
+
+            if (deliveryMethod === 'DELIVERY') {
+                if (!formData.address) newErrors.address = "L'adresse de livraison est obligatoire";
+                if (!formData.wilaya) newErrors.wilaya = "La wilaya est obligatoire";
+                if (!formData.city) newErrors.city = "La commune est obligatoire";
             }
 
-            if (deliveryMethod === 'DELIVERY' && (!formData.address || !formData.wilaya || !formData.city)) {
-                alert('⚠️ Veuillez remplir l\'adresse de livraison complète');
+            // If there are errors, display them and stop submission
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
                 setIsSubmitting(false);
+                // Scroll to first error
+                const firstErrorField = document.querySelector('[data-has-error="true"]');
+                firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
@@ -319,10 +371,16 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                             name="prenom"
                                             value={formData.prenom}
                                             onChange={handleChange}
-                                            className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]"
+                                            data-has-error={!!errors.prenom}
+                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.prenom ? 'border-red-500 bg-red-50' : ''}`}
                                             placeholder="Ahmed"
                                             required
                                         />
+                                        {errors.prenom && (
+                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                                <span>⚠️</span> {errors.prenom}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Nom</label>
@@ -331,16 +389,36 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                             name="nom"
                                             value={formData.nom}
                                             onChange={handleChange}
-                                            className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]"
+                                            data-has-error={!!errors.nom}
+                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.nom ? 'border-red-500 bg-red-50' : ''}`}
                                             placeholder="Benali"
                                             required
                                         />
+                                        {errors.nom && (
+                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                                <span>⚠️</span> {errors.nom}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Email</label>
-                                        <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]" placeholder="exemple@email.com" required />
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            data-has-error={!!errors.email}
+                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.email ? 'border-red-500 bg-red-50' : ''}`}
+                                            placeholder="exemple@email.com"
+                                            required
+                                        />
+                                        {errors.email && (
+                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                                <span>⚠️</span> {errors.email}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">
@@ -351,24 +429,72 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                             name="telephone"
                                             value={formData.telephone}
                                             onChange={handleChange}
-                                            className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]"
+                                            data-has-error={!!errors.telephone}
+                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.telephone ? 'border-red-500 bg-red-50' : ''}`}
                                             placeholder="0661234567"
                                             required
                                         />
+                                        {errors.telephone && (
+                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                                <span>⚠️</span> {errors.telephone}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                                 <div>
                                     <label className="text-sm font-bold text-gray-700 mb-1 block">Adresse</label>
-                                    <input type="text" name="address" value={formData.address} onChange={handleChange} className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]" placeholder="Cité 123 logts..." required />
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleChange}
+                                        data-has-error={!!errors.address}
+                                        className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.address ? 'border-red-500 bg-red-50' : ''}`}
+                                        placeholder="Cité 123 logts..."
+                                        required
+                                    />
+                                    {errors.address && (
+                                        <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                            <span>⚠️</span> {errors.address}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Wilaya</label>
-                                        <input type="text" name="wilaya" value={formData.wilaya} onChange={handleChange} className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]" placeholder="Oran" required />
+                                        <input
+                                            type="text"
+                                            name="wilaya"
+                                            value={formData.wilaya}
+                                            onChange={handleChange}
+                                            data-has-error={!!errors.wilaya}
+                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.wilaya ? 'border-red-500 bg-red-50' : ''}`}
+                                            placeholder="Oran"
+                                            required
+                                        />
+                                        {errors.wilaya && (
+                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                                <span>⚠️</span> {errors.wilaya}
+                                            </p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="text-sm font-bold text-gray-700 mb-1 block">Commune</label>
-                                        <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233]" placeholder="Es Senia" required />
+                                        <input
+                                            type="text"
+                                            name="city"
+                                            value={formData.city}
+                                            onChange={handleChange}
+                                            data-has-error={!!errors.city}
+                                            className={`w-full rounded-lg border-gray-300 focus:ring-[#006233] focus:border-[#006233] ${errors.city ? 'border-red-500 bg-red-50' : ''}`}
+                                            placeholder="Es Senia"
+                                            required
+                                        />
+                                        {errors.city && (
+                                            <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                                                <span>⚠️</span> {errors.city}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -519,17 +645,39 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                         </div>
 
                         <div className="border-t border-gray-200 pt-4 space-y-2">
-                            <div className="flex justify-between text-gray-600">
+                            <div className="flex justify-between py-3">
                                 <span>Sous-total</span>
                                 <span>{total.toLocaleString()} DA</span>
                             </div>
-                            <div className="flex justify-between text-gray-600">
-                                <span>Livraison</span>
-                                <span>{deliveryMethod === 'DELIVERY' ? '500 DA' : 'Gratuit'}</span>
-                            </div>
-                            <div className="flex justify-between text-xl font-black text-gray-900 pt-2 border-t border-gray-200 mt-2">
+                            {deliveryMethod === 'DELIVERY' && (
+                                <>
+                                    <div className="flex justify-between py-3">
+                                        <span>Frais de livraison</span>
+                                        <span>{deliveryFee.toLocaleString()} DA</span>
+                                    </div>
+                                    {deliveryFeeDetails?.hasOutsideOranProducts && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-2">
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-amber-600 flex-shrink-0">📦</span>
+                                                <div>
+                                                    <p className="text-xs font-medium text-amber-900">Produits stockés hors Oran</p>
+                                                    <p className="text-xs text-amber-700 mt-0.5">
+                                                        Les frais ont été ajustés selon la ville de stockage.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                            <div className="flex justify-between text-lg font-bold border-t-2 pt-3 mt-3">
                                 <span>Total</span>
-                                <span>{(total + (deliveryMethod === 'DELIVERY' ? 500 : 0)).toLocaleString()} DA</span>
+                                <span>
+                                    {deliveryMethod === 'DELIVERY'
+                                        ? (total + deliveryFee).toLocaleString()
+                                        : total.toLocaleString()
+                                    } DA
+                                </span>
                             </div>
                         </div>
 

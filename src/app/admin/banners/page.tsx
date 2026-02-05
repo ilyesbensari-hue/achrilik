@@ -460,15 +460,16 @@ export default function BannersManagementPage() {
                                     <td className="px-6 py-4 text-sm text-blue-600">{banner.link || '-'}</td>
                                     <td className="px-6 py-4 text-center">{banner.order}</td>
                                     <td className="px-6 py-4 text-center">
-                                        <button
-                                            onClick={() => toggleActive(banner)}
-                                            className={`px-3 py-1 rounded-full text-xs font-medium ${banner.isActive
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-gray-100 text-gray-800'
-                                                }`}
-                                        >
+                                        <input
+                                            type="checkbox"
+                                            checked={banner.isActive}
+                                            onChange={() => toggleActive(banner)}
+                                            className="h-5 w-5 rounded border-gray-300 text-[#006233] focus:ring-[#006233] cursor-pointer"
+                                            title={banner.isActive ? 'Cliquez pour désactiver' : 'Cliquez pour activer'}
+                                        />
+                                        <span className={`block text-xs mt-1 font-medium ${banner.isActive ? 'text-green-600' : 'text-gray-400'}`}>
                                             {banner.isActive ? 'Actif' : 'Inactif'}
-                                        </button>
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex gap-2 justify-center">

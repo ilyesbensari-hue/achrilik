@@ -17,7 +17,6 @@ interface Banner {
 }
 
 interface PromotionsBannerProps {
-    banners?: Banner[];
     featuredProducts?: Array<{
         id: string;
         image: string;
@@ -25,7 +24,35 @@ interface PromotionsBannerProps {
     }>;
 }
 
-export default function PromotionsBanner({ banners = [], featuredProducts = [] }: PromotionsBannerProps) {
+export default function PromotionsBanner({ featuredProducts = [] }: PromotionsBannerProps) {
+    const [banners, setBanners] = useState<Banner[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch banners with cache-busting to ensure deleted banners are removed
+    useEffect(() => {
+        const fetchBanners = () => {
+            fetch(`/api/admin/banners?activeOnly=true&_t=${Date.now()}`)
+                .then(res => res.json())
+                .then(data => {
+                    setBanners(data || []);
+                    setIsLoading(false);
+                })
+                .catch(error => {
+                    console.error('Error fetching banners:', error);
+                    setBanners([]);
+                    setIsLoading(false);
+                });
+        };
+
+        // Initial fetch
+        fetchBanners();
+
+        // Refresh every 60 seconds to sync with admin changes
+        const refreshInterval = setInterval(fetchBanners, 60000);
+
+        return () => clearInterval(refreshInterval);
+    }, []);
+
     // Determine which slides to show
     const activeBanners = banners.filter(b => b.isActive);
     const hasCustomBanners = activeBanners.length > 0;
