@@ -43,15 +43,15 @@ export default function ClothingProductSections({ sections }: ClothingProductSec
                         </Link>
                     </div>
 
-                    {/* Products Carousel on Mobile, Grid on Desktop */}
-                    <div className="overflow-x-auto md:overflow-visible pb-8 -mb-4 px-4 md:px-8 lg:px-12 scrollbar-hide snap-x snap-mandatory">
-                        <div className="flex md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 lg:gap-8 min-w-max md:min-w-0 md:max-w-7xl md:mx-auto">
+                    {/* Products Carousel - Horizontal on ALL screens */}
+                    <div className="overflow-x-auto pb-8 -mb-4 px-4 md:px-8 lg:px-12 scrollbar-hide">
+                        <div className="flex gap-4 md:gap-5 lg:gap-6 min-w-max">
                             {section.products.length > 0 ? (
                                 section.products.map((product) => (
                                     <Link
                                         key={product.id}
                                         href={`/products/${product.id}`}
-                                        className="w-[155px] md:w-auto flex flex-col gap-3 group snap-start"
+                                        className="w-[155px] md:w-[200px] lg:w-[220px] flex flex-col gap-3 group flex-shrink-0"
                                     >
                                         <div className="relative aspect-[3/4] bg-gray-50 rounded-[18px] overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-black/[0.04] transition-all duration-300 group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.1)] group-hover:-translate-y-1">
                                             <img
@@ -118,7 +118,7 @@ export default function ClothingProductSections({ sections }: ClothingProductSec
                                 ))
                             ) : (
                                 // Placeholder/Empty state if no products found
-                                <div className="w-full flex col-span-full items-center justify-center py-12 text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                                <div className="w-full flex items-center justify-center py-12 text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                                     <span className="text-sm font-medium">Aucun produit disponible pour le moment</span>
                                 </div>
                             )}

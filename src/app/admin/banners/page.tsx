@@ -6,11 +6,14 @@ import { Plus, Edit2, Trash2, Image as ImageIcon, ArrowUp, ArrowDown, Eye, EyeOf
 interface Banner {
     id: string;
     title: string;
+    title_ar?: string | null;
     subtitle: string | null;
+    subtitle_ar?: string | null;
     image: string;
     videoUrl?: string | null; // NEW: Support vidéo
     link: string | null;
     buttonText: string;
+    buttonText_ar?: string | null;
     isActive: boolean;
     order: number;
     createdAt: string;
@@ -26,11 +29,14 @@ export default function BannersManagementPage() {
     // Form state
     const [formData, setFormData] = useState({
         title: '',
+        title_ar: '',
         subtitle: '',
+        subtitle_ar: '',
         image: '',
         videoUrl: '', // NEW
         link: '',
         buttonText: "Voir l'offre",
+        buttonText_ar: '',
         isActive: true,
         order: 0,
         height: 110 // NEW: Hauteur personnalisable (px)
@@ -181,11 +187,14 @@ export default function BannersManagementPage() {
         setEditingBanner(banner);
         setFormData({
             title: banner.title,
+            title_ar: banner.title_ar || '',
             subtitle: banner.subtitle || '',
+            subtitle_ar: banner.subtitle_ar || '',
             image: banner.image,
             videoUrl: banner.videoUrl || '', // NEW
             link: banner.link || '',
             buttonText: banner.buttonText,
+            buttonText_ar: banner.buttonText_ar || '',
             isActive: banner.isActive,
             order: banner.order,
             height: 110  // Keep default
@@ -198,11 +207,14 @@ export default function BannersManagementPage() {
     function resetForm() {
         setFormData({
             title: '',
+            title_ar: '',
             subtitle: '',
+            subtitle_ar: '',
             image: '',
             videoUrl: '', // NEW
             link: '',
             buttonText: "Voir l'offre",
+            buttonText_ar: '',
             isActive: true,
             order: 0,
             height: 110  // Default height
@@ -245,35 +257,74 @@ export default function BannersManagementPage() {
                         <div className="grid md:grid-cols-2 gap-6">
                             {/* Left Column - Form Fields */}
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Titre *</label>
-                                    <input
-                                        type="text"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                        required
-                                    />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Titre (FR) *</label>
+                                        <input
+                                            type="text"
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">عنوان (AR)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.title_ar}
+                                            onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg text-right"
+                                            dir="rtl"
+                                            placeholder="العنوان بالعربية"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Sous-titre</label>
-                                    <input
-                                        type="text"
-                                        value={formData.subtitle}
-                                        onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Sous-titre (FR)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.subtitle}
+                                            onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">عنوان فرعي (AR)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.subtitle_ar}
+                                            onChange={(e) => setFormData({ ...formData, subtitle_ar: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg text-right"
+                                            dir="rtl"
+                                            placeholder="العنوان الفرعي"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Texte du Bouton</label>
-                                    <input
-                                        type="text"
-                                        value={formData.buttonText}
-                                        onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
-                                        className="w-full px-4 py-2 border rounded-lg"
-                                    />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Texte du Bouton (FR)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.buttonText}
+                                            onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">نص الزر (AR)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.buttonText_ar}
+                                            onChange={(e) => setFormData({ ...formData, buttonText_ar: e.target.value })}
+                                            className="w-full px-4 py-2 border rounded-lg text-right"
+                                            dir="rtl"
+                                            placeholder="نص الزر"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div>
