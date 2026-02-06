@@ -7,6 +7,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Trash2, MapPin, Store as StoreIcon, ShoppingBag, CreditCard, Wallet, Package } from 'lucide-react';
 import { calculateDeliveryFee } from '@/lib/deliveryFeeCalculator';
+import { validateCart } from '@/lib/cartLimits';
 
 const LeafletAddressPicker = dynamic(
     () => import('@/components/LeafletAddressPicker'),
@@ -23,6 +24,7 @@ interface CheckoutClientProps {
 }
 
 export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
+    const router = useRouter();
     const [cart, setCart] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
     const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
@@ -56,6 +58,15 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     useEffect(() => {
         // Load Cart
         const storedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+        // 🔒 VALIDATE CART LIMITS - Redirect if invalid
+        const validationError = validateCart(storedCart);
+        if (validationError && storedCart.length > 0) {
+            alert(`🚫 ${validationError.message}\n\nVeuillez ajuster votre panier avant de continuer.`);
+            router.push('/cart');
+            return;
+        }
+
         setCart(storedCart);
         const t = storedCart.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
         setTotal(t);

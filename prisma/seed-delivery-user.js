@@ -8,6 +8,7 @@ async function main() {
 
     // 1. Créer utilisateur avec rôle DELIVERY_AGENT
     const hashedPassword = await bcrypt.hash('livreur123', 10);
+    const { randomBytes } = require('crypto');
 
     const deliveryUser = await prisma.user.upsert({
         where: { email: 'livreur@achrilik.com' },
@@ -15,6 +16,7 @@ async function main() {
             roles: ['DELIVERY_AGENT', 'BUYER'], // Multi-rôle
         },
         create: {
+            id: randomBytes(16).toString('hex'),
             email: 'livreur@achrilik.com',
             name: 'Karim Livreur',
             password: hashedPassword,
@@ -31,11 +33,14 @@ async function main() {
         where: { userId: deliveryUser.id },
         update: {},
         create: {
+            id: randomBytes(16).toString('hex'),
             userId: deliveryUser.id,
+            provider: 'Achrilik',
             vehicleType: 'MOTO',
             licenseNumber: 'DZ-2024-12345',
-            isAvailable: true,
-            wilaya: 'Oran',
+            wilayasCovered: ['Oran'],
+            isActive: true,
+            isVerified: true,
         },
     });
 

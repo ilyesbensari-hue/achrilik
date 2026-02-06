@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
 import Image from 'next/image';
 import ProductReviews from '@/components/reviews/ProductReviews';
+import { canAddToCart } from '@/lib/cartLimits';
 
 interface ProductPageClientProps {
     product: any;
@@ -100,8 +101,9 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             return;
         }
 
-        // Add to cart
+        // Prepare cart item
         const cartItem = {
+            id: `${product.id}-${variant.id}`,
             productId: product.id,
             title: product.title,
             price: product.price,
@@ -110,9 +112,34 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             color: selectedColor || colors[0] || 'N/A',
             image: images[0],
             storeId: product.storeId,
+            storeName: product.Store?.name || 'Boutique',
             stock: variant.stock,
             quantity
         };
+
+        // 🔒 VALIDATE CART LIMITS
+        const { allowed, error } = canAddToCart(cart, cartItem);
+
+        if (!allowed && error) {
+            let message = error.message;
+            let advice = '';
+
+            if (error.type === 'MAX_ITEMS_PER_STORE') {
+                advice = `Vous avez déjà ${error.currentCount} articles de "${error.storeName}". Finalisez votre commande avant d'en ajouter plus.`;
+            } else if (error.type === 'MAX_STORES') {
+                advice = `Vous avez déjà des articles de ${error.currentCount} boutiques différentes. Finalisez cette commande avant d'acheter ailleurs.`;
+            }
+
+            showToast(
+                `🚫 ${message}${advice ? '\n' + advice : ''}`,
+                'error',
+                {
+                    label: 'Voir le panier',
+                    onClick: () => router.push('/cart')
+                }
+            );
+            return;
+        }
 
         cart.push(cartItem);
         localStorage.setItem('cart', JSON.stringify(cart));

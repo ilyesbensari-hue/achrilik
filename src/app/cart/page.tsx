@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
+import { validateCart, getRemainingCapacity, CART_LIMITS } from '@/lib/cartLimits';
 
 const MapPicker = dynamic(() => import('@/components/Map'), { ssr: false });
 
@@ -97,15 +98,28 @@ export default function CartPage() {
         if (newQuantity < 1) return;
 
         const item = cart[index];
+
         // Vérifier le stock disponible
         if (newQuantity > item.stock) {
             alert(`Stock maximum disponible: ${item.stock}`);
             return;
         }
 
-        // Mettre à jour le panier
+        // 🔒 VALIDATE CART LIMITS
         const newCart = [...cart];
         newCart[index] = { ...newCart[index], quantity: newQuantity };
+
+        const error = validateCart(newCart);
+        if (error) {
+            let message = error.message;
+            if (error.type === 'MAX_ITEMS_PER_STORE') {
+                message = `Vous ne pouvez pas dépasser ${CART_LIMITS.MAX_ITEMS_PER_STORE} articles pour "${error.storeName}"`;
+            }
+            alert(message);
+            return;
+        }
+
+        // Mettre à jour le panier
         setCart(newCart);
         localStorage.setItem('cart', JSON.stringify(newCart));
         window.dispatchEvent(new Event('storage'));
