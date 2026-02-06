@@ -340,8 +340,12 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             </div>
 
             {/* Customer Reviews Section */}
+            {/* ProductReviews Component */}
             <div className="border-t border-gray-200 pt-8 mt-8">
-                <ProductReviews productId={product.id} />
+                <ProductReviews
+                    productId={product.id}
+                    reviews={product.reviews || []}
+                />
             </div>
         </>
     );

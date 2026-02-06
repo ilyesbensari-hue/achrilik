@@ -39,7 +39,7 @@ export default function HeroSlider({ featuredProduct }: HeroSliderProps) {
             buttonText: 'Voir',
             buttonColor: 'bg-[#C62828] text-white',
             image: '',
-            link: '/categories/femme',
+            link: '/categories/vtements-femme',
             type: 'category' as const
         },
 

@@ -36,7 +36,7 @@ export default function CategoryCircles() {
             icon: User,
             bgColor: 'bg-pink-100',
             iconColor: 'text-pink-600',
-            href: '/categories/femme'
+            href: '/categories/vtements-femme'
         },
         {
             slug: 'homme',
@@ -44,7 +44,7 @@ export default function CategoryCircles() {
             icon: Shirt,
             bgColor: 'bg-blue-100',
             iconColor: 'text-blue-600',
-            href: '/categories/homme'
+            href: '/categories/vtements-homme'
         },
         {
             slug: 'enfant',
