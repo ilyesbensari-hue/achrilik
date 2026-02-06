@@ -272,7 +272,20 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                             </button>
                             <span className="text-xl font-bold w-16 text-center text-gray-900 dark:text-gray-900">{quantity}</span>
                             <button
-                                onClick={() => setQuantity(quantity + 1)}
+                                onClick={() => {
+                                    // Find current variant to check stock
+                                    const variant = product.Variant.find((v: any) =>
+                                        (!sizes.length || v.size === selectedSize) &&
+                                        (!colors.length || v.color === selectedColor)
+                                    );
+                                    const maxStock = variant?.stock || 999;
+
+                                    if (quantity >= maxStock) {
+                                        showToast(`⚠️ Stock maximum atteint (${maxStock} disponible${maxStock > 1 ? 's' : ''})`, 'error');
+                                        return;
+                                    }
+                                    setQuantity(quantity + 1);
+                                }}
                                 className="w-12 h-12 rounded-lg bg-indigo-50 hover:bg-indigo-100 font-bold text-lg text-indigo-600 flex items-center justify-center transition-colors"
                             >
                                 +

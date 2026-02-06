@@ -227,9 +227,9 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
 
 
     return (
-        <div className="container py-6 max-w-4xl mx-auto">
+        <div className="container py-6 px-4 mx-auto max-w-7xl">
             {/* STEPPER */}
-            <div className="flex items-center justify-between mb-8 px-4">
+            <div className="flex items-center justify-between mb-8">
                 <div className="flex flex-col items-center">
                     <div className="w-8 h-8 rounded-full bg-[#006233] text-white flex items-center justify-center font-bold text-sm">1</div>
                     <span className="text-xs mt-1 font-semibold text-[#006233]">Panier</span>
@@ -246,9 +246,9 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 </div>
             </div>
 
-            <h1 className="text-3xl font-black text-gray-900 mb-8">Finaliser la commande</h1>
+            <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-6">Finaliser la commande</h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* LEFT COLUMN: Options */}
                 <div className="space-y-8">
 
