@@ -37,9 +37,11 @@ async function createAdminAccount() {
         // Create new admin account
         console.log('🔨 Creating admin account...');
         const hashedPassword = await bcrypt.hash('admin123', 10);
+        const { randomBytes } = require('crypto');
 
         const admin = await prisma.user.create({
             data: {
+                id: randomBytes(16).toString('hex'),
                 email: 'admin@achrilik.com',
                 name: 'Admin Achrilik',
                 phone: '0770000000',
