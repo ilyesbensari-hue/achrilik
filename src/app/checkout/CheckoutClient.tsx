@@ -129,6 +129,15 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+    // Detect missing profile info
+    const missingFields = [];
+    if (!formData.email) missingFields.push('Email');
+    if (!formData.prenom) missingFields.push('Prénom');
+    if (!formData.nom) missingFields.push('Nom');
+    if (!formData.telephone) missingFields.push('Téléphone');
+    if (deliveryMethod === 'DELIVERY' && !formData.address) missingFields.push('Adresse');
+    const hasIncompleteProfile = missingFields.length > 0;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -247,6 +256,30 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
             </div>
 
             <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-6">Finaliser la commande</h1>
+
+            {/* Missing Info Warning */}
+            {hasIncompleteProfile && (
+                <div className="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-r-xl mb-6 animate-fade-in">
+                    <div className="flex items-start gap-3">
+                        <span className="text-2xl flex-shrink-0">⚠️</span>
+                        <div className="flex-1">
+                            <h3 className="font-bold text-orange-900 mb-2 text-lg">
+                                Informations manquantes pour finaliser votre commande
+                            </h3>
+                            <p className="text-sm text-orange-800 mb-3">
+                                Veuillez compléter les champs suivants pour continuer :
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {missingFields.map(field => (
+                                    <span key={field} className="bg-orange-200 text-orange-900 px-3 py-1 rounded-full text-xs font-semibold">
+                                        {field}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* LEFT COLUMN: Options */}

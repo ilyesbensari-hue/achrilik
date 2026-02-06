@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
 import Image from 'next/image';
+import ProductReviews from '@/components/reviews/ProductReviews';
 
 interface ProductPageClientProps {
     product: any;
@@ -309,6 +310,11 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
                         Voir le panier
                     </Link>
                 </div>
+            </div>
+
+            {/* Customer Reviews Section */}
+            <div className="border-t border-gray-200 pt-8 mt-8">
+                <ProductReviews productId={product.id} />
             </div>
         </>
     );
