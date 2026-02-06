@@ -15,8 +15,10 @@ export async function POST(request: Request) {
         if (!password || password.length < 8) {
             return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' }, { status: 400 });
         }
-        if (!phone || !PHONE_REGEX.test(phone)) {
-            return NextResponse.json({ error: 'N número de téléphone invalide (Doit commencer par 05, 06 ou 07 et contenir 10 chiffres).' }, { status: 400 });
+
+        // Phone is now optional - validate only if provided
+        if (phone && !PHONE_REGEX.test(phone)) {
+            return NextResponse.json({ error: 'Numéro de téléphone invalide (Doit commencer par 05, 06 ou 07 et contenir 10 chiffres).' }, { status: 400 });
         }
 
         // 2. Check Exists
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
                 email,
                 password: hashedPassword,
                 name: name || email.split('@')[0],
-                phone,
+                phone: phone || null, // Phone is now optional
                 address: address || null,
                 wilaya: wilaya || null,
                 city: city || null,
