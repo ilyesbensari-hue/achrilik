@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         // 🔒 CRITICAL: Vérifier que l'utilisateur a acheté ce produit
         const purchase = await prisma.order.findFirst({
             where: {
-                userId: user.id,
+                userId: (user as any).id as string,
                 status: 'DELIVERED', // Seulement les commandes livrées
                 OrderItem: {
                     some: {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         const existingReview = await prisma.review.findUnique({
             where: {
                 userId_productId: {
-                    userId: user.id,
+                    userId: (user as any).id as string,
                     productId: productId
                 }
             }
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             data: {
                 id: randomBytes(16).toString('hex'),
                 productId,
-                userId: user.id,
+                userId: (user as any).id as string,
                 orderId: purchase.id,
                 rating,
                 title: title || null,
