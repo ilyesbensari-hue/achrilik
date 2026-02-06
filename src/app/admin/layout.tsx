@@ -96,6 +96,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <span>Éditeur Fast</span>
                     </Link>
                     <Link
+                        href="/admin/categories"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/categories' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                            }`}
+                    >
+                        <span>🏷️</span>
+                        <span>Catégories</span>
+                    </Link>
+                    <Link
                         href="/admin/banners"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/banners' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
@@ -141,6 +149,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </Link>
                     </div>
 
+                    {/* Analytics - Feature not implemented yet
                     <Link
                         href="/admin/analytics"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/analytics' ? 'bg-slate-700' : 'hover:bg-slate-700'
@@ -149,6 +158,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <span>📈</span>
                         <span>Analytics</span>
                     </Link>
+                    */}
                 </nav>
 
                 <div className="absolute bottom-6 left-6 right-6">
