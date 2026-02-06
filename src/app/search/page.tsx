@@ -35,20 +35,23 @@ function SearchResults() {
     const fetchResults = async (search: string) => {
         try {
             setLoading(true);
-            const [productsRes, storesRes] = await Promise.all([
-                fetch(`/api/products?search=${encodeURIComponent(search)}`),
-                fetch(`/api/stores?search=${encodeURIComponent(search)}`)
-            ]);
 
-            const productsData = await productsRes.json();
-            const storesData = await storesRes.json();
+            // Use the new unified fuzzy search API
+            const response = await fetch(`/api/search?q=${encodeURIComponent(search)}`);
+            const data = await response.json();
 
-            // API returns array directly, not {products: []}
-            setProducts(Array.isArray(productsData) ? productsData : []);
-            setStores(Array.isArray(storesData) ? storesData : []);
+            if (response.ok) {
+                setProducts(data.products || []);
+                setStores(data.stores || []);
+            } else {
+                setProducts([]);
+                setStores([]);
+            }
 
         } catch (error) {
             console.error('Error fetching results:', error);
+            setProducts([]);
+            setStores([]);
         } finally {
             setLoading(false);
         }

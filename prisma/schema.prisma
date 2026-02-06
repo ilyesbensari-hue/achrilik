@@ -132,6 +132,7 @@ model Order {
   Store               Store?         @relation(fields: [storeId], references: [id])
   User                User           @relation(fields: [userId], references: [id])
   OrderItem           OrderItem[]
+  Review              Review[]       // NEW: Avis liés à cette commande
 
   @@index([createdAt])
   @@index([isPaid])
@@ -261,6 +262,7 @@ model Review {
   // Relations
   productId          String
   userId             String
+  orderId            String?   // NEW: Lien vers la commande pour vérifier l'achat
   
   // Contenu avis
   rating             Int       // 1-5
@@ -288,9 +290,12 @@ model Review {
   // Relations
   Product            Product   @relation(fields: [productId], references: [id])
   User               User      @relation(fields: [userId], references: [id])
+  Order              Order?    @relation(fields: [orderId], references: [id])
 
+  @@unique([userId, productId]) // Un seul avis par utilisateur/produit
   @@index([productId])
   @@index([userId])
+  @@index([orderId])
 }
 
 model Store {
