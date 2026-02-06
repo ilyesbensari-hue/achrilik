@@ -64,6 +64,9 @@ async function getFeaturedProducts() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
+        Store: {
+          verified: true
+        },
         OR: [
           { promotionLabel: { not: null } },
           { discountPrice: { not: null } }
@@ -112,6 +115,9 @@ async function getBestSellers() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
+        Store: {
+          verified: true
+        }
       },
       select: {
         id: true,
@@ -146,6 +152,9 @@ async function getNewArrivals() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
+        Store: {
+          verified: true
+        }
       },
       select: {
         id: true,
@@ -180,6 +189,9 @@ async function getPromotions() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
+        Store: {
+          verified: true
+        },
         OR: [
           {
             discountPrice: {
@@ -259,7 +271,10 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
     const products = await prisma.product.findMany({
       where: {
         categoryId: { in: categoryIds },
-        status: 'APPROVED'
+        status: 'APPROVED',
+        Store: {
+          verified: true
+        }
       },
       select: {
         id: true,
