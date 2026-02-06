@@ -55,43 +55,6 @@ export default function WishlistPage() {
         }
     };
 
-    const addToCart = (product: any) => {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-
-        // Find first available variant
-        const variant = product.Variant?.[0];
-        if (!variant) {
-            alert('Ce produit n\'a pas de variante disponible');
-            return;
-        }
-
-        const existingItem = cart.find((item: any) => item.VariantId === variant.id);
-
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.push({
-                variantId: variant.id,
-                productId: product.id,
-                title: product.title,
-                price: product.price,
-                image: product.images.split(',')[0],
-                size: variant.size,
-                color: variant.color,
-                quantity: 1,
-                storeId: product.StoreId,
-                storeName: product.Store.name,
-                clickCollect: product.Store.clickCollect
-            });
-        }
-
-        localStorage.setItem('cart', JSON.stringify(cart));
-        window.dispatchEvent(new Event('storage'));
-
-        // Show toast notification
-        alert('Produit ajouté au panier !');
-    };
-
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -164,17 +127,6 @@ export default function WishlistPage() {
                                                 <div className="absolute top-2 right-2 z-10">
                                                     <WishlistButton productId={product.id} size="md" />
                                                 </div>
-
-                                                {/* Quick Add to Cart */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        addToCart(product);
-                                                    }}
-                                                    className="absolute bottom-2 left-2 right-2 bg-white/95 backdrop-blur-sm text-[#006233] font-semibold py-2 px-4 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-[#006233] hover:text-white"
-                                                >
-                                                    Ajouter au panier
-                                                </button>
                                             </div>
 
                                             {/* Info */}
