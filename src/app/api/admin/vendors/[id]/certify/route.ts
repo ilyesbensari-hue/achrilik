@@ -8,11 +8,11 @@ import { requireAdminApi } from '@/lib/server-auth';
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const admin = await requireAdminApi();
-        const vendorId = params.id;
+        const { id: vendorId } = await params;
 
         // Update vendor certification
         const updatedStore = await prisma.store.update({

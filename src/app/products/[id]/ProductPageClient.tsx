@@ -344,7 +344,6 @@ export default function ProductPageClient({ product, sizes, colors, images }: Pr
             <div className="border-t border-gray-200 pt-8 mt-8">
                 <ProductReviews
                     productId={product.id}
-                    reviews={product.reviews || []}
                 />
             </div>
         </>
