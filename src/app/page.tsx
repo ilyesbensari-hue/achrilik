@@ -371,20 +371,7 @@ async function getElectroniqueProducts() {
   }
 }
 
-// Fetch Tech products
-async function getTechProducts() {
-  try {
-    // Find Tech category in DB
-    const category = await prisma.category.findFirst({
-      where: { slug: 'tech' }
-    });
-    if (!category) return [];
-    return await getCategoryProducts(category.id, 8);
-  } catch (error) {
-    console.error('Failed to fetch tech products:', error);
-    return [];
-  }
-}
+
 
 export default async function Home() {
   const [
@@ -397,8 +384,7 @@ export default async function Home() {
     clothingSections,
     maroquinerieProducts,
     accessoiresProducts,
-    elektroniqueProducts,
-    techProducts
+    elektroniqueProducts
   ] = await Promise.all([
     getActiveBanners(),
     getTopLevelCategories(),
@@ -409,8 +395,7 @@ export default async function Home() {
     getClothingSections(),
     getMaroquinerieProducts(),
     getAccessoiresProducts(),
-    getElectroniqueProducts(),
-    getTechProducts()
+    getElectroniqueProducts()
   ]);
 
   return (
@@ -486,16 +471,6 @@ export default async function Home() {
             name: 'Électronique',
             slug: 'electronique',
             products: elektroniqueProducts
-          }]}
-        />
-
-        {/* 10. Tech */}
-        <ClothingProductSections
-          sections={[{
-            id: 'tech',
-            name: 'Tech',
-            slug: 'tech',
-            products: techProducts
           }]}
         />
 

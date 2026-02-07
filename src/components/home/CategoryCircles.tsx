@@ -80,14 +80,6 @@ export default function CategoryCircles() {
             iconColor: 'text-indigo-600',
             href: '/categories/electronique'
         },
-        {
-            slug: 'tech',
-            name: 'Tech',
-            icon: Briefcase, // Using Briefcase as placeholder, will use proper icon
-            bgColor: 'bg-slate-100',
-            iconColor: 'text-slate-600',
-            href: '/categories/tech'
-        },
     ];
 
     return (
