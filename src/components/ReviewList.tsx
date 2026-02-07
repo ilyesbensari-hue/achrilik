@@ -22,7 +22,7 @@ export default function ReviewList({ productId }: { productId: string }) {
             const res = await fetch(`/api/reviews?productId=${productId}`);
             if (res.ok) {
                 const data = await res.json();
-                setReviews(data);
+                setReviews(data || []); // Ensure always an array
             }
         } catch (error) {
             console.error(error);
@@ -55,7 +55,7 @@ export default function ReviewList({ productId }: { productId: string }) {
         <div className="space-y-6">
             <h3 className="font-bold text-xl text-gray-900 border-b pb-2">Avis Clients ({reviews.length})</h3>
             <div className="space-y-6">
-                {reviews.map((review) => (
+                {(reviews || []).map((review) => (
                     <div key={review.id} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                         <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-2">
