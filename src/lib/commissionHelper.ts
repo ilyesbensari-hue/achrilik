@@ -1,3 +1,5 @@
+import { prisma } from '@/lib/prisma';
+
 // Helper function to get platform commission rate
 export async function getPlatformCommissionRate(): Promise<number> {
     try {
