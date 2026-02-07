@@ -22,7 +22,7 @@ export default function ReviewList({ productId }: { productId: string }) {
             const res = await fetch(`/api/reviews?productId=${productId}`);
             if (res.ok) {
                 const data = await res.json();
-                setReviews(data || []); // Ensure always an array
+                setReviews(data.reviews || []); // Extract reviews array from API response object
             }
         } catch (error) {
             console.error(error);
