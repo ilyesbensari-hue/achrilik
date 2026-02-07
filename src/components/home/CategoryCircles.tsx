@@ -4,8 +4,9 @@ import { Tag, TrendingUp, Sparkles, Shirt, Briefcase, Watch, User } from 'lucide
 import Link from 'next/link';
 
 export default function CategoryCircles() {
-    // Homepage sections in order
+    // Homepage category circles - synced with main categories
     const sections = [
+        // Special sections first
         {
             slug: 'promos',
             name: 'Promos',
@@ -30,6 +31,7 @@ export default function CategoryCircles() {
             iconColor: 'text-purple-600',
             href: '/nouveautes'
         },
+        // Main categories
         {
             slug: 'femme',
             name: 'Femme',
@@ -55,14 +57,6 @@ export default function CategoryCircles() {
             href: '/categories/enfants'
         },
         {
-            slug: 'bebe',
-            name: 'Bébé',
-            icon: User,
-            bgColor: 'bg-yellow-100',
-            iconColor: 'text-yellow-600',
-            href: '/categories/bebe'
-        },
-        {
             slug: 'maroquinerie',
             name: 'Maroquinerie',
             icon: Briefcase,
@@ -77,6 +71,22 @@ export default function CategoryCircles() {
             bgColor: 'bg-cyan-100',
             iconColor: 'text-cyan-600',
             href: '/categories/accessoires'
+        },
+        {
+            slug: 'electronique',
+            name: 'Électronique',
+            icon: Watch, // Using Watch as placeholder, will use proper icon
+            bgColor: 'bg-indigo-100',
+            iconColor: 'text-indigo-600',
+            href: '/categories/electronique'
+        },
+        {
+            slug: 'tech',
+            name: 'Tech',
+            icon: Briefcase, // Using Briefcase as placeholder, will use proper icon
+            bgColor: 'bg-slate-100',
+            iconColor: 'text-slate-600',
+            href: '/categories/tech'
         },
     ];
 

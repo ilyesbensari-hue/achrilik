@@ -107,10 +107,18 @@ function ProductSection({ section }: { section: SubcategorySection }) {
                     </button>
                 )}
 
+                {/* Gradient scroll indicators - Mobile only */}
+                {section.products.length > 2 && (
+                    <>
+                        <div className="md:hidden absolute left-0 top-0 bottom-8 w-6 bg-gradient-to-r from-white via-white/80 to-transparent pointer-events-none z-[5]" />
+                        <div className="md:hidden absolute right-0 top-0 bottom-8 w-6 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none z-[5]" />
+                    </>
+                )}
+
                 <div
                     ref={scrollContainerRef}
                     onScroll={checkScroll}
-                    className="overflow-x-auto pb-8 -mb-4 px-4 md:px-8 lg:px-12 scrollbar-hide"
+                    className="overflow-x-auto pb-8 -mb-4 px-4 md:px-8 lg:px-12 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent md:scrollbar-hide"
                 >
                     <div className="flex gap-4 md:gap-5 lg:gap-6 min-w-max">
                         {section.products.length > 0 ? (
