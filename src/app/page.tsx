@@ -306,11 +306,11 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
 // Fetch clothing sections (Femme, Homme, Enfants) with products
 async function getClothingSections() {
   try {
-    // Using top-level category IDs
+    // Using top-level category IDs (REAL IDs from database)
     const sections = [
       { id: 'cat-femme', name: 'Femme', slug: 'femmes' },
       { id: 'cat-homme', name: 'Homme', slug: 'hommes' },
-      { id: 'cat-enfant', name: 'Enfant', slug: 'enfants' }
+      { id: 'a041678aa693e0f26bb81f6d0046f7be', name: 'Enfant', slug: 'enfants' }
     ];
 
     const sectionsWithProducts = await Promise.all(
@@ -337,7 +337,7 @@ async function getClothingSections() {
 // Fetch Maroquinerie products
 async function getMaroquinerieProducts() {
   try {
-    const categoryId = '457821bfaeb8bde0ffb13fb010b41b88'; // Real ID from database
+    const categoryId = '071afaec3544214899128fe1293330e6'; // CORRECT ID from database
     return await getCategoryProducts(categoryId, 8);
   } catch (error) {
     console.error('Failed to fetch maroquinerie products:', error);
@@ -348,7 +348,7 @@ async function getMaroquinerieProducts() {
 // Fetch Accessoires products
 async function getAccessoiresProducts() {
   try {
-    const categoryId = '0f24e9b613932b9a4ebd0cf4c0cf7bb2'; // Real ID from database
+    const categoryId = '2db6a96e26fdba4431025b4a3421e48e'; // CORRECT ID from database
     return await getCategoryProducts(categoryId, 8);
   } catch (error) {
     console.error('Failed to fetch accessoires products:', error);
