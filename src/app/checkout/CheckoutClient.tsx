@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Trash2, MapPin, Store as StoreIcon, ShoppingBag, CreditCard, Wallet, Package } from 'lucide-react';
-import { calculateDeliveryFee } from '@/lib/deliveryFeeCalculator';
 import { validateCart } from '@/lib/cartLimits';
 
 const LeafletAddressPicker = dynamic(
@@ -111,7 +110,16 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     // Recalculate delivery fee when cart changes (wilaya is always Oran)
     useEffect(() => {
         if (cart.length > 0 && deliveryMethod === 'DELIVERY') {
-            calculateDeliveryFee(cart, 'Oran') // Always calculate for Oran delivery
+            // Call server-side API to avoid Prisma browser error
+            fetch('/api/calculate-delivery-fee', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cart,
+                    destinationWilaya: 'Oran' // Always calculate for Oran delivery
+                })
+            })
+                .then(res => res.json())
                 .then(result => {
                     setDeliveryFee(result.totalFee);
                     setDeliveryFeeDetails(result);
