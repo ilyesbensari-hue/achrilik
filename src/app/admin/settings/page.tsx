@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
 
     const categories = [
         { key: 'GENERAL', label: 'Général' },
+        { key: 'COMMISSION', label: '💰 Commissions' },
         { key: 'EMAIL', label: 'Email' },
         { key: 'PAYMENT', label: 'Paiement' },
         { key: 'SHIPPING', label: 'Livraison' }
@@ -138,20 +139,58 @@ export default function AdminSettingsPage() {
                                                     {setting.description}
                                                 </p>
                                             )}
-                                            <input
-                                                type="text"
-                                                defaultValue={setting.value}
-                                                onChange={(e) => {
-                                                    const newValue = e.target.value;
-                                                    const btn = e.target.nextElementSibling as HTMLButtonElement;
-                                                    if (btn) {
-                                                        btn.onclick = () => handleSave(setting.key, newValue, setting.description ?? undefined);
-                                                    }
-                                                }}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                                            />
+                                            {/* Commission percentage special input */}
+                                            {setting.key === 'PLATFORM_COMMISSION_RATE' ? (
+                                                <div>
+                                                    <div className="flex items-center gap-4 mb-2">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="20"
+                                                            step="0.5"
+                                                            defaultValue={setting.value}
+                                                            onChange={(e) => {
+                                                                const newValue = e.target.value;
+                                                                const display = e.target.nextElementSibling as HTMLSpanElement;
+                                                                const input = display?.nextElementSibling as HTMLInputElement;
+                                                                if (display) display.textContent = newValue + '%';
+                                                                if (input) input.value = newValue;
+                                                            }}
+                                                            className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                        />
+                                                        <span className="text-2xl font-bold text-indigo-600 min-w-[60px]">{setting.value}%</span>
+                                                        <input type="hidden" defaultValue={setting.value} />
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mb-3">
+                                                        💡 Commission prélevée sur chaque vente. Actuellement à <strong>{setting.value}%</strong> pendant la phase de test.
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    defaultValue={setting.value}
+                                                    onChange={(e) => {
+                                                        const newValue = e.target.value;
+                                                        const btn = e.target.nextElementSibling as HTMLButtonElement;
+                                                        if (btn) {
+                                                            btn.onclick = () => handleSave(setting.key, newValue, setting.description ?? undefined);
+                                                        }
+                                                    }}
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                                />
+                                            )}
                                             <button
-                                                onClick={() => handleSave(setting.key, setting.value, setting.description ?? undefined)}
+                                                onClick={(e) => {
+                                                    let newValue = setting.value;
+                                                    if (setting.key === 'PLATFORM_COMMISSION_RATE') {
+                                                        const hiddenInput = e.currentTarget.previousElementSibling?.querySelector('input[type="hidden"]') as HTMLInputElement;
+                                                        if (hiddenInput) newValue = hiddenInput.value;
+                                                    } else {
+                                                        const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                                        if (input) newValue = input.value;
+                                                    }
+                                                    handleSave(setting.key, newValue, setting.description ?? undefined);
+                                                }}
                                                 className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
                                             >
                                                 Sauvegarder
