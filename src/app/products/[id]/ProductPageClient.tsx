@@ -15,8 +15,14 @@ interface ProductPageClientProps {
     images: string[];
 }
 
-export default function ProductPageClient({ product, sizes, colors, images }: ProductPageClientProps) {
+export default function ProductPageClient({ product, sizes: sizesProps, colors: colorsProps, images: imagesProps }: ProductPageClientProps) {
     const router = useRouter();
+
+    // Safe defaults to prevent crashes if props are null/undefined
+    const images = imagesProps || [];
+    const sizes = sizesProps || [];
+    const colors = colorsProps || [];
+
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
