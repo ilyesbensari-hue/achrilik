@@ -276,7 +276,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
             {/* Reviews List */}
             <div className="space-y-6">
-                {reviews.map((review) => (
+                {(reviews || []).map((review) => (
                     <div key={review.id} className="bg-white border border-gray-200 rounded-xl p-6">
                         <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
