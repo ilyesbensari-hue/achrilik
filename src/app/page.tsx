@@ -303,24 +303,19 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
   }
 }
 
-// Fetch clothing sections (Femme, Homme, Enfants, Bébé) with products
+// Fetch clothing sections (Femme, Homme, Enfants) with products
 async function getClothingSections() {
   try {
-    // Real category IDs from database (verified Feb 2026)
-    // NOTE: 'Bébé' is a subcategory of 'Enfant', so we use its ID directly.
-    // The getCategoryProducts function handles recursive descendant lookup automatically.
+    // Using top-level category IDs
     const sections = [
-      { id: 'cat-femme', name: 'Femme', slug: 'femme' },
-      { id: 'cat-homme', name: 'Homme', slug: 'homme' },
-      { id: 'cat-enfant', name: 'Enfant', slug: 'enfant' },
-      { id: '622ae9b199c9dee17a62024bf5792e35', name: 'Bébé', slug: 'bebe' }
+      { id: 'cat-femme', name: 'Femme', slug: 'femmes' },
+      { id: 'cat-homme', name: 'Homme', slug: 'hommes' },
+      { id: 'cat-enfant', name: 'Enfant', slug: 'enfants' }
     ];
 
     const sectionsWithProducts = await Promise.all(
       sections.map(async (section) => {
-        // getCategoryProducts already includes all descendant categories recursively
-        // This works for both top-level categories (Femme, Homme, Enfant)
-        // AND subcategories (Bébé is a child of Enfant)
+        // getCategoryProducts includes all descendant categories recursively
         const products = await getCategoryProducts(section.id, 8);
         return {
           id: section.id,
@@ -331,7 +326,7 @@ async function getClothingSections() {
       })
     );
 
-    // Filter out sections with no products to avoid empty sections on homepage
+    // Filter out sections with no products
     return sectionsWithProducts.filter(section => section.products.length > 0);
   } catch (error) {
     console.error('Failed to fetch clothing sections:', error);
@@ -361,6 +356,36 @@ async function getAccessoiresProducts() {
   }
 }
 
+// Fetch Électronique products
+async function getElectroniqueProducts() {
+  try {
+    // Find Électronique category in DB
+    const category = await prisma.category.findFirst({
+      where: { slug: 'electronique' }
+    });
+    if (!category) return [];
+    return await getCategoryProducts(category.id, 8);
+  } catch (error) {
+    console.error('Failed to fetch electronique products:', error);
+    return [];
+  }
+}
+
+// Fetch Tech products
+async function getTechProducts() {
+  try {
+    // Find Tech category in DB
+    const category = await prisma.category.findFirst({
+      where: { slug: 'tech' }
+    });
+    if (!category) return [];
+    return await getCategoryProducts(category.id, 8);
+  } catch (error) {
+    console.error('Failed to fetch tech products:', error);
+    return [];
+  }
+}
+
 export default async function Home() {
   const [
     banners,
@@ -371,7 +396,9 @@ export default async function Home() {
     promotions,
     clothingSections,
     maroquinerieProducts,
-    accessoiresProducts
+    accessoiresProducts,
+    elektroniqueProducts,
+    techProducts
   ] = await Promise.all([
     getActiveBanners(),
     getTopLevelCategories(),
@@ -381,7 +408,9 @@ export default async function Home() {
     getPromotions(),
     getClothingSections(),
     getMaroquinerieProducts(),
-    getAccessoiresProducts()
+    getAccessoiresProducts(),
+    getElectroniqueProducts(),
+    getTechProducts()
   ]);
 
   return (
@@ -427,7 +456,7 @@ export default async function Home() {
           }]}
         />
 
-        {/* 6. Vêtements Sections (Femme, Homme, Enfants, Bébé) */}
+        {/* 6. Vêtements Sections (Femme, Homme, Enfants) */}
         <ClothingProductSections sections={clothingSections} />
 
         {/* 7. Maroquinerie */}
@@ -447,6 +476,26 @@ export default async function Home() {
             name: 'Accessoires',
             slug: 'accessoires',
             products: accessoiresProducts
+          }]}
+        />
+
+        {/* 9. Électronique */}
+        <ClothingProductSections
+          sections={[{
+            id: 'electronique',
+            name: 'Électronique',
+            slug: 'electronique',
+            products: elektroniqueProducts
+          }]}
+        />
+
+        {/* 10. Tech */}
+        <ClothingProductSections
+          sections={[{
+            id: 'tech',
+            name: 'Tech',
+            slug: 'tech',
+            products: techProducts
           }]}
         />
 
