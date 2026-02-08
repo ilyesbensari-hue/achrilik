@@ -47,11 +47,15 @@ export async function GET(
                         createdAt: true,
                         OrderItem: {
                             include: {
-                                product: {
-                                    select: {
-                                        name: true,
-                                        images: true,
-                                        price: true
+                                Variant: {
+                                    include: {
+                                        Product: {
+                                            select: {
+                                                name: true,
+                                                images: true,
+                                                price: true
+                                            }
+                                        }
                                     }
                                 }
                             }

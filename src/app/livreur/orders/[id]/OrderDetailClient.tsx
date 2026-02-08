@@ -190,15 +190,15 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                         <div className="space-y-2">
                             {delivery.order.OrderItem.map((item: any, idx: number) => (
                                 <div key={idx} className="flex gap-3 p-2 bg-base-100 rounded">
-                                    {item.product.images?.[0] && (
+                                    {item.Variant?.Product?.images?.[0] && (
                                         <img
-                                            src={item.product.images[0]}
-                                            alt={item.product.name}
+                                            src={item.Variant.Product.images[0]}
+                                            alt={item.Variant.Product.name}
                                             className="w-16 h-16 object-cover rounded"
                                         />
                                     )}
                                     <div className="flex-1">
-                                        <p className="font-medium text-sm">{item.product.name}</p>
+                                        <p className="font-medium text-sm">{item.Variant?.Product?.name}</p>
                                         <p className="text-xs text-gray-600">Quantité: {item.quantity}</p>
                                         <p className="text-xs text-gray-600">{item.price} DA × {item.quantity}</p>
                                     </div>
