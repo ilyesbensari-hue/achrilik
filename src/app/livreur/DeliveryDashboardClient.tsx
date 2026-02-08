@@ -32,9 +32,11 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
         try {
             const res = await fetch(`/api/deliveries?agentId=${initialUser.id}`);
             const data = await res.json();
-            setDeliveries(data);
+            // API returns {deliveries, stats}, extract deliveries array
+            setDeliveries(data.deliveries || data || []);
         } catch (error) {
             console.error('Failed to fetch deliveries:', error);
+            setDeliveries([]); // Set empty array on error
         } finally {
             setLoading(false);
         }
