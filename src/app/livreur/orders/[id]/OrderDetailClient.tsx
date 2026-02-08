@@ -193,12 +193,12 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                                     {item.Variant?.Product?.images?.[0] && (
                                         <img
                                             src={item.Variant.Product.images[0]}
-                                            alt={item.Variant.Product.name}
+                                            alt={item.Variant.Product.title}
                                             className="w-16 h-16 object-cover rounded"
                                         />
                                     )}
                                     <div className="flex-1">
-                                        <p className="font-medium text-sm">{item.Variant?.Product?.name}</p>
+                                        <p className="font-medium text-sm">{item.Variant?.Product?.title}</p>
                                         <p className="text-xs text-gray-600">Quantité: {item.quantity}</p>
                                         <p className="text-xs text-gray-600">{item.price} DA × {item.quantity}</p>
                                     </div>
