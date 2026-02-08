@@ -25,7 +25,44 @@ export function middleware(request: NextRequest) {
     }
 
     // ========================================
-    // 2. RATE LIMITING
+    // 2. DELIVERY AGENT ROLE RESTRICTION
+    // ========================================
+    // Delivery agents should ONLY access /livreur routes
+    // If they want to shop, they should use a separate buyer account
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (authToken) {
+        try {
+            // Decode JWT to get user role (simple decode, no full verification for performance)
+            const payload = JSON.parse(
+                Buffer.from(authToken.split('.')[1], 'base64').toString()
+            );
+
+            const userRole = payload.role;
+            const isDeliveryAgent = userRole === 'DELIVERY_AGENT';
+
+            // Whitelist routes delivery agents CAN access
+            const allowedForDeliveryAgent =
+                pathname.startsWith('/livreur') ||
+                pathname.startsWith('/api/deliveries') ||
+                pathname.startsWith('/api/delivery') ||
+                pathname.startsWith('/login') ||
+                pathname.startsWith('/logout') ||
+                pathname === '/' || // Allow seeing homepage briefly before redirect
+                pathname.startsWith('/_next') || // Next.js internals
+                pathname.startsWith('/api/upload'); // For uploading delivery photos
+
+            if (isDeliveryAgent && !allowedForDeliveryAgent) {
+                // Redirect to delivery dashboard
+                return NextResponse.redirect(new URL('/livreur', request.url));
+            }
+        } catch (error) {
+            // Invalid token, let it continue (will be handled by auth pages)
+        }
+    }
+
+    // ========================================
+    // 3. RATE LIMITING
     // ========================================
     // Protect sensitive API routes
     if (pathname.startsWith('/api/orders') ||
