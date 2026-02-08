@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Check ownership
     const existingProduct = await prisma.product.findUnique({
       where: { id },
-      include: { Store: true }
+      include: { Store: true, Category: true }
     });
 
     if (!existingProduct) {
@@ -175,6 +175,32 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         },
       });
     });
+
+    // Revalidate cache after product update
+    try {
+      const oldCategorySlug = existingProduct.Category?.slug;
+      const newCategory = await prisma.category.findUnique({
+        where: { id: categoryId },
+        select: { slug: true }
+      });
+
+      // Call revalidation API
+      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/revalidate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': `auth_token=${token}` },
+        body: JSON.stringify({
+          paths: [
+            '/',
+            `/products/${id}`,
+            oldCategorySlug ? `/categories/${oldCategorySlug}` : null,
+            newCategory?.slug ? `/categories/${newCategory.slug}` : null,
+            '/admin/products'
+          ].filter(Boolean)
+        })
+      });
+    } catch (revalidateError) {
+      console.log('Cache revalidation failed (non-critical):', revalidateError);
+    }
 
     return NextResponse.json(product);
   } catch (error) {
