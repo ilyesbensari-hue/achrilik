@@ -41,8 +41,21 @@ export async function GET(
                         shippingPhone: true,
                         shippingAddress: true,
                         shippingWilaya: true,
+                        deliveryLatitude: true,
+                        deliveryLongitude: true,
                         total: true,
-                        createdAt: true
+                        createdAt: true,
+                        items: {
+                            include: {
+                                product: {
+                                    select: {
+                                        name: true,
+                                        images: true,
+                                        price: true
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
