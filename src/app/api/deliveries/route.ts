@@ -98,7 +98,7 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
         }
 
-        const { deliveryId, status, codCollected, agentNotes } = await request.json();
+        const { deliveryId, status, codCollected, agentNotes, trackingNumber, trackingUrl } = await request.json();
 
         // Verify delivery belongs to this agent
         const delivery = await prisma.delivery.findUnique({
@@ -117,6 +117,8 @@ export async function PATCH(request: Request) {
                 codCollected: codCollected !== undefined ? codCollected : delivery.codCollected,
                 codCollectedAt: codCollected && !delivery.codCollected ? new Date() : delivery.codCollectedAt,
                 agentNotes: agentNotes || delivery.agentNotes,
+                trackingNumber: trackingNumber !== undefined ? trackingNumber : delivery.trackingNumber,
+                trackingUrl: trackingUrl !== undefined ? trackingUrl : delivery.trackingUrl,
                 updatedAt: new Date()
             }
         });

@@ -637,25 +637,25 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 </div>
                             </label>
 
-                            <label className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'CIB' ? 'border-[#006233] bg-green-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                                <input type="radio" name="payment" value="CIB" checked={paymentMethod === 'CIB'} onChange={() => setPaymentMethod('CIB')} className="w-5 h-5 text-[#006233]" />
+                            <label className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all opacity-50 cursor-not-allowed bg-gray-50`}>
+                                <input type="radio" name="payment" value="CIB" disabled className="w-5 h-5 text-gray-300" />
                                 <div className="flex items-center justify-between w-full">
                                     <div>
-                                        <span className="font-bold text-gray-900 block">Carte CIB</span>
-                                        <span className="text-xs text-gray-500">Paiement sécurisé en ligne</span>
+                                        <span className="font-bold text-gray-400 block">Carte CIB</span>
+                                        <span className="text-xs text-orange-600 font-semibold">🚧 Bientôt disponible</span>
                                     </div>
-                                    <div className="bg-gray-200 h-8 w-12 rounded flex items-center justify-center text-[10px] font-bold text-gray-500">LOGO CIB</div>
+                                    <div className="bg-gray-200 h-8 w-12 rounded flex items-center justify-center text-[10px] font-bold text-gray-400">CIB</div>
                                 </div>
                             </label>
 
-                            <label className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'DAHABIA' ? 'border-[#006233] bg-green-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                                <input type="radio" name="payment" value="DAHABIA" checked={paymentMethod === 'DAHABIA'} onChange={() => setPaymentMethod('DAHABIA')} className="w-5 h-5 text-[#006233]" />
+                            <label className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all opacity-50 cursor-not-allowed bg-gray-50`}>
+                                <input type="radio" name="payment" value="DAHABIA" disabled className="w-5 h-5 text-gray-300" />
                                 <div className="flex items-center justify-between w-full">
                                     <div>
-                                        <span className="font-bold text-gray-900 block">Carte Edahabia</span>
-                                        <span className="text-xs text-gray-500">Algérie Poste</span>
+                                        <span className="font-bold text-gray-400 block">Carte Edahabia</span>
+                                        <span className="text-xs text-orange-600 font-semibold">🚧 Bientôt disponible</span>
                                     </div>
-                                    <div className="bg-yellow-200 h-8 w-12 rounded flex items-center justify-center text-[10px] font-bold text-yellow-700">GOLD</div>
+                                    <div className="bg-gray-200 h-8 w-12 rounded flex items-center justify-center text-[10px] font-bold text-gray-400">GOLD</div>
                                 </div>
                             </label>
                         </div>

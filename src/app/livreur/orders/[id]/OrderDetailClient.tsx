@@ -43,7 +43,9 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                 body: JSON.stringify({
                     deliveryId: delivery.id,
                     status: newStatus,
-                    agentNotes: notes
+                    agentNotes: notes,
+                    trackingNumber: delivery.trackingNumber,
+                    trackingUrl: delivery.trackingUrl
                 })
             });
 
@@ -154,31 +156,49 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                     </div>
                 </div>
 
-                {/* Google Maps */}
-                {delivery.order.deliveryLatitude && delivery.order.deliveryLongitude && (
-                    <div className="bg-white rounded-lg p-4 shadow">
-                        <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
-                            <Navigation className="w-5 h-5" />
-                            Carte
-                        </h2>
-                        <div className="aspect-video w-full bg-gray-100 rounded-lg overflow-hidden mb-3">
-                            <iframe
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0 }}
-                                loading="lazy"
-                                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&q=${delivery.order.deliveryLatitude},${delivery.order.deliveryLongitude}&zoom=15`}
-                            ></iframe>
+                {/* Tracking Information */}
+                <div className="bg-white rounded-lg p-4 shadow">
+                    <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
+                        <Package className="w-5 h-5" />
+                        Suivi Livraison
+                    </h2>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                                Numéro de dossier (Yalidine, etc.)
+                            </label>
+                            <input
+                                type="text"
+                                value={delivery.trackingNumber || ''}
+                                onChange={(e) => setDelivery({ ...delivery, trackingNumber: e.target.value })}
+                                placeholder="Ex: YAL123456"
+                                className="input input-bordered w-full"
+                            />
                         </div>
-                        <button
-                            onClick={openInGoogleMaps}
-                            className="btn btn-primary btn-block"
-                        >
-                            <Navigation className="w-5 h-5" />
-                            Ouvrir dans Google Maps
-                        </button>
+                        <div>
+                            <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                                Lien de suivi
+                            </label>
+                            <input
+                                type="url"
+                                value={delivery.trackingUrl || ''}
+                                onChange={(e) => setDelivery({ ...delivery, trackingUrl: e.target.value })}
+                                placeholder="https://yalidine.com/track/123456"
+                                className="input input-bordered w-full"
+                            />
+                            {delivery.trackingUrl && (
+                                <a
+                                    href={delivery.trackingUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-primary hover:underline mt-1 inline-block"
+                                >
+                                    🔗 Ouvrir le lien de suivi
+                                </a>
+                            )}
+                        </div>
                     </div>
-                )}
+                </div>
 
                 {/* Order Items */}
                 {delivery.order.OrderItem && delivery.order.OrderItem.length > 0 && (
