@@ -53,6 +53,19 @@ export async function POST(
             }
         });
 
+        // Revalidate cache after rejection
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/revalidate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    paths: ['/', `/products/${id}`, '/admin/products']
+                })
+            });
+        } catch (e) {
+            console.log('Cache revalidation failed (non-critical)');
+        }
+
         // Send email notification to seller
         if (product.Store.User.email) {
             await sendTemplateEmail(
