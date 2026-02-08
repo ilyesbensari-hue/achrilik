@@ -70,8 +70,7 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from "@/app/providers";
-
-// ... (imports)
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function RootLayout({
   children,
@@ -83,11 +82,13 @@ export default function RootLayout({
       <body className={inter.className}>
         <PHProvider>
           <Providers>
-            <NavbarWrapper />
-            <div className="pb-[120px] md:pb-0">
-              {children}
-            </div>
-            <ToastContainer />
+            <ErrorBoundary>
+              <NavbarWrapper />
+              <div className="pb-[120px] md:pb-0">
+                {children}
+              </div>
+              <ToastContainer />
+            </ErrorBoundary>
           </Providers>
         </PHProvider>
         {process.env.NEXT_PUBLIC_GA_ID && (
