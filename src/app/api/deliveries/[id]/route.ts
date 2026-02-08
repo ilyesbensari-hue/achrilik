@@ -45,7 +45,7 @@ export async function GET(
                         deliveryLongitude: true,
                         total: true,
                         createdAt: true,
-                        items: {
+                        OrderItem: {
                             include: {
                                 product: {
                                     select: {

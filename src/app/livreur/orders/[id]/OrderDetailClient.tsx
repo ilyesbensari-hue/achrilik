@@ -181,14 +181,14 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                 )}
 
                 {/* Order Items */}
-                {delivery.order.items && delivery.order.items.length > 0 && (
+                {delivery.order.OrderItem && delivery.order.OrderItem.length > 0 && (
                     <div className="bg-white rounded-lg p-4 shadow">
                         <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
                             <Package className="w-5 h-5" />
-                            Articles ({delivery.order.items.length})
+                            Articles ({delivery.order.OrderItem.length})
                         </h2>
                         <div className="space-y-2">
-                            {delivery.order.items.map((item: any, idx: number) => (
+                            {delivery.order.OrderItem.map((item: any, idx: number) => (
                                 <div key={idx} className="flex gap-3 p-2 bg-base-100 rounded">
                                     {item.product.images?.[0] && (
                                         <img
