@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 import { verifyToken } from '@/lib/auth-token';
+import { getProductStatus } from '@/lib/productHelpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -174,6 +175,9 @@ export async function POST(request: NextRequest) {
       isBestSeller: false  // Calculé ultérieurement basé sur les ventes
     };
 
+    // Auto-approve products from verified stores
+    const productStatus = await getProductStatus(storeId);
+
     const product = await prisma.product.create({
       data: {
         id: randomBytes(16).toString('hex'),
@@ -183,7 +187,7 @@ export async function POST(request: NextRequest) {
         images: images, // Comma separated string
         storeId,
         categoryId,
-        status: 'APPROVED', // Auto-approve products so they appear immediately
+        status: productStatus, // Auto-approved if store is verified, PENDING otherwise
         promotionLabel: promotionLabel || null,
         cutType: cutType || null,
         sizeGuide: sizeGuide || null,
@@ -206,6 +210,11 @@ export async function POST(request: NextRequest) {
         Category: true,
       },
     });
+
+    // Log auto-approval for monitoring
+    if (productStatus === 'APPROVED') {
+      console.log(`[Auto-Approval] Product "${title}" (${product.id}) auto-approved from verified store ${storeId}`);
+    }
 
     return NextResponse.json(product);
   } catch (error) {

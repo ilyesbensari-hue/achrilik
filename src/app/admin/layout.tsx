@@ -14,6 +14,7 @@ interface User {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // Mobile menu state
     const router = useRouter();
     const pathname = usePathname();
 
@@ -47,18 +48,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Mobile menu overlay */}
+            {mobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Mobile menu toggle button */}
+            <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="fixed top-4 left-4 z-50 md:hidden p-2 bg-slate-800 text-white rounded-lg shadow-lg"
+                aria-label="Toggle menu"
+            >
+                {mobileMenuOpen ? (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                ) : (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                )}
+            </button>
+
             {/* Sidebar */}
-            <aside className="fixed left-0 top-0 h-full w-64 bg-slate-800 text-white p-6">
+            <aside className={`
+                fixed left-0 top-0 h-full w-64 bg-slate-800 text-white p-6 z-40
+                transform transition-transform duration-300 ease-in-out
+                ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+                md:translate-x-0
+            `}>
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold">Admin Panel</h1>
                     <p className="text-sm text-gray-400 mt-1">Achrilik</p>
                 </div>
 
-                <nav className="space-y-2">
+                <nav className="space-y-2 overflow-y-auto max-h-[calc(100vh-200px)]">
                     <Link
                         href="/admin"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>📊</span>
                         <span>Dashboard</span>
@@ -67,6 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/users"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/users' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>👥</span>
                         Utilisateurs
@@ -75,6 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/orders"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/orders' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>🛒</span>
                         Commandes
@@ -83,6 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/products"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/products' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>📦</span>
                         <span>Produits</span>
@@ -91,6 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/products/bulk"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/products/bulk' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>⚡</span>
                         <span>Éditeur Fast</span>
@@ -99,6 +135,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/categories"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/categories' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>🏷️</span>
                         <span>Catégories</span>
@@ -107,6 +144,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/banners"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/banners' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>🎨</span>
                         <span>Banners Promo</span>
@@ -115,6 +153,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href="/admin/vendors"
                         className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/vendors' ? 'bg-slate-700' : 'hover:bg-slate-700'
                             }`}
+                        onClick={() => setMobileMenuOpen(false)}
                     >
                         <span>🏪</span>
                         <span>Vendeurs</span>
@@ -127,6 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href="/admin/delivery-agents"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname?.startsWith('/admin/delivery-agents') ? 'bg-slate-700' : 'hover:bg-slate-700'
                                 }`}
+                            onClick={() => setMobileMenuOpen(false)}
                         >
                             <span>🚚</span>
                             <span>Prestataires</span>
@@ -135,6 +175,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href="/admin/deliveries"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/deliveries' ? 'bg-slate-700' : 'hover:bg-slate-700'
                                 }`}
+                            onClick={() => setMobileMenuOpen(false)}
                         >
                             <span>📍</span>
                             <span>Suivi Livraisons</span>
@@ -143,6 +184,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href="/admin/delivery-config"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/delivery-config' ? 'bg-slate-700' : 'hover:bg-slate-700'
                                 }`}
+                            onClick={() => setMobileMenuOpen(false)}
                         >
                             <span>⚙️</span>
                             <span>Config Livraisons</span>
@@ -167,6 +209,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Link
                             href="/"
                             className="text-sm text-indigo-400 hover:text-indigo-300"
+                            onClick={() => setMobileMenuOpen(false)}
                         >
                             ← Retour au site
                         </Link>
@@ -175,7 +218,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </aside>
 
             {/* Main Content */}
-            <main className="ml-64 p-8">
+            <main className="md:ml-64 p-4 md:p-8 pt-16 md:pt-8">
                 {children}
             </main>
         </div>

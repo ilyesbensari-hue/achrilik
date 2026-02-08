@@ -338,7 +338,7 @@ async function getClothingSections() {
 async function getMaroquinerieProducts() {
   try {
     const categoryId = '071afaec3544214899128fe1293330e6'; // CORRECT ID from database
-    return await getCategoryProducts(categoryId, 8);
+    return await getCategoryProducts(categoryId, 20); // Increased from 8 to show all products
   } catch (error) {
     console.error('Failed to fetch maroquinerie products:', error);
     return [];
@@ -349,7 +349,7 @@ async function getMaroquinerieProducts() {
 async function getAccessoiresProducts() {
   try {
     const categoryId = '2db6a96e26fdba4431025b4a3421e48e'; // CORRECT ID from database
-    return await getCategoryProducts(categoryId, 8);
+    return await getCategoryProducts(categoryId, 20); // Increased from 8
   } catch (error) {
     console.error('Failed to fetch accessoires products:', error);
     return [];
@@ -364,7 +364,7 @@ async function getElectroniqueProducts() {
       where: { slug: 'electronique' }
     });
     if (!category) return [];
-    return await getCategoryProducts(category.id, 8);
+    return await getCategoryProducts(category.id, 20); // Increased from 8
   } catch (error) {
     console.error('Failed to fetch electronique products:', error);
     return [];
