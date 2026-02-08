@@ -76,8 +76,8 @@ export default function ProductCardBase({
                         </div>
                     )}
 
-                    {/* Wishlist Button - Always bottom-right */}
-                    <div className="absolute bottom-2 right-2 z-10">
+                    {/* Wishlist Button - Always visible, top-right with high z-index */}
+                    <div className="absolute top-2 right-2 z-20">
                         <WishlistButton productId={product.id} size={wishlistButtonSize} />
                     </div>
 

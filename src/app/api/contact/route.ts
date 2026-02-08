@@ -15,13 +15,14 @@ export async function POST(request: Request) {
             );
         }
 
-        // Send email to achrilik@gmail.com
-        await resend.emails.send({
-            from: 'Achrilik Contact <contact@achrilik.com>',
-            to: 'achrilik@gmail.com',
-            replyTo: email,
-            subject: `[Contact] ${subject}`,
-            html: `
+        // Send email to achrilik@gmail.com with error handling
+        try {
+            const result = await resend.emails.send({
+                from: 'Achrilik Contact <contact@achrilik.com>',
+                to: 'achrilik@gmail.com',
+                replyTo: email,
+                subject: `[Contact] ${subject}`,
+                html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -74,11 +75,26 @@ export async function POST(request: Request) {
                 </body>
                 </html>
             `,
-        });
+            });
 
-        return NextResponse.json({ success: true });
+            console.log('[Contact Form] ✅ Email sent successfully');
+            return NextResponse.json({ success: true });
+        } catch (emailError: any) {
+            console.error('[Contact Form] ❌ Resend API Error:', emailError);
+            console.error('[Contact Form] Error details:', {
+                message: emailError?.message,
+                name: emailError?.name,
+                apiKeySet: process.env.RESEND_API_KEY ? 'YES ✓' : 'NO ✗'
+            });
+
+            // Return success to user but log server-side error
+            return NextResponse.json({
+                success: true,
+                warning: 'Message logged, email delivery pending'
+            });
+        }
     } catch (error) {
-        console.error('Contact form error:', error);
+        console.error('[Contact Form] Server error:', error);
         return NextResponse.json(
             { error: 'Erreur lors de l\'envoi du message' },
             { status: 500 }

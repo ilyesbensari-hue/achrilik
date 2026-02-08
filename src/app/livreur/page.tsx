@@ -18,7 +18,7 @@ export default async function DeliveryDashboardPage() {
 
     const user = await verifyToken(token);
 
-    if (!user || user.role !== 'DELIVERY_AGENT') {
+    if (!user || (user.role !== 'DELIVERY_AGENT' && user.role !== 'ADMIN')) {
         redirect('/');
     }
 

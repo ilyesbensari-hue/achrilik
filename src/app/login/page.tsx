@@ -66,7 +66,9 @@ function LoginForm() {
                 if (selectedType === 'seller') {
                     router.push('/sell');
                 } else if (selectedType === 'delivery') {
-                    router.push('/delivery/dashboard');
+                    router.push('/livreur');
+                } else if (data.user.role === 'ADMIN') {
+                    router.push('/admin');
                 } else {
                     router.push(callbackUrl);
                 }
