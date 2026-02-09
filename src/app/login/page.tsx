@@ -15,20 +15,14 @@ function LoginForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedType, setSelectedType] = useState<'client' | 'seller' | 'delivery'>('client');
+    const [selectedType, setSelectedType] = useState<'user' | 'delivery'>('user');
 
     const loginTypes = [
         {
-            id: 'client' as const,
+            id: 'user' as const,
             icon: '🛍️',
-            title: 'Client',
-            description: 'Acheter des produits'
-        },
-        {
-            id: 'seller' as const,
-            icon: '🏪',
-            title: 'Vendeur',
-            description: 'Vendre vos produits'
+            title: 'Utilisateur',
+            description: 'Acheteur & Vendeur'
         },
         {
             id: 'delivery' as const,
@@ -51,7 +45,8 @@ function LoginForm() {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, loginType: selectedType }),
+                // Map 'user' to 'client' for backward compatibility with API
+                body: JSON.stringify({ email, password, loginType: selectedType === 'user' ? 'client' : selectedType }),
             });
 
             if (res.ok) {
@@ -62,8 +57,8 @@ function LoginForm() {
                 window.dispatchEvent(new Event('storage'));
                 await refresh(); // Refresh user context
 
-                // Redirect based on login type
-                if (selectedType === 'seller') {
+                // Redirect based on user role or login type
+                if (data.user.isSeller || data.user.role === 'SELLER') {
                     router.push('/sell');
                 } else if (selectedType === 'delivery') {
                     router.push('/livreur');
@@ -95,30 +90,29 @@ function LoginForm() {
                 </p>
             </div>
 
-            {/* Login Type Selection */}
-            <div className="grid grid-cols-3 gap-3 mb-8">
-                {loginTypes.map((type) => (
-                    <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setSelectedType(type.id)}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${selectedType === type.id
-                            ? 'border-[#006233] bg-green-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                    >
-                        <span className="text-3xl">{type.icon}</span>
-                        <div className="text-center">
-                            <div className={`text-sm font-bold ${selectedType === type.id ? 'text-[#006233]' : 'text-gray-700'
-                                }`}>
-                                {type.title}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-0.5">
-                                {type.description}
-                            </div>
+            {/* Login Type Selection - Simplified to 2 options */}
+            <div className="grid grid-cols-2 gap-4 mb-8">{loginTypes.map((type) => (
+                <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setSelectedType(type.id)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${selectedType === type.id
+                        ? 'border-[#006233] bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                >
+                    <span className="text-3xl">{type.icon}</span>
+                    <div className="text-center">
+                        <div className={`text-sm font-bold ${selectedType === type.id ? 'text-[#006233]' : 'text-gray-700'
+                            }`}>
+                            {type.title}
                         </div>
-                    </button>
-                ))}
+                        <div className="text-xs text-gray-500 mt-0.5">
+                            {type.description}
+                        </div>
+                    </div>
+                </button>
+            ))}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
