@@ -105,6 +105,12 @@ function mapProducts(products: any[]) {
       image: images[0] || '/placeholder-product.png',
       categoryName: p.Category?.name || 'Produit',
       createdAt: p.createdAt,
+      Store: p.Store ? {
+        name: p.Store.name,
+        city: p.Store.city,
+        offersFreeDelivery: p.Store.offersFreeDelivery,
+        freeDeliveryThreshold: p.Store.freeDeliveryThreshold
+      } : undefined
     };
   });
 }
@@ -134,6 +140,14 @@ async function getNewArrivals() {
             name: true,
           },
         },
+        Store: {
+          select: {
+            name: true,
+            city: true,
+            offersFreeDelivery: true,
+            freeDeliveryThreshold: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -254,6 +268,14 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
             name: true,
           },
         },
+        Store: {
+          select: {
+            name: true,
+            city: true,
+            offersFreeDelivery: true,
+            freeDeliveryThreshold: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
