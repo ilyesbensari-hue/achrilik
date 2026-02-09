@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
 import { validateCart, getRemainingCapacity, CART_LIMITS } from '@/lib/cartLimits';
+import { calculateFreeDeliveryStatus, getIncentiveStores } from '@/lib/freeDeliveryHelpers';
+import FreeDeliveryIncentivePopup from '@/components/FreeDeliveryIncentivePopup';
 
 const MapPicker = dynamic(() => import('@/components/Map'), { ssr: false });
 
@@ -27,6 +29,10 @@ export default function CartPage() {
     const [selectedStore, setSelectedStore] = useState<any>(null);
     const [hasMixedCart, setHasMixedCart] = useState(false);
     const [onlineOnlyItems, setOnlineOnlyItems] = useState<string[]>([]);
+
+    // Free Delivery Popup
+    const [showFreeDeliveryPopup, setShowFreeDeliveryPopup] = useState(false);
+    const [enrichedCart, setEnrichedCart] = useState<any[]>([]);
 
     useEffect(() => {
         const c = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -68,6 +74,62 @@ export default function CartPage() {
         }).catch(console.error);
 
         // Auth check is now handled by useAuth() hook
+
+        // Fetch enriched cart data with Store info for free delivery calculation
+        if (c.length > 0) {
+            const fetchEnrichedCart = async () => {
+                try {
+                    const productIds = c.map((item: any) => item.productId);
+                    const uniqueIds = [...new Set(productIds)];
+
+                    const productPromises = uniqueIds.map(id =>
+                        fetch(`/api/products/${id}`).then(r => r.json())
+                    );
+
+                    const products = await Promise.all(productPromises);
+
+                    // Map cart items with full product data
+                    const enriched = c.map((cartItem: any) => {
+                        const product = products.find(p => p.id === cartItem.productId);
+                        if (!product) return null;
+
+                        return {
+                            id: cartItem.productId + cartItem.variantId,
+                            productId: cartItem.productId,
+                            variantId: cartItem.variantId,
+                            cartQuantity: cartItem.quantity || 1,
+                            Product: {
+                                id: product.id,
+                                title: product.title,
+                                price: product.price,
+                                storeId: product.storeId,
+                                Store: product.Store || product.store
+                            }
+                        };
+                    }).filter(Boolean);
+
+                    setEnrichedCart(enriched);
+
+                    // Calculate free delivery status
+                    if (enriched.length > 0) {
+                        const storesData = calculateFreeDeliveryStatus(enriched);
+                        const incentiveStores = getIncentiveStores(storesData);
+
+                        // Show popup if applicable (within 3000 DA of threshold)
+                        if (incentiveStores.length > 0) {
+                            // Wait 1 second before showing popup (don't overwhelm immediately)
+                            setTimeout(() => {
+                                setShowFreeDeliveryPopup(true);
+                            }, 1000);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching enriched cart:', error);
+                }
+            };
+
+            fetchEnrichedCart();
+        }
     }, []);
 
     const handleCheckout = (e?: React.MouseEvent) => {
@@ -255,6 +317,26 @@ export default function CartPage() {
                     </div>
                 )}
             </div>
+
+            {/* Free Delivery Incentive Popup */}
+            {showFreeDeliveryPopup && enrichedCart.length > 0 && (() => {
+                const storesData = calculateFreeDeliveryStatus(enrichedCart);
+                const incentiveStores = getIncentiveStores(storesData);
+                const firstIncentive = incentiveStores[0];
+
+                if (!firstIncentive) return null;
+
+                return (
+                    <FreeDeliveryIncentivePopup
+                        storeName={firstIncentive.storeName}
+                        currentAmount={firstIncentive.totalAmount}
+                        threshold={firstIncentive.freeDeliveryThreshold!}
+                        amountNeeded={firstIncentive.amountToFreeDelivery!}
+                        storeId={firstIncentive.storeId}
+                        onClose={() => setShowFreeDeliveryPopup(false)}
+                    />
+                );
+            })()}
         </div>
     );
 }
