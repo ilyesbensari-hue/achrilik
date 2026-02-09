@@ -309,129 +309,128 @@ export default function AddProductPage() {
                             />
                         </div>
                     </div>
-            </div>
 
-            {/* STORAGE LOCATION - MANDATORY */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span>📍</span>
-                    <span>Localisation du Stock</span>
-                    <span className="text-red-500 text-sm ml-2">* Obligatoire</span>
-                </h3>
+                    {/* STORAGE LOCATION - MANDATORY */}
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <span>📍</span>
+                            <span>Localisation du Stock</span>
+                            <span className="text-red-500 text-sm ml-2">* Obligatoire</span>
+                        </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Storage Wilaya */}
-                    <div>
-                        <label className="label mb-1 block">
-                            Wilaya de stockage <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            className="input"
-                            value={storageWilaya}
-                            onChange={e => setStorageWilaya(e.target.value)}
-                            required
-                        >
-                            <option value="">Sélectionner une wilaya...</option>
-                            {ALGERIA_WILAYAS.map(wilaya => (
-                                <option key={wilaya} value={wilaya}>{wilaya}</option>
-                            ))}
-                        </select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Storage Wilaya */}
+                            <div>
+                                <label className="label mb-1 block">
+                                    Wilaya de stockage <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    className="input"
+                                    value={storageWilaya}
+                                    onChange={e => setStorageWilaya(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Sélectionner une wilaya...</option>
+                                    {ALGERIA_WILAYAS.map(wilaya => (
+                                        <option key={wilaya} value={wilaya}>{wilaya}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Storage Zone */}
+                            <div>
+                                <label className="label mb-1 block">
+                                    Zone de stockage <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    placeholder="Ex: Centre-ville, Zone industrielle..."
+                                    value={storageZone}
+                                    onChange={e => setStorageZone(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
+                            <span>💡</span>
+                            <span>
+                                Ces informations aident les clients à estimer les délais de livraison
+                                et les frais de port selon leur localisation.
+                            </span>
+                        </p>
                     </div>
 
-                    {/* Storage Zone */}
-                    <div>
-                        <label className="label mb-1 block">
-                            Zone de stockage <span className="text-red-500">*</span>
+                    {/* Promotion Label */}
+                    <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border-2 border-red-200">
+                        <label className="label mb-2 block flex items-center gap-2">
+                            <span className="text-lg">🏷️</span>
+                            <span>Label Promotion (optionnel)</span>
                         </label>
                         <input
-                            type="text"
-                            className="input"
-                            placeholder="Ex: Centre-ville, Zone industrielle..."
-                            value={storageZone}
-                            onChange={e => setStorageZone(e.target.value)}
-                            required
+                            className="input mb-2"
+                            placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
+                            value={promotionLabel}
+                            onChange={e => setPromotionLabel(e.target.value)}
+                            maxLength={20}
                         />
+                        <p className="text-xs text-gray-600 mt-1">
+                            💡 <strong>Astuce:</strong> Ajoutez un badge accrocheur pour attirer l'attention !
+                            Exemples: "-30%", "PROMO", "SOLDES", "NOUVEAU", "OFFRE LIMITÉE"
+                        </p>
+                        {promotionLabel && (
+                            <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
+                                <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
+                                <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                    {promotionLabel}
+                                </span>
+                            </div>
+                        )}
                     </div>
-                </div>
 
-                <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
-                    <span>💡</span>
-                    <span>
-                        Ces informations aident les clients à estimer les délais de livraison
-                        et les frais de port selon leur localisation.
-                    </span>
-                </p>
-            </div>
+                    {/* Variants Section */}
+                    <div className="bg-gray-50 p-4 rounded-xl border">
+                        <h3 className="font-bold mb-4">Variantes (Tailles & Couleurs)</h3>
 
-            {/* Promotion Label */}
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border-2 border-red-200">
-                <label className="label mb-2 block flex items-center gap-2">
-                    <span className="text-lg">🏷️</span>
-                    <span>Label Promotion (optionnel)</span>
-                </label>
-                <input
-                    className="input mb-2"
-                    placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
-                    value={promotionLabel}
-                    onChange={e => setPromotionLabel(e.target.value)}
-                    maxLength={20}
-                />
-                <p className="text-xs text-gray-600 mt-1">
-                    💡 <strong>Astuce:</strong> Ajoutez un badge accrocheur pour attirer l'attention !
-                    Exemples: "-30%", "PROMO", "SOLDES", "NOUVEAU", "OFFRE LIMITÉE"
-                </p>
-                {promotionLabel && (
-                    <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
-                        <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
-                        <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                            {promotionLabel}
-                        </span>
-                    </div>
-                )}
-            </div>
-
-            {/* Variants Section */}
-            <div className="bg-gray-50 p-4 rounded-xl border">
-                <h3 className="font-bold mb-4">Variantes (Tailles & Couleurs)</h3>
-
-                <div className="flex gap-2 items-end mb-4">
-                    <div>
-                        <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
-                        <select className="input h-10 w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
-                            {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
-                        <input type="color" className="h-10 w-16 p-0 border-0" value={vColor} onChange={e => setVColor(e.target.value)} />
-                    </div>
-                    <div>
-                        <label className="text-xs font-bold uppercase mb-1 block">Stock</label>
-                        <input type="number" className="input h-10 w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
-                    </div>
-                    <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4">Ajouter</button>
-                </div>
-
-                <div className="space-y-2">
-                    {variants.map((v, i) => (
-                        <div key={i} className="flex items-center justify-between bg-white p-2 border rounded">
-                            <span className="text-sm font-medium">Taille: {v.size}</span>
-                            <div className="w-4 h-4 rounded-full border" style={{ background: v.color }}></div>
-                            <span className="text-sm">Stock: {v.stock}</span>
-                            <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm">X</button>
+                        <div className="flex gap-2 items-end mb-4">
+                            <div>
+                                <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
+                                <select className="input h-10 w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
+                                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
+                                <input type="color" className="h-10 w-16 p-0 border-0" value={vColor} onChange={e => setVColor(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold uppercase mb-1 block">Stock</label>
+                                <input type="number" className="input h-10 w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
+                            </div>
+                            <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4">Ajouter</button>
                         </div>
-                    ))}
-                </div>
-            </div>
 
-            <div className="flex justify-end gap-4">
-                <button type="button" onClick={() => router.back()} className="btn btn-outline">Annuler</button>
-                <button type="submit" disabled={loading} className="btn btn-primary">
-                    {loading ? 'Publication...' : 'Publier le produit'}
-                </button>
-            </div>
-        </form>
+                        <div className="space-y-2">
+                            {variants.map((v, i) => (
+                                <div key={i} className="flex items-center justify-between bg-white p-2 border rounded">
+                                    <span className="text-sm font-medium">Taille: {v.size}</span>
+                                    <div className="w-4 h-4 rounded-full border" style={{ background: v.color }}></div>
+                                    <span className="text-sm">Stock: {v.stock}</span>
+                                    <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm">X</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-4">
+                        <button type="button" onClick={() => router.back()} className="btn btn-outline">Annuler</button>
+                        <button type="submit" disabled={loading} className="btn btn-primary">
+                            {loading ? 'Publication...' : 'Publier le produit'}
+                        </button>
+                    </div>
+                </form>
+            </div >
         </div >
-    </div >
     );
 }
