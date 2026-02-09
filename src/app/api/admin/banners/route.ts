@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
 import { withCache } from '@/lib/cache';
 import cache from '@/lib/cache';
+import { revalidatePath } from 'next/cache';
 
 // GET - Fetch all banners (or only active ones for public)
 export async function GET(request: NextRequest) {
@@ -72,6 +73,9 @@ export async function POST(request: NextRequest) {
         cache.delete('banners:active');
         cache.delete('banners:all');
 
+        // Force homepage revalidation to show new banner immediately
+        revalidatePath('/');
+
         return NextResponse.json(banner, { status: 201 });
     } catch (error) {
         console.error('Failed to create banner:', error);
@@ -119,6 +123,9 @@ export async function PUT(request: NextRequest) {
         cache.delete('banners:active');
         cache.delete('banners:all');
 
+        // Force homepage revalidation to show updated banner immediately
+        revalidatePath('/');
+
         return NextResponse.json(banner);
     } catch (error) {
         console.error('Failed to update banner:', error);
@@ -155,6 +162,9 @@ export async function DELETE(request: NextRequest) {
         // Clear banner cache after deletion
         cache.delete('banners:active');
         cache.delete('banners:all');
+
+        // Force homepage revalidation to remove deleted banner immediately
+        revalidatePath('/');
 
         return NextResponse.json({ message: 'Banner deleted successfully' });
     } catch (error) {
