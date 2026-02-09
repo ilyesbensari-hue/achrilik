@@ -226,7 +226,7 @@ export default function HeroVideoBanner() {
             </div>
 
             {/* Navigation Arrows - Desktop Only */}
-            {banners.length > 1 && (
+            {banners.length >= 1 && (
                 <>
                     <button
                         onClick={goToPrevSlide}
@@ -246,7 +246,7 @@ export default function HeroVideoBanner() {
             )}
 
             {/* Navigation Dots */}
-            {banners.length > 1 && (
+            {banners.length >= 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                     {banners.map((_, index) => (
                         <button
