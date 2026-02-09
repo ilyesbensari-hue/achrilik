@@ -230,14 +230,14 @@ export default function HeroVideoBanner() {
                 <>
                     <button
                         onClick={goToPrevSlide}
-                        className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 rounded-full hover:bg-white/30 transition-all hover:scale-110 shadow-lg"
+                        className="flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-black/40 backdrop-blur-md border border-white/30 rounded-full hover:bg-black/60 transition-all hover:scale-110 shadow-lg"
                         aria-label="Bannière précédente"
                     >
                         <ChevronLeft className="h-5 w-5 text-white" strokeWidth={2.5} />
                     </button>
                     <button
                         onClick={goToNextSlide}
-                        className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 rounded-full hover:bg-white/30 transition-all hover:scale-110 shadow-lg"
+                        className="flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-black/40 backdrop-blur-md border border-white/30 rounded-full hover:bg-black/60 transition-all hover:scale-110 shadow-lg"
                         aria-label="Bannière suivante"
                     >
                         <ChevronRight className="h-5 w-5 text-white" strokeWidth={2.5} />
