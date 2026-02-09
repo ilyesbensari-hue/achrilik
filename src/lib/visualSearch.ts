@@ -20,7 +20,9 @@ export async function loadModel(): Promise<any> {
 
     if (model) return model;
 
-    console.log('[VisualSearch] Loading TensorFlow.js and MobileNet (lazy)...');
+    if (process.env.NODE_ENV === 'development') {
+        console.log('[VisualSearch] Loading TensorFlow.js and MobileNet (lazy)...');
+    }
 
     try {
         // Lazy import pour éviter de charger au démarrage
@@ -30,7 +32,9 @@ export async function loadModel(): Promise<any> {
         ]);
 
         model = await mobilenet.load();
-        console.log('[VisualSearch] MobileNet model loaded successfully!');
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[VisualSearch] MobileNet model loaded successfully!');
+        }
 
         return model;
     } catch (error) {

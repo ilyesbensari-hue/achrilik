@@ -64,9 +64,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://achrilik.com",
   },
-  verification: {
-    google: "google-site-verification-code", // TODO: Add actual verification code
-  },
+  // Google Search Console verification: Add when code is available
 };
 
 import { Providers } from "@/app/providers";

@@ -13,12 +13,10 @@ export default function BottomNav() {
         const updateCounts = () => {
             try {
                 const cartStorage = localStorage.getItem('cart');
-                console.log('[BottomNav] Cart raw:', cartStorage);
 
                 if (cartStorage) {
                     const cart = JSON.parse(cartStorage);
                     const count = cart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-                    console.log('[BottomNav] Calculated count:', count);
                     setCartCount(count);
                 } else {
                     setCartCount(0);

@@ -77,12 +77,16 @@ export async function withCache<T>(
     // Check cache first
     const cached = cache.get(key);
     if (cached !== null) {
-        console.log(`[CACHE HIT] ${key}`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[CACHE HIT] ${key}`);
+        }
         return cached as T;
     }
 
     // Fetch fresh data
-    console.log(`[CACHE MISS] ${key}`);
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`[CACHE MISS] ${key}`);
+    }
     const data = await fetcher();
 
     // Store in cache

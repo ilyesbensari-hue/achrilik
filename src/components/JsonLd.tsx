@@ -31,9 +31,8 @@ export function generateOrganizationSchema(baseUrl: string) {
             "@type": "PostalAddress",
             addressCountry: "DZ",
         },
-        sameAs: [
-            // TODO: Add social media links when available
-        ],
+        // Add social media links when available (Facebook, Instagram, etc.)
+        sameAs: [],
     };
 }
 

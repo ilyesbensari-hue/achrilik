@@ -96,27 +96,39 @@ export default function VendorsPage() {
     };
 
     const handleVerify = async (storeId: string, currentStatus: boolean) => {
-        console.log('[VENDOR CERTIFICATION] handleVerify called', { storeId, currentStatus });
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[VENDOR CERTIFICATION] handleVerify called', { storeId, currentStatus });
+        }
 
         const action = currentStatus ? 'retirer la certification' : 'certifier';
 
-        console.log('[VENDOR CERTIFICATION] About to show confirm dialog', { action });
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[VENDOR CERTIFICATION] About to show confirm dialog', { action });
+        }
         if (!confirm(`Voulez-vous ${action} ce vendeur ?`)) {
-            console.log('[VENDOR CERTIFICATION] User cancelled certification');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[VENDOR CERTIFICATION] User cancelled certification');
+            }
             return;
         }
 
-        console.log('[VENDOR CERTIFICATION] User confirmed, sending API request to:', `/api/admin/stores/${storeId}/verify`);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[VENDOR CERTIFICATION] User confirmed, sending API request to:', `/api/admin/stores/${storeId}/verify`);
+        }
         try {
             const res = await fetch(`/api/admin/stores/${storeId}/verify`, {
                 method: 'POST'
             });
 
-            console.log('[VENDOR CERTIFICATION] API response received', { ok: res.ok, status: res.status });
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[VENDOR CERTIFICATION] API response received', { ok: res.ok, status: res.status });
+            }
 
             if (res.ok) {
                 const data = await res.json();
-                console.log('[VENDOR CERTIFICATION] Response data:', data);
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('[VENDOR CERTIFICATION] Response data:', data);
+                }
                 alert(data.verified ? '✅ Vendeur certifié ! Email envoyé.' : 'Certification retirée');
                 fetchVendors();
             } else {
@@ -307,7 +319,9 @@ export default function VendorsPage() {
                                         <td className="px-6 py-4">
                                             <button
                                                 onClick={() => {
-                                                    console.log('[VENDOR CERTIFICATION] Button clicked for vendor:', vendor.id, 'verified:', vendor.verified);
+                                                    if (process.env.NODE_ENV === 'development') {
+                                                        console.log('[VENDOR CERTIFICATION] Button clicked for vendor:', vendor.id, 'verified:', vendor.verified);
+                                                    }
                                                     handleVerify(vendor.id, vendor.verified);
                                                 }}
                                                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${vendor.verified

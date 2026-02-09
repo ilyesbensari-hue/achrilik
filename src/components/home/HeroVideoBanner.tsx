@@ -124,7 +124,9 @@ export default function HeroVideoBanner() {
             if (!video) return;
 
             if (index === currentSlide) {
-                video.play().catch(err => console.log('Autoplay blocked:', err));
+                video.play().catch(() => {
+                    // Autoplay blocked by browser - expected behavior
+                });
             } else {
                 video.pause();
             }

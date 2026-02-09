@@ -37,7 +37,9 @@ export function useAutoSave(formData: any, enabled: boolean = true) {
 
             // Ne sauvegarder que si changement détecté
             if (currentData !== lastSavedRef.current) {
-                console.log('[AutoSave] Brouillon sauvegardé à', new Date().toLocaleTimeString());
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('[AutoSave] Brouillon sauvegardé à', new Date().toLocaleTimeString());
+                }
                 ClientPersistenceService.saveDraft(formData);
                 lastSavedRef.current = currentData;
             }

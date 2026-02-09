@@ -213,7 +213,9 @@ export async function POST(request: NextRequest) {
 
     // Log auto-approval for monitoring
     if (productStatus === 'APPROVED') {
-      console.log(`[Auto-Approval] Product "${title}" (${product.id}) auto-approved from verified store ${storeId}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Auto-Approval] Product "${title}" (${product.id}) auto-approved from verified store ${storeId}`);
+      }
     }
 
     return NextResponse.json(product);
