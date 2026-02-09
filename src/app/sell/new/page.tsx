@@ -485,7 +485,7 @@ export default function AddProductPage() {
                 </button>
             </div>
         </form>
-            </div >
         </div >
+    </div >
     );
 }
