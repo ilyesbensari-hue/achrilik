@@ -271,7 +271,6 @@ async function seedProducts() {
                 length: productData.length || null,
                 careInstructions: productData.careInstructions || null,
                 brand: productData.brand || null,
-                quality: productData.quality || null,
                 countryOfManufacture: productData.countryOfManufacture || null,
                 availableSizes: productData.availableSizes || [],
                 badges: productData.badges || [],
