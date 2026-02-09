@@ -15,6 +15,19 @@ interface Category {
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+    const toggleCategory = (categoryId: string) => {
+        setExpandedCategories(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            return newSet;
+        });
+    };
 
     useEffect(() => {
         fetch('/api/categories')
@@ -115,71 +128,77 @@ export default function CategoriesPage() {
                         Toutes les catégories
                     </h2>
 
-                    {sortedCategories.map((topCategory, index) => (
-                        <div key={topCategory.id} className={`${index > 0 ? 'mt-8' : ''}`}>
-                            {/* Top-level category title - NOW CLICKABLE with arrow */}
-                            <Link
-                                href={`/categories/${topCategory.slug}`}
-                                className="group flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl mb-4 hover:from-rose-50 hover:to-purple-50 transition-all hover:shadow-md"
-                            >
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide group-hover:text-[#C62828] transition-colors">
-                                    {topCategory.name}
-                                </h3>
-                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-[#C62828] group-hover:translate-x-1 transition-all" />
-                            </Link>
+                    {sortedCategories.map((topCategory, index) => {
+                        const isExpanded = expandedCategories.has(topCategory.id);
+                        const hasSubcategories = topCategory.children && topCategory.children.length > 0;
 
-                            {/* Subcategories */}
-                            {topCategory.children && topCategory.children.length > 0 && (
-                                <div className="space-y-2 ml-2">
-                                    {/* Sort subcategories for Vêtements: Femme, Homme, Enfant, Bébé */}
-                                    {[...topCategory.children].sort((a, b) => {
-                                        if (topCategory.name.toLowerCase().includes('vêtement') || topCategory.name.toLowerCase().includes('vetement')) {
-                                            const order = ['femme', 'homme', 'enfant', 'bébé', 'bebe'];
-                                            const aIndex = order.findIndex(name => a.name.toLowerCase().includes(name));
-                                            const bIndex = order.findIndex(name => b.name.toLowerCase().includes(name));
+                        return (
+                            <div key={topCategory.id} className={`${index > 0 ? 'mt-6' : ''}`}>
+                                {/* Top-level category title - CLICK TO EXPAND/COLLAPSE */}
+                                <button
+                                    onClick={() => hasSubcategories && toggleCategory(topCategory.id)}
+                                    className="w-full group flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl mb-2 hover:from-rose-50 hover:to-purple-50 transition-all hover:shadow-md"
+                                >
+                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide group-hover:text-[#C62828] transition-colors">
+                                        {topCategory.name}
+                                    </h3>
+                                    <ChevronRight
+                                        className={`w-6 h-6 text-gray-400 group-hover:text-[#C62828] transition-all ${isExpanded ? 'rotate-90' : ''}`}
+                                    />
+                                </button>
 
-                                            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-                                            if (aIndex !== -1) return -1;
-                                            if (bIndex !== -1) return 1;
-                                        }
-                                        return a.name.localeCompare(b.name);
-                                    }).map(subCategory => (
-                                        <div key={subCategory.id}>
-                                            {/* Subcategory link with enhanced styling */}
-                                            <Link
-                                                href={`/categories/${subCategory.slug}`}
-                                                className="group flex items-center justify-between px-5 py-4 rounded-xl hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 transition-all border border-transparent hover:border-[#C62828]/20 hover:shadow-md"
-                                            >
-                                                <span className="font-semibold text-gray-800 group-hover:text-[#C62828] transition-colors">
-                                                    {subCategory.name}
-                                                </span>
-                                                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-[#C62828] group-hover:translate-x-1 transition-all" />
-                                            </Link>
+                                {/* Subcategories */}
+                                {topCategory.children && topCategory.children.length > 0 && (
+                                    <div className="space-y-2 ml-2">
+                                        {/* Sort subcategories for Vêtements: Femme, Homme, Enfant, Bébé */}
+                                        {[...topCategory.children].sort((a, b) => {
+                                            if (topCategory.name.toLowerCase().includes('vêtement') || topCategory.name.toLowerCase().includes('vetement')) {
+                                                const order = ['femme', 'homme', 'enfant', 'bébé', 'bebe'];
+                                                const aIndex = order.findIndex(name => a.name.toLowerCase().includes(name));
+                                                const bIndex = order.findIndex(name => b.name.toLowerCase().includes(name));
 
-                                            {/* Sub-subcategories (if any) */}
-                                            {subCategory.children && subCategory.children.length > 0 && (
-                                                <div className="ml-8 mt-2 space-y-1">
-                                                    {subCategory.children.map(subSubCategory => (
-                                                        <Link
-                                                            key={subSubCategory.id}
-                                                            href={`/categories/${subSubCategory.slug}`}
-                                                            className="group flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-white/60 transition-all text-sm"
-                                                        >
-                                                            <span className="text-gray-600 group-hover:text-[#C62828] transition-colors flex items-center gap-2">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 group-hover:bg-[#C62828]"></span>
-                                                                {subSubCategory.name}
-                                                            </span>
-                                                            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#C62828] group-hover:translate-x-1 transition-all" />
-                                                        </Link>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                                if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                                                if (aIndex !== -1) return -1;
+                                                if (bIndex !== -1) return 1;
+                                            }
+                                            return a.name.localeCompare(b.name);
+                                        }).map(subCategory => (
+                                            <div key={subCategory.id}>
+                                                {/* Subcategory link with enhanced styling */}
+                                                <Link
+                                                    href={`/categories/${subCategory.slug}`}
+                                                    className="group flex items-center justify-between px-5 py-4 rounded-xl hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 transition-all border border-transparent hover:border-[#C62828]/20 hover:shadow-md"
+                                                >
+                                                    <span className="font-semibold text-gray-800 group-hover:text-[#C62828] transition-colors">
+                                                        {subCategory.name}
+                                                    </span>
+                                                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-[#C62828] group-hover:translate-x-1 transition-all" />
+                                                </Link>
+
+                                                {/* Sub-subcategories (if any) */}
+                                                {subCategory.children && subCategory.children.length > 0 && (
+                                                    <div className="ml-8 mt-2 space-y-1">
+                                                        {subCategory.children.map(subSubCategory => (
+                                                            <Link
+                                                                key={subSubCategory.id}
+                                                                href={`/categories/${subSubCategory.slug}`}
+                                                                className="group flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-white/60 transition-all text-sm"
+                                                            >
+                                                                <span className="text-gray-600 group-hover:text-[#C62828] transition-colors flex items-center gap-2">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 group-hover:bg-[#C62828]"></span>
+                                                                    {subSubCategory.name}
+                                                                </span>
+                                                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#C62828] group-hover:translate-x-1 transition-all" />
+                                                            </Link>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                 </div>
             </div>
         </div>
