@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/ImageUpload';
 import HierarchicalCategorySelector from '@/components/HierarchicalCategorySelector';
+import { ALGERIA_WILAYAS } from '@/constants/wilayas';
 
 
 export default function AddProductPage() {
@@ -33,9 +34,16 @@ export default function AddProductPage() {
     // Enhanced Product Details - Existing
     const [cutType, setCutType] = useState('');
     const [sizeGuide, setSizeGuide] = useState('');
-    const [quality, setQuality] = useState('');
     const [countryOfManufacture, setCountryOfManufacture] = useState('');
     const [composition, setComposition] = useState('');
+
+    // NEW: Storage Location
+    const [storageZone, setStorageZone] = useState('');
+    const [storageWilaya, setStorageWilaya] = useState('');
+
+    // NEW: Free Delivery
+    const [offersFreeDelivery, setOffersFreeDelivery] = useState(false);
+    const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState('');
 
     // NEW: Design Details
     const [neckline, setNeckline] = useState('');
@@ -158,7 +166,6 @@ export default function AddProductPage() {
                     promotionLabel: promotionLabel || null,
                     cutType: cutType || null,
                     sizeGuide: sizeGuide || null,
-                    quality: quality || null,
                     countryOfManufacture: countryOfManufacture || null,
                     composition: composition || null,
                     // NEW FIELDS
@@ -180,7 +187,12 @@ export default function AddProductPage() {
                     badges: badges.length > 0 ? badges : null,
                     isNew,
                     isTrending,
-                    isBestSeller
+                    isBestSeller,
+                    // Storage & Delivery
+                    storageZone: storageZone || null,
+                    storageWilaya: storageWilaya || null,
+                    offersFreeDelivery,
+                    freeDeliveryThreshold: offersFreeDelivery && freeDeliveryThreshold ? parseInt(freeDeliveryThreshold) : null
                 })
             });
 
@@ -279,117 +291,201 @@ export default function AddProductPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Quality */}
-                                <div>
-                                    <label className="label mb-1 block">Qualité produit (optionnel)</label>
-                                    <select
-                                        className="input"
-                                        value={quality}
-                                        onChange={e => setQuality(e.target.value)}
-                                    >
-                                        <option value="">Sélectionner...</option>
-                                        <option value="Standard">Standard</option>
-                                        <option value="Premium">Premium</option>
-                                        <option value="Luxe">Luxe</option>
-                                    </select>
-                                </div>
-
-                                {/* Country of Manufacture */}
-                                <div>
-                                    <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
-                                    <input
-                                        type="text"
-                                        className="input"
-                                        placeholder="Ex: Algérie, Turquie, France..."
-                                        value={countryOfManufacture}
-                                        onChange={e => setCountryOfManufacture(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Composition */}
+                            {/* Country of Manufacture */}
                             <div>
-                                <label className="label mb-1 block">Composition produit (optionnel)</label>
-                                <textarea
-                                    className="input h-20 py-2"
-                                    placeholder="Ex: 100% Coton, 80% Polyester 20% Élasthanne..."
-                                    value={composition}
-                                    onChange={e => setComposition(e.target.value)}
+                                <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    placeholder="Ex: Algérie, Turquie, France..."
+                                    value={countryOfManufacture}
+                                    onChange={e => setCountryOfManufacture(e.target.value)}
                                 />
                             </div>
                         </div>
+
+                        {/* Composition */}
+                        <div>
+                            <label className="label mb-1 block">Composition produit (optionnel)</label>
+                            <textarea
+                                className="input h-20 py-2"
+                                placeholder="Ex: 100% Coton, 80% Polyester 20% Élasthanne..."
+                                value={composition}
+                                onChange={e => setComposition(e.target.value)}
+                            />
+                        </div>
+                    </div>
+            </div>
+
+            {/* STORAGE LOCATION - MANDATORY */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span>📍</span>
+                    <span>Localisation du Stock</span>
+                    <span className="text-red-500 text-sm ml-2">* Obligatoire</span>
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Storage Wilaya */}
+                    <div>
+                        <label className="label mb-1 block">
+                            Wilaya de stockage <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            className="input"
+                            value={storageWilaya}
+                            onChange={e => setStorageWilaya(e.target.value)}
+                            required
+                        >
+                            <option value="">Sélectionner une wilaya...</option>
+                            {ALGERIA_WILAYAS.map(wilaya => (
+                                <option key={wilaya} value={wilaya}>{wilaya}</option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Promotion Label */}
-                    <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border-2 border-red-200">
-                        <label className="label mb-2 block flex items-center gap-2">
-                            <span className="text-lg">🏷️</span>
-                            <span>Label Promotion (optionnel)</span>
+                    {/* Storage Zone */}
+                    <div>
+                        <label className="label mb-1 block">
+                            Zone de stockage <span className="text-red-500">*</span>
                         </label>
                         <input
-                            className="input mb-2"
-                            placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
-                            value={promotionLabel}
-                            onChange={e => setPromotionLabel(e.target.value)}
-                            maxLength={20}
+                            type="text"
+                            className="input"
+                            placeholder="Ex: Centre-ville, Zone industrielle..."
+                            value={storageZone}
+                            onChange={e => setStorageZone(e.target.value)}
+                            required
                         />
-                        <p className="text-xs text-gray-600 mt-1">
-                            💡 <strong>Astuce:</strong> Ajoutez un badge accrocheur pour attirer l'attention !
-                            Exemples: "-30%", "PROMO", "SOLDES", "NOUVEAU", "OFFRE LIMITÉE"
-                        </p>
-                        {promotionLabel && (
-                            <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
-                                <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
-                                <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                                    {promotionLabel}
-                                </span>
-                            </div>
-                        )}
                     </div>
+                </div>
 
-                    {/* Variants Section */}
-                    <div className="bg-gray-50 p-4 rounded-xl border">
-                        <h3 className="font-bold mb-4">Variantes (Tailles & Couleurs)</h3>
-
-                        <div className="flex gap-2 items-end mb-4">
-                            <div>
-                                <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
-                                <select className="input h-10 w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
-                                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
-                                <input type="color" className="h-10 w-16 p-0 border-0" value={vColor} onChange={e => setVColor(e.target.value)} />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold uppercase mb-1 block">Stock</label>
-                                <input type="number" className="input h-10 w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
-                            </div>
-                            <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4">Ajouter</button>
-                        </div>
-
-                        <div className="space-y-2">
-                            {variants.map((v, i) => (
-                                <div key={i} className="flex items-center justify-between bg-white p-2 border rounded">
-                                    <span className="text-sm font-medium">Taille: {v.size}</span>
-                                    <div className="w-4 h-4 rounded-full border" style={{ background: v.color }}></div>
-                                    <span className="text-sm">Stock: {v.stock}</span>
-                                    <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm">X</button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end gap-4">
-                        <button type="button" onClick={() => router.back()} className="btn btn-outline">Annuler</button>
-                        <button type="submit" disabled={loading} className="btn btn-primary">
-                            {loading ? 'Publication...' : 'Publier le produit'}
-                        </button>
-                    </div>
-                </form>
+                <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
+                    <span>💡</span>
+                    <span>
+                        Ces informations aident les clients à estimer les délais de livraison
+                        et les frais de port selon leur localisation.
+                    </span>
+                </p>
             </div>
-        </div>
+
+            {/* FREE DELIVERY OPTION */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span>🚚</span>
+                    <span>Livraison Gratuite</span>
+                    <span className="text-sm font-normal text-gray-600">(optionnel)</span>
+                </h3>
+
+                <div className="mb-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            checked={offersFreeDelivery}
+                            onChange={e => setOffersFreeDelivery(e.target.checked)}
+                        />
+                        <span className="font-medium">J'offre la livraison gratuite pour ce produit</span>
+                    </label>
+                </div>
+
+                {offersFreeDelivery && (
+                    <div className="mt-4 pl-8">
+                        <label className="label mb-1 block">
+                            Montant minimum pour livraison gratuite (DA)
+                        </label>
+                        <input
+                            type="number"
+                            className="input max-w-xs"
+                            placeholder="Ex: 5000"
+                            value={freeDeliveryThreshold}
+                            onChange={e => setFreeDeliveryThreshold(e.target.value)}
+                            min="0"
+                        />
+                        <p className="text-xs text-gray-600 mt-2">
+                            Si vide, la livraison sera gratuite sans condition de montant.
+                        </p>
+                    </div>
+                )}
+
+                <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
+                    <span>💡</span>
+                    <span>
+                        <strong>Astuce:</strong> Offrir la livraison gratuite augmente vos ventes!
+                        Un badge "Livraison gratuite" sera affiché sur votre produit.
+                    </span>
+                </p>
+            </div>
+
+            {/* Promotion Label */}
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border-2 border-red-200">
+                <label className="label mb-2 block flex items-center gap-2">
+                    <span className="text-lg">🏷️</span>
+                    <span>Label Promotion (optionnel)</span>
+                </label>
+                <input
+                    className="input mb-2"
+                    placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
+                    value={promotionLabel}
+                    onChange={e => setPromotionLabel(e.target.value)}
+                    maxLength={20}
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                    💡 <strong>Astuce:</strong> Ajoutez un badge accrocheur pour attirer l'attention !
+                    Exemples: "-30%", "PROMO", "SOLDES", "NOUVEAU", "OFFRE LIMITÉE"
+                </p>
+                {promotionLabel && (
+                    <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
+                        <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
+                        <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                            {promotionLabel}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Variants Section */}
+            <div className="bg-gray-50 p-4 rounded-xl border">
+                <h3 className="font-bold mb-4">Variantes (Tailles & Couleurs)</h3>
+
+                <div className="flex gap-2 items-end mb-4">
+                    <div>
+                        <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
+                        <select className="input h-10 w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
+                            {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
+                        <input type="color" className="h-10 w-16 p-0 border-0" value={vColor} onChange={e => setVColor(e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold uppercase mb-1 block">Stock</label>
+                        <input type="number" className="input h-10 w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
+                    </div>
+                    <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4">Ajouter</button>
+                </div>
+
+                <div className="space-y-2">
+                    {variants.map((v, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white p-2 border rounded">
+                            <span className="text-sm font-medium">Taille: {v.size}</span>
+                            <div className="w-4 h-4 rounded-full border" style={{ background: v.color }}></div>
+                            <span className="text-sm">Stock: {v.stock}</span>
+                            <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm">X</button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="flex justify-end gap-4">
+                <button type="button" onClick={() => router.back()} className="btn btn-outline">Annuler</button>
+                <button type="submit" disabled={loading} className="btn btn-primary">
+                    {loading ? 'Publication...' : 'Publier le produit'}
+                </button>
+            </div>
+        </form>
+            </div >
+        </div >
     );
 }
