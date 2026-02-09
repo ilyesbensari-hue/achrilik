@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
 import { cookies } from 'next/headers';
 import { randomBytes } from 'crypto';
 import { revalidatePath } from 'next/cache';
-
-const prisma = new PrismaClient();
 
 export async function POST(
     request: NextRequest,
@@ -75,15 +73,21 @@ export async function POST(
             },
         });
 
-        // Send verification email to vendor
+        // Send verification email to vendor (non-blocking)
         if (newVerifiedStatus) {
-            const { sendVendorVerificationEmail } = await import('@/lib/mail');
-            await sendVendorVerificationEmail(
-                store.User.email,
-                store.name,
-                store.User.name || 'Vendeur',
-                true
-            );
+            try {
+                const { sendVendorVerificationEmail } = await import('@/lib/mail');
+                await sendVendorVerificationEmail(
+                    store.User.email,
+                    store.name,
+                    store.User.name || 'Vendeur',
+                    true
+                );
+                console.log('[VENDOR VERIFY] Verification email sent successfully to:', store.User.email);
+            } catch (emailError) {
+                // Don't fail the entire request if email fails
+                console.error('[VENDOR VERIFY] Failed to send verification email (non-critical):', emailError);
+            }
         }
 
         // Force admin vendor list revalidation
