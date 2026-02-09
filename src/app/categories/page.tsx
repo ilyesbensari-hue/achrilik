@@ -117,12 +117,16 @@ export default function CategoriesPage() {
 
                     {sortedCategories.map((topCategory, index) => (
                         <div key={topCategory.id} className={`${index > 0 ? 'mt-8' : ''}`}>
-                            {/* Top-level category title with gradient background */}
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl mb-4">
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide">
+                            {/* Top-level category title - NOW CLICKABLE with arrow */}
+                            <Link
+                                href={`/categories/${topCategory.slug}`}
+                                className="group flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-xl mb-4 hover:from-rose-50 hover:to-purple-50 transition-all hover:shadow-md"
+                            >
+                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-wide group-hover:text-[#C62828] transition-colors">
                                     {topCategory.name}
                                 </h3>
-                            </div>
+                                <ChevronRight className="w-6 h-6 text-gray-400 group-hover:text-[#C62828] group-hover:translate-x-1 transition-all" />
+                            </Link>
 
                             {/* Subcategories */}
                             {topCategory.children && topCategory.children.length > 0 && (
