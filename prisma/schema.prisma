@@ -128,6 +128,9 @@ model Order {
   deliveryLatitude    Float?         // GPS coordinates for delivery
   deliveryLongitude   Float?         // GPS coordinates for delivery
   trackingUrl         String?
+  statusHistory       Json?          // Historique transitions status [{from, to, at, by}]
+  merchantNotes       String?        // Notes du commerçant
+  deliveryNotes       String?        // Notes du livreur
   delivery            Delivery?
   Store               Store?         @relation(fields: [storeId], references: [id])
   User                User           @relation(fields: [userId], references: [id])
@@ -455,12 +458,16 @@ model Delivery {
 }
 
 enum OrderStatus {
-  PENDING
-  CONFIRMED
-  READY
-  SHIPPED
-  DELIVERED
-  CANCELLED
+  PENDING              // En attente (client vient de commander)
+  PAYMENT_PENDING      // Paiement en attente
+  CONFIRMED            // Confirmée par client
+  AT_MERCHANT          // Chez le commerçant (préparation)
+  READY_FOR_PICKUP     // Prête pour enlèvement livreur
+  WITH_DELIVERY_AGENT  // Chez le livreur
+  OUT_FOR_DELIVERY     // En cours de livraison
+  DELIVERED            // Livrée
+  RETURNED             // Retournée (échec livraison)
+  CANCELLED            // Annulée
 }
 
 // Configuration des frais de livraison gérés par l'admin
