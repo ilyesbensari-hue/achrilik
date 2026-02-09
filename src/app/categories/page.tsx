@@ -150,6 +150,17 @@ export default function CategoriesPage() {
                                 {/* Subcategories - COLLAPSIBLE */}
                                 {isExpanded && topCategory.children && topCategory.children.length > 0 && (
                                     <div className="space-y-2 ml-2 mb-4">
+                                        {/* "Voir tous" link at the top */}
+                                        <Link
+                                            href={`/categories/${topCategory.slug}`}
+                                            className="group flex items-center justify-between px-5 py-3 rounded-xl bg-gradient-to-r from-[#C62828]/5 to-purple-600/5 hover:from-[#C62828]/10 hover:to-purple-600/10 transition-all border border-[#C62828]/20 hover:shadow-md"
+                                        >
+                                            <span className="font-bold text-[#C62828] group-hover:text-[#B71C1C] transition-colors">
+                                                Voir tous
+                                            </span>
+                                            <ChevronRight className="w-5 h-5 text-[#C62828] group-hover:translate-x-1 transition-all" />
+                                        </Link>
+
                                         {/* Sort subcategories for Vêtements: Femme, Homme, Enfant, Bébé */}
                                         {[...topCategory.children].sort((a, b) => {
                                             if (topCategory.name.toLowerCase().includes('vêtement') || topCategory.name.toLowerCase().includes('vetement')) {
