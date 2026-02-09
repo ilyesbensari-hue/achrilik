@@ -208,10 +208,6 @@ model Product {
   storageZone     String?    // Zone de stockage du produit
   storageWilaya   String?    // Wilaya de stockage (58 wilayas)
   
-  // LIVRAISON GRATUITE - NEW
-  offersFreeDelivery      Boolean  @default(false) // Le vendeur offre la livraison gratuite
-  freeDeliveryThreshold   Int?     // Montant minimum pour livraison gratuite (en DA)
-  
   // Guide des Tailles
   sizeGuide       String?    // JSON ou texte
   availableSizes  String[]   // Ex: ["S", "M", "L", "XL"]
@@ -321,6 +317,11 @@ model Store {
   verifiedAt             DateTime?
   verifiedBy             String?
   defaultDeliveryAgentId String?
+  
+  // LIVRAISON GRATUITE - Par boutique/commande
+  offersFreeDelivery     Boolean        @default(false) // Livraison gratuite si montant minimum atteint
+  freeDeliveryThreshold  Int?           // Montant minimum pour livraison gratuite (en DA)
+  
   Order                  Order[]
   Product                Product[]
   defaultDeliveryAgent   DeliveryAgent? @relation(fields: [defaultDeliveryAgentId], references: [id])

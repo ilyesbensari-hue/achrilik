@@ -41,10 +41,6 @@ export default function AddProductPage() {
     const [storageZone, setStorageZone] = useState('');
     const [storageWilaya, setStorageWilaya] = useState('');
 
-    // NEW: Free Delivery
-    const [offersFreeDelivery, setOffersFreeDelivery] = useState(false);
-    const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState('');
-
     // NEW: Design Details
     const [neckline, setNeckline] = useState('');
     const [pattern, setPattern] = useState('');
@@ -188,11 +184,9 @@ export default function AddProductPage() {
                     isNew,
                     isTrending,
                     isBestSeller,
-                    // Storage & Delivery
+                    // Storage Location
                     storageZone: storageZone || null,
-                    storageWilaya: storageWilaya || null,
-                    offersFreeDelivery,
-                    freeDeliveryThreshold: offersFreeDelivery && freeDeliveryThreshold ? parseInt(freeDeliveryThreshold) : null
+                    storageWilaya: storageWilaya || null
                 })
             });
 
@@ -365,54 +359,6 @@ export default function AddProductPage() {
                     <span>
                         Ces informations aident les clients à estimer les délais de livraison
                         et les frais de port selon leur localisation.
-                    </span>
-                </p>
-            </div>
-
-            {/* FREE DELIVERY OPTION */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-200">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span>🚚</span>
-                    <span>Livraison Gratuite</span>
-                    <span className="text-sm font-normal text-gray-600">(optionnel)</span>
-                </h3>
-
-                <div className="mb-4">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                            checked={offersFreeDelivery}
-                            onChange={e => setOffersFreeDelivery(e.target.checked)}
-                        />
-                        <span className="font-medium">J'offre la livraison gratuite pour ce produit</span>
-                    </label>
-                </div>
-
-                {offersFreeDelivery && (
-                    <div className="mt-4 pl-8">
-                        <label className="label mb-1 block">
-                            Montant minimum pour livraison gratuite (DA)
-                        </label>
-                        <input
-                            type="number"
-                            className="input max-w-xs"
-                            placeholder="Ex: 5000"
-                            value={freeDeliveryThreshold}
-                            onChange={e => setFreeDeliveryThreshold(e.target.value)}
-                            min="0"
-                        />
-                        <p className="text-xs text-gray-600 mt-2">
-                            Si vide, la livraison sera gratuite sans condition de montant.
-                        </p>
-                    </div>
-                )}
-
-                <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
-                    <span>💡</span>
-                    <span>
-                        <strong>Astuce:</strong> Offrir la livraison gratuite augmente vos ventes!
-                        Un badge "Livraison gratuite" sera affiché sur votre produit.
                     </span>
                 </p>
             </div>
