@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import WishlistButton from '@/components/WishlistButton';
+import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
 
 interface Product {
     id: string;
@@ -13,6 +14,8 @@ interface Product {
     Store?: {
         name: string;
         city?: string;
+        offersFreeDelivery?: boolean;
+        freeDeliveryThreshold?: number | null;
     };
 }
 
@@ -123,10 +126,21 @@ export default function ProductCardBase({
 
                     {/* Store Info */}
                     {product.Store && (
-                        <p className="text-xs text-gray-500 mt-1">
-                            {product.Store.name}
-                            {product.Store.city && ` • ${product.Store.city}`}
-                        </p>
+                        <>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {product.Store.name}
+                                {product.Store.city && ` • ${product.Store.city}`}
+                            </p>
+                            {/* Free Delivery Badge */}
+                            {product.Store.offersFreeDelivery && (
+                                <div className="mt-2">
+                                    <FreeDeliveryBadge
+                                        threshold={product.Store.freeDeliveryThreshold}
+                                        size="sm"
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </Link>
