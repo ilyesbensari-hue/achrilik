@@ -147,9 +147,9 @@ export default function CategoriesPage() {
                                     />
                                 </button>
 
-                                {/* Subcategories */}
-                                {topCategory.children && topCategory.children.length > 0 && (
-                                    <div className="space-y-2 ml-2">
+                                {/* Subcategories - COLLAPSIBLE */}
+                                {isExpanded && topCategory.children && topCategory.children.length > 0 && (
+                                    <div className="space-y-2 ml-2 mb-4">
                                         {/* Sort subcategories for Vêtements: Femme, Homme, Enfant, Bébé */}
                                         {[...topCategory.children].sort((a, b) => {
                                             if (topCategory.name.toLowerCase().includes('vêtement') || topCategory.name.toLowerCase().includes('vetement')) {
@@ -167,7 +167,7 @@ export default function CategoriesPage() {
                                                 {/* Subcategory link with enhanced styling */}
                                                 <Link
                                                     href={`/categories/${subCategory.slug}`}
-                                                    className="group flex items-center justify-between px-5 py-4 rounded-xl hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 transition-all border border-transparent hover:border-[#C62828]/20 hover:shadow-md"
+                                                    className="group flex items-center justify-between px-5 py-3 rounded-xl hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 transition-all border border-transparent hover:border-[#C62828]/20 hover:shadow-md"
                                                 >
                                                     <span className="font-semibold text-gray-800 group-hover:text-[#C62828] transition-colors">
                                                         {subCategory.name}
@@ -177,12 +177,12 @@ export default function CategoriesPage() {
 
                                                 {/* Sub-subcategories (if any) */}
                                                 {subCategory.children && subCategory.children.length > 0 && (
-                                                    <div className="ml-8 mt-2 space-y-1">
+                                                    <div className="ml-8 mt-1 space-y-1">
                                                         {subCategory.children.map(subSubCategory => (
                                                             <Link
                                                                 key={subSubCategory.id}
                                                                 href={`/categories/${subSubCategory.slug}`}
-                                                                className="group flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-white/60 transition-all text-sm"
+                                                                className="group flex items-center justify-between px-4 py-2 rounded-lg hover:bg-white/60 transition-all text-sm"
                                                             >
                                                                 <span className="text-gray-600 group-hover:text-[#C62828] transition-colors flex items-center gap-2">
                                                                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400 group-hover:bg-[#C62828]"></span>
@@ -198,7 +198,8 @@ export default function CategoriesPage() {
                                     </div>
                                 )}
                             </div>
-                        ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>
