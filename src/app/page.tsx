@@ -109,42 +109,7 @@ function mapProducts(products: any[]) {
   });
 }
 
-// Fetch best sellers (top products by creation date)
-async function getBestSellers() {
-  try {
-    const products = await prisma.product.findMany({
-      where: {
-        status: 'APPROVED',
-        Store: {
-          verified: true
-        }
-      },
-      select: {
-        id: true,
-        title: true,
-        price: true,
-        discountPrice: true,
-        promotionLabel: true,
-        images: true,
-        createdAt: true,
-        Category: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 12
-    });
-
-    return mapProducts(products);
-  } catch (error) {
-    console.error('Failed to fetch best sellers:', error);
-    return [];
-  }
-}
+// getBestSellers function removed - Best Seller feature discontinued
 
 // Fetch new arrivals (newest products)
 async function getNewArrivals() {
@@ -378,7 +343,6 @@ export default async function Home() {
     banners,
     categories,
     featuredProducts,
-    bestSellers,
     newArrivals,
     promotions,
     clothingSections,
@@ -389,7 +353,6 @@ export default async function Home() {
     getActiveBanners(),
     getTopLevelCategories(),
     getFeaturedProducts(),
-    getBestSellers(),
     getNewArrivals(),
     getPromotions(),
     getClothingSections(),
@@ -421,15 +384,7 @@ export default async function Home() {
           }]}
         />
 
-        {/* 4. Best Sellers */}
-        <ClothingProductSections
-          sections={[{
-            id: 'best-sellers',
-            name: 'Best Sellers',
-            slug: 'best-sellers',
-            products: bestSellers
-          }]}
-        />
+        {/* Best Sellers section removed */}
 
         {/* 5. Nouveautés */}
         <ClothingProductSections

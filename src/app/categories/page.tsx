@@ -88,21 +88,7 @@ export default function CategoriesPage() {
                         <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                     </Link>
 
-                    <Link
-                        href="/best-sellers"
-                        className="group flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-5 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                <TrendingUp className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <span className="font-bold text-lg block">Best Sellers</span>
-                                <span className="text-xs text-white/80">Les plus vendus</span>
-                            </div>
-                        </div>
-                        <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                    {/* Best Sellers link removed */}
 
                     <Link
                         href="/nouveautes"

@@ -1,6 +1,6 @@
 'use client';
 
-import { Tag, TrendingUp, Sparkles, Shirt, Briefcase, Watch, User } from 'lucide-react';
+import { Tag, Sparkles, Shirt, Briefcase, Watch, User } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CategoryCircles() {
@@ -14,14 +14,6 @@ export default function CategoryCircles() {
             bgColor: 'bg-red-100',
             iconColor: 'text-red-600',
             href: '/categories/promotions'
-        },
-        {
-            slug: 'best-sellers',
-            name: 'Best Sellers',
-            icon: TrendingUp,
-            bgColor: 'bg-orange-100',
-            iconColor: 'text-orange-600',
-            href: '/best-sellers'
         },
         {
             slug: 'nouveautes',
