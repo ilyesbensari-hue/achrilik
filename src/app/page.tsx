@@ -271,10 +271,10 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
 // Fetch clothing sections (Femme, Homme, Enfants) with products
 async function getClothingSections() {
   try {
-    // Using top-level category IDs (REAL IDs from database)
+    // Using top-level category IDs (REAL IDs from database - verified in Prisma Studio Feb 9 2026)
     const sections = [
-      { id: 'cat-femme', name: 'Femme', slug: 'femmes' },
-      { id: 'cat-homme', name: 'Homme', slug: 'hommes' },
+      { id: '9affd04aa8ebc8631587f7d3d7f76e3a', name: 'Femme', slug: 'femmes' }, // Vêtements Femme - 16 children
+      { id: '7978b971816bcebcb3734e4aade82620', name: 'Homme', slug: 'hommes' }, // Vêtements Homme - 14 children
       { id: 'a041678aa693e0f26bb81f6d0046f7be', name: 'Enfant', slug: 'enfants' }
     ];
 
