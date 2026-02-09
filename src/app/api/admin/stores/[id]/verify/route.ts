@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { verifyToken } from '@/lib/auth-token';
 import { cookies } from 'next/headers';
 import { randomBytes } from 'crypto';
+import { revalidatePath } from 'next/cache';
 
 const prisma = new PrismaClient();
 
@@ -84,6 +85,9 @@ export async function POST(
                 true
             );
         }
+
+        // Force admin vendor list revalidation
+        revalidatePath('/admin/vendors');
 
         return NextResponse.json({
             success: true,
