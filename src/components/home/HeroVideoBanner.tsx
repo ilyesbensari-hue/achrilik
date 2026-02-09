@@ -163,6 +163,7 @@ export default function HeroVideoBanner() {
                     }}
                     className="absolute inset-0 w-full h-full object-cover"
                     poster={banner.thumbnail_url}
+                    autoPlay
                     playsInline
                     muted
                     loop
