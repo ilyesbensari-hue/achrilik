@@ -24,7 +24,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     // Enhanced Product Details
     const [cutType, setCutType] = useState('');
     const [sizeGuide, setSizeGuide] = useState('');
-    const [quality, setQuality] = useState('');
     const [countryOfManufacture, setCountryOfManufacture] = useState('');
     const [composition, setComposition] = useState('');
 
@@ -90,7 +89,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setPromotionLabel(data.promotionLabel || '');
                 setCutType(data.cutType || '');
                 setSizeGuide(data.sizeGuide || '');
-                setQuality(data.quality || '');
                 setCountryOfManufacture(data.countryOfManufacture || '');
                 setComposition(data.composition || '');
                 // NEW: Load additional fields
@@ -148,7 +146,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     promotionLabel: promotionLabel || null,
                     cutType: cutType || null,
                     sizeGuide: sizeGuide || null,
-                    quality: quality || null,
                     countryOfManufacture: countryOfManufacture || null,
                     composition: composition || null,
                     // NEW: Additional fields
@@ -287,33 +284,16 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Quality */}
-                                <div>
-                                    <label className="label mb-1 block">Qualité produit (optionnel)</label>
-                                    <select
-                                        className="input"
-                                        value={quality}
-                                        onChange={e => setQuality(e.target.value)}
-                                    >
-                                        <option value="">Sélectionner...</option>
-                                        <option value="Standard">Standard</option>
-                                        <option value="Premium">Premium</option>
-                                        <option value="Luxe">Luxe</option>
-                                    </select>
-                                </div>
-
-                                {/* Country of Manufacture */}
-                                <div>
-                                    <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
-                                    <input
-                                        type="text"
-                                        className="input"
-                                        placeholder="Ex: Algérie, Turquie, France..."
-                                        value={countryOfManufacture}
-                                        onChange={e => setCountryOfManufacture(e.target.value)}
-                                    />
-                                </div>
+                            {/* Country of Manufacture - MOVED UP */}
+                            <div>
+                                <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    placeholder="Ex: Algérie, Turquie, France..."
+                                    value={countryOfManufacture}
+                                    onChange={e => setCountryOfManufacture(e.target.value)}
+                                />
                             </div>
 
                             {/* Composition */}

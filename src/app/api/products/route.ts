@@ -153,7 +153,6 @@ export async function POST(request: NextRequest) {
       promotionLabel,
       cutType,
       sizeGuide,
-      quality,
       countryOfManufacture,
       composition
       // NOTE: isNew, isTrending, isBestSeller sont ignorés - calculés automatiquement
@@ -191,7 +190,6 @@ export async function POST(request: NextRequest) {
         promotionLabel: promotionLabel || null,
         cutType: cutType || null,
         sizeGuide: sizeGuide || null,
-        quality: quality || null,
         countryOfManufacture: countryOfManufacture || null,
         composition: composition || null,
         // Badges automatiques

@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json();
     const {
       title, description, price, images, categoryId, variants, promotionLabel,
-      cutType, sizeGuide, quality, countryOfManufacture, composition,
+      cutType, sizeGuide, countryOfManufacture, composition,
       material, fit, neckline, pattern, careInstructions, brand,
       isNew, isTrending, isBestSeller  // Ces valeurs ne seront utilisées que si admin
     } = body;
@@ -149,7 +149,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           promotionLabel: promotionLabel || null,
           cutType: cutType || null,
           sizeGuide: sizeGuide || null,
-          quality: quality || null,
           countryOfManufacture: countryOfManufacture || null,
           composition: composition || null,
           material: material || null,
