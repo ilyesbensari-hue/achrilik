@@ -96,23 +96,36 @@ export default function VendorsPage() {
     };
 
     const handleVerify = async (storeId: string, currentStatus: boolean) => {
-        const action = currentStatus ? 'retirer la certification' : 'certifier';
-        if (!confirm(`Voulez-vous ${action} ce vendeur ?`)) return;
+        console.log('[VENDOR CERTIFICATION] handleVerify called', { storeId, currentStatus });
 
+        const action = currentStatus ? 'retirer la certification' : 'certifier';
+
+        console.log('[VENDOR CERTIFICATION] About to show confirm dialog', { action });
+        if (!confirm(`Voulez-vous ${action} ce vendeur ?`)) {
+            console.log('[VENDOR CERTIFICATION] User cancelled certification');
+            return;
+        }
+
+        console.log('[VENDOR CERTIFICATION] User confirmed, sending API request to:', `/api/admin/stores/${storeId}/verify`);
         try {
             const res = await fetch(`/api/admin/stores/${storeId}/verify`, {
                 method: 'POST'
             });
 
+            console.log('[VENDOR CERTIFICATION] API response received', { ok: res.ok, status: res.status });
+
             if (res.ok) {
                 const data = await res.json();
+                console.log('[VENDOR CERTIFICATION] Response data:', data);
                 alert(data.verified ? '✅ Vendeur certifié ! Email envoyé.' : 'Certification retirée');
                 fetchVendors();
             } else {
+                const errorText = await res.text();
+                console.error('[VENDOR CERTIFICATION] API error response:', errorText);
                 alert('Erreur lors de la certification');
             }
         } catch (error) {
-            console.error('Error verifying vendor:', error);
+            console.error('[VENDOR CERTIFICATION] Exception caught:', error);
             alert('Erreur technique');
         }
     };
@@ -293,7 +306,10 @@ export default function VendorsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <button
-                                                onClick={() => handleVerify(vendor.id, vendor.verified)}
+                                                onClick={() => {
+                                                    console.log('[VENDOR CERTIFICATION] Button clicked for vendor:', vendor.id, 'verified:', vendor.verified);
+                                                    handleVerify(vendor.id, vendor.verified);
+                                                }}
                                                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${vendor.verified
                                                     ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                     : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
