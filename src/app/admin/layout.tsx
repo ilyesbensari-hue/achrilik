@@ -189,6 +189,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <span>⚙️</span>
                             <span>Config Livraisons</span>
                         </Link>
+                        <Link
+                            href="/admin/cache"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/cache' ? 'bg-emerald-700' : 'hover:bg-emerald-700/50'
+                                }`}
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <span>🔄</span>
+                            <span>Rafraîchir Cache</span>
+                        </Link>
                     </div>
 
                     {/* Analytics - Feature not implemented yet
