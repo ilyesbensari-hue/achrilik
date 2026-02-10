@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
         const ordersByStatus = {
             pending: storeOrders.filter(o => o.status === 'PENDING').length,
             confirmed: storeOrders.filter(o => o.status === 'CONFIRMED').length,
-            ready: storeOrders.filter(o => o.status === 'READY').length,
+            readyForPickup: storeOrders.filter(o => o.status === 'READY_FOR_PICKUP').length,
             delivered: storeOrders.filter(o => o.status === 'DELIVERED').length,
             cancelled: storeOrders.filter(o => o.status === 'CANCELLED').length,
         };
