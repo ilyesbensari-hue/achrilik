@@ -5,6 +5,7 @@ import ReviewList from '@/components/ReviewList';
 import ReviewForm from '@/components/ReviewForm';
 import SellerRating from '@/components/SellerRating';
 import ProductPageClient from './ProductPageClient';
+import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
 import { prisma } from '@/lib/prisma'; // Direct DB access for efficiency
 
 // Enable ISR with 5 minute revalidation
@@ -193,6 +194,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 )}
                             </div>
                         </div>
+
+                        {/* Free Delivery Incentive Section */}
+                        {product.Store?.offersFreeDelivery && (
+                            <FreeDeliveryBadge
+                                variant="product-page"
+                                threshold={product.Store.freeDeliveryThreshold}
+                                currentAmount={product.discountPrice || product.price}
+                                storeName={product.Store.name}
+                                storeId={product.Store.id}
+                            />
+                        )}
 
                         {/* Warranty Badge */}
                         {product.warranty && (
