@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth-token';
 
 // GET - Load current delivery settings
 export async function GET() {
@@ -12,37 +13,33 @@ export async function GET() {
             return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
         }
 
-        // Find user by auth token
-        const authToken = await prisma.authToken.findUnique({
-            where: {
-                token: token.value
-            },
+        // Verify JWT and extract user email
+        const payload = await verifyToken(token.value);
+        if (!payload || !payload.email) {
+            return NextResponse.json({ error: 'Token invalide' }, { status: 401 });
+        }
+
+        // Find user and store
+        const user = await prisma.user.findUnique({
+            where: { email: payload.email as string },
             include: {
-                user: {
-                    include: {
-                        Store: {
-                            select: {
-                                id: true,
-                                offersFreeDelivery: true,
-                                freeDeliveryThreshold: true,
-                            }
-                        }
+                Store: {
+                    select: {
+                        id: true,
+                        offersFreeDelivery: true,
+                        freeDeliveryThreshold: true,
                     }
                 }
             }
         });
 
-        if (!authToken || authToken.expiresAt < new Date()) {
-            return NextResponse.json({ error: 'Token invalide ou expiré' }, { status: 401 });
-        }
-
-        if (!authToken.user.Store) {
+        if (!user?.Store) {
             return NextResponse.json({ error: 'Boutique non trouvée' }, { status: 404 });
         }
 
         return NextResponse.json({
-            offersFreeDelivery: authToken.user.Store.offersFreeDelivery || false,
-            freeDeliveryThreshold: authToken.user.Store.freeDeliveryThreshold || 8000,
+            offersFreeDelivery: user.Store.offersFreeDelivery || false,
+            freeDeliveryThreshold: user.Store.freeDeliveryThreshold || 8000,
         });
 
     } catch (error) {
@@ -61,23 +58,19 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
         }
 
-        // Find user by auth token
-        const authToken = await prisma.authToken.findUnique({
-            where: {
-                token: token.value
-            },
-            include: {
-                user: {
-                    include: { Store: true }
-                }
-            }
-        });
-
-        if (!authToken || authToken.expiresAt < new Date()) {
-            return NextResponse.json({ error: 'Token invalide ou expiré' }, { status: 401 });
+        // Verify JWT and extract user email
+        const payload = await verifyToken(token.value);
+        if (!payload || !payload.email) {
+            return NextResponse.json({ error: 'Token invalide' }, { status: 401 });
         }
 
-        if (!authToken.user.Store) {
+        // Find user and store
+        const user = await prisma.user.findUnique({
+            where: { email: payload.email as string },
+            include: { Store: true }
+        });
+
+        if (!user?.Store) {
             return NextResponse.json({ error: 'Boutique non trouvée' }, { status: 404 });
         }
 
@@ -96,7 +89,7 @@ export async function POST(request: Request) {
 
         // Update store settings
         await prisma.store.update({
-            where: { id: authToken.user.Store.id },
+            where: { id: user.Store.id },
             data: {
                 offersFreeDelivery: offersFreeDelivery,
                 freeDeliveryThreshold: offersFreeDelivery ? freeDeliveryThreshold : null,
