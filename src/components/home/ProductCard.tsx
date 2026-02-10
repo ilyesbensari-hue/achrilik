@@ -7,11 +7,17 @@ interface ProductCardProps {
         id: string;
         title: string;
         price: number;
-        originalPrice: number | null;
+        originalPrice?: number | null;
         image: string;
-        isNew: boolean;
-        categoryName: string;
-        promotionLabel: string | null;
+        isNew?: boolean;
+        categoryName?: string;
+        promotionLabel?: string | null;
+        Store?: {
+            name: string;
+            city?: string;
+            offersFreeDelivery?: boolean;
+            freeDeliveryThreshold?: number | null;
+        };
     };
 }
 
@@ -25,7 +31,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         promotion: product.promotionLabel,
         createdAt: product.isNew ? new Date() : undefined, // Simulate new product
         Review: [], // No reviews on homepage cards for now
-        Store: undefined // Store info not available on homepage
+        Store: product.Store // Pass Store data for free delivery badge
     };
 
     return (
@@ -34,7 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             layout="compact"
             imageAspectRatio="square"
             badgePosition="top-left"
-            wishlistButtonSize="sm"
+            wishlistButtonSize="md"
         />
     );
 }
