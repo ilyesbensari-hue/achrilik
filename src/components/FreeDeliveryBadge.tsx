@@ -50,24 +50,26 @@ export default function FreeDeliveryBadge({
         // Case A: Product qualifies for free delivery
         if (isQualified || thresholdAmount === 0) {
             return (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-lg p-4 mb-4">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 rounded-lg p-5 mb-4 shadow-sm">
                     <div className="flex items-start gap-3">
-                        <div className="bg-green-500 rounded-full p-2 flex-shrink-0">
+                        <div className="bg-green-500 rounded-full p-2.5 flex-shrink-0">
                             <Truck className="h-6 w-6 text-white" strokeWidth={2.5} />
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-green-700 mb-1">
+                        <div className="flex-1">
+                            <h3 className="text-xl font-bold text-green-700 mb-1 flex items-center gap-2">
                                 ✅ LIVRAISON GRATUITE
                             </h3>
-                            <p className="text-sm text-green-600">
-                                avec ce produit !
+                            <p className="text-base font-semibold text-green-600 mb-2">
+                                🎉 Félicitations ! Vous avez la livraison offerte avec ce produit !
                             </p>
+                            {thresholdAmount > 0 && (
+                                <p className="text-sm text-gray-700 bg-white/60 inline-block px-3 py-1.5 rounded-full">
+                                    ✓ Livraison gratuite à partir de <span className="font-bold">{thresholdAmount.toLocaleString('fr-DZ')} DA</span>
+                                </p>
+                            )}
                             {storeName && (
                                 <p className="text-xs text-gray-600 mt-2">
                                     Boutique : <span className="font-semibold">{storeName}</span>
-                                    {thresholdAmount > 0 && (
-                                        <> • Livraison offerte dès {thresholdAmount.toLocaleString('fr-DZ')} DA</>
-                                    )}
                                 </p>
                             )}
                         </div>
