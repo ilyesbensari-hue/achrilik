@@ -76,6 +76,12 @@ export default function ProductCardBase({
                                     NOUVEAU
                                 </span>
                             )}
+                            {/* Free Delivery Badge Tag */}
+                            {product.Store?.offersFreeDelivery && (
+                                <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md flex items-center gap-1">
+                                    🚚 Livraison Gratuite
+                                </span>
+                            )}
                         </div>
                     )}
 
