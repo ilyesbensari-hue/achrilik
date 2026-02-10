@@ -1,37 +1,48 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 // GET - Load current delivery settings
 export async function GET() {
     try {
-        const session = await getServerSession(authOptions);
+        const cookieStore = await cookies();
+        const token = cookieStore.get('auth_token');
 
-        if (!session?.user?.email) {
+        if (!token?.value) {
             return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
+        // Find user by auth token
+        const authToken = await prisma.authToken.findUnique({
+            where: {
+                token: token.value
+            },
             include: {
-                Store: {
-                    select: {
-                        id: true,
-                        offersFreeDelivery: true,
-                        freeDeliveryThreshold: true,
+                user: {
+                    include: {
+                        Store: {
+                            select: {
+                                id: true,
+                                offersFreeDelivery: true,
+                                freeDeliveryThreshold: true,
+                            }
+                        }
                     }
                 }
             }
         });
 
-        if (!user?.Store) {
+        if (!authToken || authToken.expiresAt < new Date()) {
+            return NextResponse.json({ error: 'Token invalide ou expiré' }, { status: 401 });
+        }
+
+        if (!authToken.user.Store) {
             return NextResponse.json({ error: 'Boutique non trouvée' }, { status: 404 });
         }
 
         return NextResponse.json({
-            offersFreeDelivery: user.Store.offersFreeDelivery || false,
-            freeDeliveryThreshold: user.Store.freeDeliveryThreshold || 8000,
+            offersFreeDelivery: authToken.user.Store.offersFreeDelivery || false,
+            freeDeliveryThreshold: authToken.user.Store.freeDeliveryThreshold || 8000,
         });
 
     } catch (error) {
@@ -43,10 +54,31 @@ export async function GET() {
 // POST - Update delivery settings
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const cookieStore = await cookies();
+        const token = cookieStore.get('auth_token');
 
-        if (!session?.user?.email) {
+        if (!token?.value) {
             return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+        }
+
+        // Find user by auth token
+        const authToken = await prisma.authToken.findUnique({
+            where: {
+                token: token.value
+            },
+            include: {
+                user: {
+                    include: { Store: true }
+                }
+            }
+        });
+
+        if (!authToken || authToken.expiresAt < new Date()) {
+            return NextResponse.json({ error: 'Token invalide ou expiré' }, { status: 401 });
+        }
+
+        if (!authToken.user.Store) {
+            return NextResponse.json({ error: 'Boutique non trouvée' }, { status: 404 });
         }
 
         const body = await request.json();
@@ -62,18 +94,9 @@ export async function POST(request: Request) {
             }
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
-            include: { Store: true }
-        });
-
-        if (!user?.Store) {
-            return NextResponse.json({ error: 'Boutique non trouvée' }, { status: 404 });
-        }
-
         // Update store settings
         await prisma.store.update({
-            where: { id: user.Store.id },
+            where: { id: authToken.user.Store.id },
             data: {
                 offersFreeDelivery: offersFreeDelivery,
                 freeDeliveryThreshold: offersFreeDelivery ? freeDeliveryThreshold : null,

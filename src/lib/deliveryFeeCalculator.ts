@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
  * Basé sur la ville de stockage des produits et la wilaya de destination
  */
 export async function calculateDeliveryFee(
-    cart: Array<{ storeId: string;[key: string]: any }>,
+    cart: Array<{ storeId: string; price: number; quantity: number;[key: string]: any }>,
     destinationWilaya: string
 ): Promise<{
     totalFee: number;
@@ -14,13 +14,21 @@ export async function calculateDeliveryFee(
         storeName: string;
         storageCity: string | null;
         fee: number;
+        freeDeliveryApplied?: boolean;
+        thresholdReached?: boolean;
     }>;
     hasOutsideOranProducts: boolean;
 }> {
     const DEFAULT_FEE = 500; // Frais par défaut si aucune config trouvée
 
-    // Grouper le panier par magasin
+    // Grouper le panier par magasin et calculer totaux
     const storeIds = [...new Set(cart.map(item => item.storeId))].filter(Boolean);
+    const storeTotals = new Map<string, number>();
+
+    cart.forEach(item => {
+        const total = item.price * item.quantity;
+        storeTotals.set(item.storeId, (storeTotals.get(item.storeId) || 0) + total);
+    });
 
     if (storeIds.length === 0) {
         return {
@@ -30,13 +38,15 @@ export async function calculateDeliveryFee(
         };
     }
 
-    // Récupérer les magasins avec leur ville de stockage
+    // Récupérer les magasins avec ville de stockage ET paramètres livraison gratuite
     const stores = await prisma.store.findMany({
         where: { id: { in: storeIds } },
         select: {
             id: true,
             name: true,
-            storageCity: true
+            storageCity: true,
+            offersFreeDelivery: true,
+            freeDeliveryThreshold: true
         }
     });
 
@@ -50,18 +60,41 @@ export async function calculateDeliveryFee(
         storeName: string;
         storageCity: string | null;
         fee: number;
+        freeDeliveryApplied?: boolean;
+        thresholdReached?: boolean;
     }> = [];
     let totalFee = 0;
     let hasOutsideOranProducts = false;
 
     for (const store of stores) {
         const storageCity = store.storageCity || 'Oran'; // Par défaut Oran si non spécifié
+        const storeTotal = storeTotals.get(store.id) || 0;
 
         if (storageCity !== 'Oran') {
             hasOutsideOranProducts = true;
         }
 
-        // Chercher la configuration exacte fromCity → toWilaya
+        // 🚚 CHECK FREE DELIVERY FIRST
+        const qualifiesForFreeDelivery =
+            store.offersFreeDelivery &&
+            store.freeDeliveryThreshold &&
+            storeTotal >= store.freeDeliveryThreshold;
+
+        if (qualifiesForFreeDelivery) {
+            // ✅ Livraison GRATUITE - Frais = 0
+            feeByStore.push({
+                storeId: store.id,
+                storeName: store.name,
+                storageCity: store.storageCity,
+                fee: 0,
+                freeDeliveryApplied: true,
+                thresholdReached: true
+            });
+            // totalFee += 0 (pas de frais)
+            continue;
+        }
+
+        // Sinon, calculer frais normaux
         let fee: number | null = null;
         const exactConfig = feeConfigs.find(
             (config: any) => config.fromCity === storageCity && config.toWilaya === destinationWilaya
@@ -87,7 +120,8 @@ export async function calculateDeliveryFee(
             storeId: store.id,
             storeName: store.name,
             storageCity: store.storageCity,
-            fee: storeFee
+            fee: storeFee,
+            freeDeliveryApplied: false
         });
 
         totalFee += storeFee;
