@@ -301,6 +301,9 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                         <button onClick={() => setIsEditing(true)} className="btn btn-outline whitespace-nowrap">
                             ✏️ Ma boutique en ligne
                         </button>
+                        <Link href="/sell/settings" className="btn btn-outline whitespace-nowrap">
+                            ⚙️ Paramètres
+                        </Link>
                         <Link href="/sell/analytics" className="btn btn-outline whitespace-nowrap">
                             📊 Analytics
                         </Link>
