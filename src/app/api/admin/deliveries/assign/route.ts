@@ -38,7 +38,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Commande introuvable' }, { status: 404 });
         }
 
-        if (order.status !== 'CONFIRMED' && order.status !== 'SHIPPED') {
+        // Allow delivery creation for confirmed orders or those ready for pickup
+        const validStatuses = ['CONFIRMED', 'AT_MERCHANT', 'READY_FOR_PICKUP'];
+        if (!validStatuses.includes(order.status)) {
             return NextResponse.json({
                 error: 'La commande doit être confirmée pour être assignée'
             }, { status: 400 });
@@ -120,11 +122,11 @@ export async function POST(request: Request) {
             }
         });
 
-        // Update order status to SHIPPED if not already
-        if (order.status === 'CONFIRMED') {
+        // Update order status to WITH_DELIVERY_AGENT when assigned
+        if (order.status === 'CONFIRMED' || order.status === 'AT_MERCHANT' || order.status === 'READY_FOR_PICKUP') {
             await prisma.order.update({
                 where: { id: orderId },
-                data: { status: 'SHIPPED' }
+                data: { status: 'WITH_DELIVERY_AGENT' }
             });
         }
 
