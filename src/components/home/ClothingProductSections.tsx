@@ -13,6 +13,12 @@ interface Product {
     image: string;
     categoryName: string;
     createdAt?: Date | string;
+    Store?: {
+        name: string;
+        city: string | null;
+        offersFreeDelivery: boolean;
+        freeDeliveryThreshold: number | null;
+    };
 }
 
 interface SubcategorySection {
@@ -134,12 +140,21 @@ function ProductSection({ section }: { section: SubcategorySection }) {
                                             alt={product.title}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
-                                        {product.promotionLabel && (
-                                            <div className="absolute top-2 left-2 bg-gradient-to-br from-rose-500 to-rose-600 text-white text-[10px] md:text-xs font-bold px-2 md:px-2.5 py-0.5 md:py-1 rounded-full shadow-lg flex items-center gap-1">
-                                                <span className="animate-pulse">🔥</span>
-                                                <span>{product.promotionLabel}</span>
-                                            </div>
-                                        )}
+                                        {/* Badges container */}
+                                        <div className="absolute top-2 left-2 flex flex-col gap-1">
+                                            {product.promotionLabel && (
+                                                <div className="bg-gradient-to-br from-rose-500 to-rose-600 text-white text-[10px] md:text-xs font-bold px-2 md:px-2.5 py-0.5 md:py-1 rounded-full shadow-lg flex items-center gap-1">
+                                                    <span className="animate-pulse">🔥</span>
+                                                    <span>{product.promotionLabel}</span>
+                                                </div>
+                                            )}
+                                            {/* Free Delivery Badge */}
+                                            {product.Store?.offersFreeDelivery && (
+                                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-[10px] md:text-xs font-bold px-2 md:px-2.5 py-0.5 md:py-1 rounded shadow-md flex items-center gap-1">
+                                                    🚚 Livraison Gratuite
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-1.5 px-0.5">
