@@ -30,7 +30,7 @@
     "recharts": "^3.6.0",
     "resend": "^6.9.1",
     "swr": "^2.3.8",
-    "yet-another-react-lightbox": "^3.21.3",
+    "yet-another-react-lightbox": "^3.28.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
