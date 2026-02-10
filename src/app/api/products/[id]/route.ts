@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 import { verifyToken } from '@/lib/auth-token';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -183,22 +184,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         select: { slug: true }
       });
 
-      // Call revalidation API
-      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/revalidate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Cookie': `auth_token=${token}` },
-        body: JSON.stringify({
-          paths: [
-            '/',
-            `/products/${id}`,
-            oldCategorySlug ? `/categories/${oldCategorySlug}` : null,
-            newCategory?.slug ? `/categories/${newCategory.slug}` : null,
-            '/admin/products'
-          ].filter(Boolean)
-        })
-      });
+      // CRITICAL: Direct revalidation (more reliable than fetch)
+      revalidatePath('/');
+      revalidatePath(`/products/${id}`);
+      revalidatePath('/nouveautes');
+      revalidatePath('/categories/[slug]', 'page');
+
+      if (oldCategorySlug) {
+        revalidatePath(`/categories/${oldCategorySlug}`);
+      }
+      if (newCategory?.slug && newCategory.slug !== oldCategorySlug) {
+        revalidatePath(`/categories/${newCategory.slug}`);
+      }
+
+      console.log(`[Cache] Revalidated homepage + categories after product ${id} update`);
     } catch (revalidateError) {
-      console.log('Cache revalidation failed (non-critical):', revalidateError);
+      console.error('Cache revalidation error:', revalidateError);
     }
 
     return NextResponse.json(product);
