@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import WishlistButton from '@/components/WishlistButton';
 
 interface Product {
     id: string;
@@ -154,6 +155,10 @@ function ProductSection({ section }: { section: SubcategorySection }) {
                                                     🚚 Livraison Gratuite
                                                 </div>
                                             )}
+                                        </div>
+                                        {/* Wishlist Button */}
+                                        <div className="absolute top-2 right-2 z-20">
+                                            <WishlistButton productId={product.id} size="sm" />
                                         </div>
                                     </div>
 
