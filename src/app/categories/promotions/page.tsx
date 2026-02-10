@@ -26,6 +26,11 @@ export default function PromotionsPage() {
         const fetchPromotions = async () => {
             try {
                 const res = await fetch('/api/products?limit=50');
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
                 const data = await res.json();
 
                 // API returns array directly, not {products: [...]}
@@ -37,9 +42,17 @@ export default function PromotionsPage() {
                     (p.discountPrice && p.discountPrice < p.price)
                 );
 
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(`[Promotions] Found ${promos.length} products in promotion`);
+                }
+
                 setProducts(promos);
             } catch (error) {
-                console.error('Error fetching promotions:', error);
+                if (process.env.NODE_ENV === 'development') {
+                    console.error('[Promotions] Error fetching:', error);
+                }
+                // Set empty array on error to show "no promotions" message
+                setProducts([]);
             } finally {
                 setLoading(false);
             }
@@ -52,8 +65,9 @@ export default function PromotionsPage() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Chargement des promotions...</p>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-pink-500 mx-auto mb-4"></div>
+                    <p className="text-lg font-semibold text-gray-700">Chargement des promotions...</p>
+                    <p className="text-sm text-gray-500 mt-2">Recherche des meilleures offres 🎁</p>
                 </div>
             </div>
         );
