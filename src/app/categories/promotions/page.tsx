@@ -25,22 +25,14 @@ export default function PromotionsPage() {
     useEffect(() => {
         const fetchPromotions = async () => {
             try {
-                const res = await fetch('/api/products?limit=50');
+                // Use optimized promotions API instead of fetching all products
+                const res = await fetch('/api/products/promotions');
 
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
 
-                const data = await res.json();
-
-                // API returns array directly, not {products: [...]}
-                const productsArray = Array.isArray(data) ? data : [];
-
-                // Filter for promotions (has label OR discount)
-                const promos = productsArray.filter((p: Product) =>
-                    (p.promotionLabel && p.promotionLabel.trim() !== '') ||
-                    (p.discountPrice && p.discountPrice < p.price)
-                );
+                const promos = await res.json();
 
                 if (process.env.NODE_ENV === 'development') {
                     console.log(`[Promotions] Found ${promos.length} products in promotion`);
@@ -51,7 +43,6 @@ export default function PromotionsPage() {
                 if (process.env.NODE_ENV === 'development') {
                     console.error('[Promotions] Error fetching:', error);
                 }
-                // Set empty array on error to show "no promotions" message
                 setProducts([]);
             } finally {
                 setLoading(false);
@@ -60,6 +51,7 @@ export default function PromotionsPage() {
 
         fetchPromotions();
     }, []);
+
 
     if (loading) {
         return (
