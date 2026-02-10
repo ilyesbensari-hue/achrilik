@@ -197,6 +197,14 @@ async function getPromotions() {
             name: true,
           },
         },
+        Store: {
+          select: {
+            name: true,
+            city: true,
+            offersFreeDelivery: true,
+            freeDeliveryThreshold: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
