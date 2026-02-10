@@ -139,7 +139,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                     telephone: formData.telephone,
                                 }}
                                 errors={errors}
-                                onChange={updateFormField}
+                                onChange={(field, value) => updateFormField(field as any, value)}
                                 onNext={goToNextStep}
                             />
                         )}
@@ -159,7 +159,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                                 deliveryFeeDetails={deliveryFeeDetails}
                                 stores={stores}
                                 cart={cart}
-                                onChange={updateFormField}
+                                onChange={(field, value) => updateFormField(field as any, value)}
                                 onBack={goToPreviousStep}
                                 onNext={goToNextStep}
                             />
