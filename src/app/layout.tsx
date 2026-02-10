@@ -64,9 +64,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://achrilik.com",
   },
-  verification: {
-    google: "google-site-verification-code", // TODO: Add actual verification code
-  },
+  // ✅ To enable Google Search Console:
+  // 1. Go to: https://search.google.com/search-console
+  // 2. Add property "achrilik.com"
+  // 3. Choose "HTML tag" method
+  // 4. Copy the verification code (meta content="...")
+  // 5. Uncomment below and add your code:
+  // verification: {
+  //   google: "your-google-verification-code-here",
+  // },
 };
 
 import { Providers } from "@/app/providers";
