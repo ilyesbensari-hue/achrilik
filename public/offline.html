@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr-DZ">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hors ligne - Achrilik</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #006233 0%, #00753D 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+
+        .icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 16px;
+        }
+
+        p {
+            font-size: 18px;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .button {
+            display: inline-block;
+            background: white;
+            color: #006233;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .tips {
+            margin-top: 48px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tips h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .tips ul {
+            text-align: left;
+            list-style: none;
+        }
+
+        .tips li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .tips li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="icon">📡</div>
+        <h1>Vous êtes hors ligne</h1>
+        <p>
+            Impossible de se connecter à Achrilik pour le moment.
+            Vérifiez votre connexion Internet et réessayez.
+        </p>
+        <a href="/" class="button" onclick="window.location.reload(); return false;">
+            🔄 Réessayer
+        </a>
+
+        <div class="tips">
+            <h2>💡 Pendant que vous êtes hors ligne:</h2>
+            <ul>
+                <li>Vos articles dans le panier sont sauvegardés</li>
+                <li>Les pages visitées récemment sont en cache</li>
+                <li>Vos favoris restent accessibles</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Auto-reload when back online
+        window.addEventListener('online', () => {
+            console.log('[Offline Page] Connection restored, reloading...');
+            window.location.reload();
+        });
+
+        // Check connection every 5 seconds
+        setInterval(() => {
+            if (navigator.onLine) {
+                fetch('/api/health', { method: 'HEAD', cache: 'no-store' })
+                    .then(() => window.location.reload())
+                    .catch(() => console.log('[Offline Page] Still offline'));
+            }
+        }, 5000);
+    </script>
+</body>
+
+</html>

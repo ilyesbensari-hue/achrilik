@@ -92,6 +92,24 @@ export default function ProductCardBase({
                         height={500}
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                     />
+
+                    {/* Quick View Button - Desktop hover, Mobile always visible */}
+                    {showQuickAdd && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 md:bg-black/20 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    // Trigger quick view (parent should handle state)
+                                    const event = new CustomEvent('openQuickView', { detail: { productId: product.id } });
+                                    window.dispatchEvent(event);
+                                }}
+                                className="bg-white text-gray-900 px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-gray-100 transition transform hover:scale-105 pointer-events-auto"
+                            >
+                                👁️ Aperçu rapide
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Product Info */}

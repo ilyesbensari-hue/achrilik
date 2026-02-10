@@ -53,6 +53,68 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    // ===== ADVANCED FILTERS =====
+
+    // Price Range Filter
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
+    if (minPrice || maxPrice) {
+      whereClause.price = {
+        ...(minPrice && { gte: parseInt(minPrice) }),
+        ...(maxPrice && { lte: parseInt(maxPrice) }),
+      };
+    }
+
+    // Size Filter (multi-select)
+    const sizes = searchParams.get('sizes')?.split(',').filter(Boolean);
+    if (sizes && sizes.length > 0) {
+      whereClause.Variant = {
+        some: {
+          size: { in: sizes }
+        }
+      };
+    }
+
+    // Color Filter (multi-select)
+    const colors = searchParams.get('colors')?.split(',').filter(Boolean);
+    if (colors && colors.length > 0) {
+      whereClause.Variant = {
+        some: {
+          ...(whereClause.Variant?.some || {}),
+          color: { in: colors }
+        }
+      };
+    }
+
+    // Wilaya Filter (multi-select for store location)
+    const wilayas = searchParams.get('wilayas')?.split(',').filter(Boolean);
+    if (wilayas && wilayas.length > 0) {
+      whereClause.Store = {
+        ...(whereClause.Store || {}),
+        wilaya: { in: wilayas }
+      };
+    }
+
+    // Free Delivery Filter
+    const freeDelivery = searchParams.get('freeDelivery') === 'true';
+    if (freeDelivery) {
+      whereClause.Store = {
+        ...(whereClause.Store || {}),
+        offersFreeDelivery: true
+      };
+    }
+
+    // Click & Collect Filter
+    const clickCollect = searchParams.get('clickCollect') === 'true';
+    if (clickCollect) {
+      whereClause.Store = {
+        ...(whereClause.Store || {}),
+        clickCollect: true
+      };
+    }
+
+    // Note: Seller rating will be filtered post-query since it's calculated dynamically
+
 
     const products = await prisma.product.findMany({
       where: whereClause,
@@ -109,7 +171,20 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json(enrichedProducts, {
+    // ===== POST-QUERY FILTERS =====
+
+    // Seller Rating Filter (applied after calculation)
+    const minRating = searchParams.get('minRating');
+    let filteredProducts = enrichedProducts;
+
+    if (minRating && parseFloat(minRating) > 0) {
+      const minRatingValue = parseFloat(minRating);
+      filteredProducts = enrichedProducts.filter(p =>
+        p.store.averageRating >= minRatingValue
+      );
+    }
+
+    return NextResponse.json(filteredProducts, {
       headers: {
         'Cache-Control': 'no-store, max-age=0',
       },
