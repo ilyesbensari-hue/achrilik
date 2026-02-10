@@ -27,10 +27,9 @@ export async function GET(request: NextRequest) {
             select: {
                 id: true,
                 title: true,
-                slug: true,
                 price: true,
-                image: true,
-                category: {
+                images: true,
+                Category: {
                     select: {
                         name: true
                     }
@@ -46,10 +45,9 @@ export async function GET(request: NextRequest) {
             id: product.id,
             type: 'product' as const,
             title: product.title,
-            slug: product.slug,
-            image: product.image?.split(',')[0] || null, // First image only
+            image: product.images?.split(',')[0] || null, // First image only
             price: product.price,
-            category: product.category?.name || null,
+            category: product.Category?.name || null,
         }));
 
         // Cache for 5 minutes
