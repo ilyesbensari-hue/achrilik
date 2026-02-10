@@ -161,6 +161,19 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             });
 
             if (res.ok) {
+                // Revalidate homepage cache to show updated product
+                try {
+                    await fetch('/api/admin/revalidate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paths: ['/', '/categories/[slug]', '/nouveautes']
+                        })
+                    });
+                } catch (e) {
+                    console.log('Cache revalidation failed (non-critical)');
+                }
+
                 router.push(`/sell/products/${id}/analytics`);
             } else {
                 const error = await res.json();

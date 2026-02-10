@@ -49,7 +49,13 @@ export async function POST(
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    paths: ['/', `/products/${id}`, '/admin/products']
+                    paths: [
+                        '/',  // Homepage
+                        `/products/${id}`,  // Product page
+                        '/admin/products',  // Admin products list
+                        '/categories/[slug]',  // Category pages
+                        '/nouveautes'  // New arrivals page
+                    ]
                 })
             });
         } catch (e) {

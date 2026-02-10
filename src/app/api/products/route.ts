@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 import { verifyToken } from '@/lib/auth-token';
 import { getProductStatus } from '@/lib/productHelpers';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -287,6 +288,11 @@ export async function POST(request: NextRequest) {
     // Log auto-approval for monitoring
     if (productStatus === 'APPROVED') {
       console.log(`[Auto-Approval] Product "${title}" (${product.id}) auto-approved from verified store ${storeId}`);
+
+      // Invalidate homepage cache so new product appears immediately
+      revalidatePath('/');
+      revalidatePath('/categories/[slug]', 'page');
+      revalidatePath('/nouveautes');
     }
 
     return NextResponse.json(product);
