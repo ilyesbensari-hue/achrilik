@@ -34,7 +34,7 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
         goToStep,
         updateFormField,
         submitOrder,
-    } = useCheckoutForm(initialUser, cart, deliveryFee, router);
+    } = useCheckoutForm({ initialUser, cart });
 
     // Load cart and stores on mount
     useEffect(() => {
