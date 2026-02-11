@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth-token';
+import { revalidatePath } from 'next/cache';
 
 // GET - Load current delivery settings
 export async function GET() {
@@ -95,6 +96,12 @@ export async function POST(request: Request) {
                 freeDeliveryThreshold: offersFreeDelivery ? freeDeliveryThreshold : null,
             }
         });
+
+        // Revalidate pages that display free delivery badges
+        revalidatePath('/'); // Homepage
+        revalidatePath('/categories/[slug]', 'page'); // All category pages
+        revalidatePath('/nouveautes'); // New arrivals
+        revalidatePath('/promotions'); // Promotions page
 
         return NextResponse.json({
             success: true,
