@@ -1,10 +1,9 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
-import { withCache } from '@/lib/cache';
 import { verifyToken } from '@/lib/auth-token';
+import { logger } from '@/lib/logger';
 
-// GET /api/admin/stats - Statistiques globales et avancées (OPTIMIZED + CACHED)
+// GET /api/admin/stats - Simplified version without cache to identify issue
 export async function GET(request: NextRequest) {
     try {
         const token = request.cookies.get('auth_token')?.value;
@@ -18,160 +17,68 @@ export async function GET(request: NextRequest) {
         if (!user || !user.roles?.includes('ADMIN')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-        // Use cache wrapper with 5 minute TTL
-        const stats = await withCache('admin-stats', async () => {
-            // Compter les utilisateurs par rôle - EN PARALLÈLE
-            const [totalUsers, buyers, sellers, admins] = await Promise.all([
+
+        // Simplified stats - just counts first
+        try {
+            const [totalUsers, totalProducts, totalStores, totalOrders] = await Promise.all([
                 prisma.user.count(),
-                prisma.user.count({ where: { roles: { has: 'BUYER' } } }),
-                prisma.user.count({ where: { roles: { has: 'SELLER' } } }),
-                prisma.user.count({ where: { roles: { has: 'ADMIN' } } })
+                prisma.product.count(),
+                prisma.store.count(),
+                prisma.order.count()
             ]);
 
-            // Compter les produits par statut
-            const [totalProducts, pendingProducts, approvedProducts] = await Promise.all([
-                prisma.product.count(),
+            // Simple role counts (fallback if array query fails)
+            let buyers = 0, sellers = 0, admins = 0;
+            try {
+                const usersWithRoles = await prisma.user.findMany({
+                    select: { roles: true }
+                });
+                buyers = usersWithRoles.filter(u => u.roles.includes('BUYER')).length;
+                sellers = usersWithRoles.filter(u => u.roles.includes('SELLER')).length;
+                admins = usersWithRoles.filter(u => u.roles.includes('ADMIN')).length;
+            } catch (roleError) {
+                logger.error('Role count error:', { error: roleError as Error });
+            }
+
+            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+            const newUsersThisWeek = await prisma.user.count({
+                where: { createdAt: { gte: weekAgo } }
+            });
+
+            const [pendingProducts, approvedProducts] = await Promise.all([
                 prisma.product.count({ where: { status: 'PENDING' } }),
                 prisma.product.count({ where: { status: 'APPROVED' } })
             ]);
 
-            // Dates pour les queries
-            const now = new Date();
-            const today = new Date(now.setHours(0, 0, 0, 0));
-            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const [pendingStores, verifiedStores] = await Promise.all([
+                prisma.store.count({ where: { verified: false } }),
+                prisma.store.count({ where: { verified: true } })
+            ]);
 
-            // Compter les commandes
-            const [totalOrders, ordersToday, ordersThisWeek, ordersThisMonth] = await Promise.all([
-                prisma.order.count(),
+            // Simplified date calculations
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            const [ordersToday, ordersThisWeek, ordersThisMonth] = await Promise.all([
                 prisma.order.count({ where: { createdAt: { gte: today } } }),
                 prisma.order.count({ where: { createdAt: { gte: weekAgo } } }),
                 prisma.order.count({ where: { createdAt: { gte: monthStart } } })
             ]);
 
-            // ✅ OPTIMISATION CRITIQUE: Utiliser SQL natif au lieu de boucles
-            // Croissance des utilisateurs (30 derniers jours) - 1 REQUÊTE au lieu de 30
-            const userGrowthRaw: any[] = await prisma.$queryRaw`
-            SELECT 
-                DATE("createdAt") as date,
-                COUNT(*)::int as count
-            FROM "User"
-            WHERE "createdAt" >= ${thirtyDaysAgo}
-            GROUP BY DATE("createdAt")
-            ORDER BY date ASC
-        `;
-
-            // Formater les résultats
-            const userGrowth = userGrowthRaw.map((row: any) => ({
-                date: row.date.toISOString().split('T')[0],
-                count: row.count
-            }));
-
-            // Revenus par jour (30 derniers jours) - 1 REQUÊTE au lieu de 30
-            const revenueByDayRaw: any[] = await prisma.$queryRaw`
-            SELECT 
-                DATE("createdAt") as date,
-                SUM(total)::float as revenue,
-                COUNT(*)::int as orders
-            FROM "Order"
-            WHERE "createdAt" >= ${thirtyDaysAgo}
-            GROUP BY DATE("createdAt")
-            ORDER BY date ASC
-        `;
-
-            const revenueByDay = revenueByDayRaw.map((row: any) => ({
-                date: row.date.toISOString().split('T')[0],
-                revenue: row.revenue || 0,
-                orders: row.orders
-            }));
-
-            // Calculer les revenus - AGRÉGATION SQL directe
-            const revenueStats: any[] = await prisma.$queryRaw`
-            SELECT 
-                SUM(total)::float as total_revenue,
-                AVG(total)::float as avg_order_value
-            FROM "Order"
-        `;
-
-            const thisMonthRevenue: any[] = await prisma.$queryRaw`
-            SELECT SUM(total)::float as revenue
-            FROM "Order"
-            WHERE "createdAt" >= ${monthStart}
-        `;
-
-            const totalRevenue = revenueStats[0]?.total_revenue || 0;
-            const averageOrderValue = revenueStats[0]?.avg_order_value || 0;
-
-            // Nouveaux utilisateurs cette semaine
-            const newUsersThisWeek = await prisma.user.count({
-                where: { createdAt: { gte: weekAgo } }
+            // Simple revenue calculation
+            const orders = await prisma.order.findMany({
+                select: { total: true }
             });
+            const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+            const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
 
-            // Top 10 produits - OPTIMISÉ avec groupBy
-            const topProducts = await prisma.orderItem.groupBy({
-                by: ['variantId'],
-                _count: { variantId: true },
-                _sum: { price: true, quantity: true },
-                orderBy: { _count: { variantId: 'desc' } },
-                take: 10
+            const ordersThisMonthData = await prisma.order.findMany({
+                where: { createdAt: { gte: monthStart } },
+                select: { total: true }
             });
-
-            // Récupérer les détails des produits top EN PARALLÈLE
-            const topProductDetails = await Promise.all(
-                topProducts.map(async (item) => {
-                    const variant = await prisma.variant.findUnique({
-                        where: { id: item.variantId },
-                        include: {
-                            Product: {
-                                select: {
-                                    title: true,
-                                    price: true
-                                }
-                            }
-                        }
-                    });
-
-                    return {
-                        productTitle: variant?.Product.title || 'Unknown',
-                        orders: item._count.variantId,
-                        totalQuantity: item._sum.quantity || 0,
-                        totalRevenue: item._sum.price || 0
-                    };
-                })
-            );
-
-            // Commandes par statut - GroupBy au lieu de multiples counts
-            const ordersByStatus = await prisma.order.groupBy({
-                by: ['status'],
-                _count: { status: true }
-            });
-
-            // Performance des catégories
-            const categoryPerformance = await prisma.product.groupBy({
-                by: ['categoryId'],
-                _count: { categoryId: true }
-            });
-
-            const categoryDetails = await Promise.all(
-                categoryPerformance.filter(cp => cp.categoryId).map(async (item) => {
-                    const category = await prisma.category.findUnique({
-                        where: { id: item.categoryId! }
-                    });
-
-                    return {
-                        categoryName: category?.name || 'Unknown',
-                        productCount: item._count.categoryId
-                    };
-                })
-            );
-
-            // Compter les boutiques (stores/vendors)
-            const [totalStores, pendingStores, verifiedStores] = await Promise.all([
-                prisma.store.count(),
-                prisma.store.count({ where: { verified: false } }),
-                prisma.store.count({ where: { verified: true } })
-            ]);
+            const thisMonthRevenue = ordersThisMonthData.reduce((sum, order) => sum + order.total, 0);
 
             return NextResponse.json({
                 users: {
@@ -179,8 +86,7 @@ export async function GET(request: NextRequest) {
                     buyers,
                     sellers,
                     admins,
-                    newThisWeek: newUsersThisWeek,
-                    growth: userGrowth
+                    newThisWeek: newUsersThisWeek
                 },
                 products: {
                     total: totalProducts,
@@ -196,23 +102,25 @@ export async function GET(request: NextRequest) {
                     total: totalOrders,
                     today: ordersToday,
                     thisWeek: ordersThisWeek,
-                    thisMonth: ordersThisMonth,
-                    byStatus: ordersByStatus
+                    thisMonth: ordersThisMonth
                 },
                 revenue: {
                     total: totalRevenue,
-                    thisMonth: thisMonthRevenue[0]?.revenue || 0,
-                    byDay: revenueByDay,
+                    thisMonth: thisMonthRevenue,
                     averageOrderValue
-                },
-                topProducts: topProductDetails,
-                categories: categoryDetails
+                }
             });
-        });
 
-        return stats;
+        } catch (queryError) {
+            logger.error('Stats query error:', { error: queryError as Error });
+            throw queryError;
+        }
+
     } catch (error) {
-        console.error('Error fetching admin stats:', error);
-        return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+        logger.error('Admin stats error:', { error: error as Error });
+        return NextResponse.json({
+            error: 'Failed to fetch stats',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }
