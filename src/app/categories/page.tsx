@@ -73,7 +73,7 @@ export default function CategoriesPage() {
                 {/* Special Links with enhanced design */}
                 <div className="space-y-3 mb-8">
                     <Link
-                        href="/promos"
+                        href="/categories/promotions"
                         className="group flex items-center justify-between bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-5 rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
                     >
                         <div className="flex items-center gap-3">
