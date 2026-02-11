@@ -1,10 +1,11 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendOrderConfirmation, sendNewOrderNotification } from '@/lib/mail';
+import { sendOrderConfirmation, sendNewOrderNotification, sendAdminNewOrderAlert, sendDeliveryAssignmentNotification } from '@/lib/mail';
 import { verifyToken } from '@/lib/auth-token';
 import { randomBytes } from 'crypto';
 import { apiRateLimit, getClientIp } from '@/lib/ratelimit';
 import { logger } from '@/lib/logger';
+import { generateTrackingNumber } from '@/lib/delivery-helpers';
 
 // GET - Fetch orders for a user or store
 export async function GET(request: NextRequest) {
@@ -226,6 +227,47 @@ export async function POST(request: NextRequest) {
 
 
 
+        // =========================================
+        //         AUTO-ASSIGNMENT DELIVERY
+        // =========================================
+        // Auto-create delivery for DELIVERY orders and assign to default agent
+        if (deliveryMethod === 'DELIVERY' && wilaya) {
+            try {
+                const defaultAgent = await prisma.deliveryAgent.findFirst({
+                    where: {
+                        user: { email: 'livreur@achrilik.com' },
+                        isActive: true
+                    },
+                    include: {
+                        user: true
+                    }
+                });
+
+                if (defaultAgent) {
+                    await prisma.delivery.create({
+                        data: {
+                            id: randomBytes(12).toString('hex'),
+                            orderId: order.id,
+                            agentId: defaultAgent.id,
+                            trackingNumber: generateTrackingNumber(),
+                            status: 'PENDING',
+                            assignedAt: new Date(),
+                            codAmount: paymentMethod === 'COD' ? order.total : 0,
+                            codCollected: false
+                        }
+                    });
+
+                    logger.info('[ORDER] Delivery auto-assigned', {
+                        orderId: order.id,
+                        agentId: defaultAgent.id
+                    });
+                }
+            } catch (deliveryErr) {
+                logger.error('[ORDER] Delivery auto-assignment failed', { error: deliveryErr as Error });
+                // Non-blocking error
+            }
+        }
+
         // ==========================================
         //         EMAIL NOTIFICATIONS (Sync-ish)
         // ==========================================
@@ -234,6 +276,14 @@ export async function POST(request: NextRequest) {
 
         try {
             const emailPromises = [];
+
+            // 0. Send Email to Admin (NEW)
+            if (process.env.ADMIN_EMAIL) {
+                emailPromises.push(
+                    sendAdminNewOrderAlert(process.env.ADMIN_EMAIL, order)
+                        .catch(e => logger.error('[EMAIL ERROR] Admin alert failed', { error: e as Error }))
+                );
+            }
 
             // 1. Send Email to Buyer
             if (order.User && order.User.email) {
@@ -260,6 +310,27 @@ export async function POST(request: NextRequest) {
                                 .catch(e => logger.error(`[EMAIL ERROR] Seller notification failed for ${store.id}:`, e))
                         );
                     }
+                }
+            }
+
+            // 3. Send Email to Delivery Agent if auto-assigned (NEW)
+            if (deliveryMethod === 'DELIVERY') {
+                const defaultAgent = await prisma.deliveryAgent.findFirst({
+                    where: {
+                        user: { email: 'livreur@achrilik.com' },
+                        isActive: true
+                    },
+                    include: { user: true }
+                });
+
+                if (defaultAgent && defaultAgent.user?.email) {
+                    emailPromises.push(
+                        sendDeliveryAssignmentNotification(
+                            defaultAgent.user.email,
+                            order,
+                            defaultAgent
+                        ).catch(e => logger.error('[EMAIL ERROR] Delivery agent notification failed', { error: e as Error }))
+                    );
                 }
             }
 

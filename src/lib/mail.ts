@@ -689,3 +689,145 @@ export async function sendVendorVerificationEmail(to: string, storeName: string,
         console.error("Error sending vendor verification email:", error);
     }
 }
+
+// ==========================================
+//   ADMIN & DELIVERY PROVIDER NOTIFICATIONS
+// ==========================================
+
+/**
+ * Send alert to admin when new order is created
+ */
+export async function sendAdminNewOrderAlert(adminEmail: string, order: any) {
+    if (!process.env.SMTP_USER) return;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: adminEmail,
+            subject: `🚨 Nouvelle commande #${order.id.slice(0, 8)} - Achrilik Admin`,
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; text-align: center;">
+                            <h1 style="color: white; margin: 0; font-size: 24px;">🚨 Nouvelle Commande</h1>
+                        </div>
+                        <div style="padding: 30px;">
+                            <p style="margin: 0 0 20px 0;">Une nouvelle commande vient d'être créée.</p>
+                            <div style="background: #f9fafb; border: 2px solid #006233; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                                <p style="margin: 5px 0;"><strong>📦 Commande:</strong> #${order.id.slice(0, 8)}</p>
+                                <p style="margin: 5px 0;"><strong>👤 Client:</strong> ${order.shippingName || 'N/A'}</p>
+                                <p style="margin: 5px 0;"><strong>📞 Téléphone:</strong> ${order.shippingPhone || 'N/A'}</p>
+                                <p style="margin: 5px 0;"><strong>💰 Montant:</strong> ${order.total?.toLocaleString() || 0} DA</p>
+                                <p style="margin: 5px 0;"><strong>Type:</strong> ${order.deliveryType === 'DELIVERY' ? '🚚 Livraison' : '🏪 Click & Collect'}</p>
+                                <p style="margin: 5px 0;"><strong>Wilaya:</strong> ${order.shippingWilaya || order.shippingCity || 'N/A'}</p>
+                            </div>
+                            <div style="text-align: center; margin-top: 20px;">
+                                <a href="https://achrilik.com/admin/orders" style="display: inline-block; padding: 12px 24px; background: #006233; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                    Voir dans Admin →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+        });
+    } catch (error) {
+        console.error('[EMAIL ERROR] Admin notification failed:', error);
+    }
+}
+
+/**
+ * Send notification to delivery provider when delivery is assigned
+ */
+export async function sendDeliveryAssignmentNotification(
+    deliveryEmail: string,
+    order: any,
+    agent: any
+) {
+    if (!process.env.SMTP_USER) return;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: deliveryEmail,
+            subject: `📦 Nouvelle livraison #${order.id.slice(0, 8)} - Achrilik`,
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); padding: 30px; text-align: center;">
+                            <h1 style="color: white; margin: 0; font-size: 24px;">📦 Nouvelle Livraison</h1>
+                        </div>
+                        <div style="padding: 30px;">
+                            <p style="margin: 0 0 10px 0;">Bonjour <strong>${agent.user?.name || 'Karim'}</strong>,</p>
+                            <p style="margin: 0 0 20px 0; color: #666;">Une nouvelle livraison vous a été assignée.</p>
+                            <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                                <h3 style="margin: 0 0 15px 0; color: #1e40af;">📋 Détails</h3>
+                                <p style="margin: 5px 0;"><strong>📦 Commande:</strong> #${order.id.slice(0, 8)}</p>
+                                <p style="margin: 5px 0;"><strong>👤 Client:</strong> ${order.shippingName || 'N/A'}</p>
+                                <p style="margin: 5px 0;"><strong>📞 Téléphone:</strong> <a href="tel:${order.shippingPhone}" style="color: #2563eb;">${order.shippingPhone || 'N/A'}</a></p>
+                                <p style="margin: 5px 0;"><strong>📍 Adresse:</strong> ${order.shippingAddress || 'N/A'}, ${order.shippingCity || ''}</p>
+                                <p style="margin: 5px 0;"><strong>💰 COD:</strong> ${order.paymentMethod === 'COD' ? order.total + ' DA' : 'Aucun'}</p>
+                            </div>
+                            <div style="text-align: center; margin-top: 20px;">
+                                <a href="https://achrilik.com/livreur" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                    Voir dans Dashboard →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+        });
+    } catch (error) {
+        console.error('[EMAIL ERROR] Delivery assignment notification failed:', error);
+    }
+}
+
+/**
+ * Send notification to client when tracking URL is added
+ */
+export async function sendTrackingUrlNotification(clientEmail: string, order: any, trackingUrl: string) {
+    if (!process.env.SMTP_USER) return;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: clientEmail,
+            subject: `📍 Suivez votre colis - Commande #${order.id.slice(0, 8)}`,
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center;">
+                            <h1 style="color: white; margin: 0; font-size: 24px;">📍 Suivez Votre Colis</h1>
+                        </div>
+                        <div style="padding: 30px;">
+                            <p style="margin: 0 0 10px 0;">Bonjour <strong>${order.shippingName || ''}</strong>,</p>
+                            <p style="margin: 0 0 20px 0; color: #666;">Bonne nouvelle ! Votre colis peut maintenant être suivi en ligne.</p>
+                            <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                                <p style="margin: 0 0 10px 0;"><strong>📦 Commande:</strong> #${order.id.slice(0, 8)}</p>
+                                <p style="margin: 10px 0 5px 0; font-weight: 600;">🔗 Lien de suivi:</p>
+                                <a href="${trackingUrl}" style="color: #059669; word-break: break-all;">${trackingUrl}</a>
+                            </div>
+                            <div style="text-align: center; margin-top: 20px;">
+                                <a href="${trackingUrl}" style="display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                                    📍 Suivre Mon Colis
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+        });
+    } catch (error) {
+        console.error('[EMAIL ERROR] Tracking URL notification failed:', error);
+    }
+}

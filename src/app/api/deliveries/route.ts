@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
 import { cookies } from 'next/headers';
+import { sendTrackingUrlNotification } from '@/lib/mail';
 
 export async function GET() {
     try {
@@ -131,6 +132,27 @@ export async function PATCH(request: Request) {
                     totalDeliveries: { increment: 1 }
                 }
             });
+        }
+
+        // Send tracking URL notification if tracking URL was just added
+        if (trackingUrl && (!delivery.trackingUrl || delivery.trackingUrl !== trackingUrl)) {
+            try {
+                const order = await prisma.order.findUnique({
+                    where: { id: delivery.orderId },
+                    include: { User: true }
+                });
+
+                if (order?.User?.email) {
+                    await sendTrackingUrlNotification(
+                        order.User.email,
+                        order,
+                        trackingUrl
+                    ).catch(err => console.error('[EMAIL ERROR] Tracking URL notification failed:', err));
+                }
+            } catch (emailErr) {
+                console.error('[EMAIL ERROR] Failed to send tracking URL notification:', emailErr);
+                // Non-blocking error
+            }
         }
 
         return NextResponse.json({ success: true, delivery: updated });
