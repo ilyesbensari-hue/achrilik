@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
         const user = await verifyToken(token);
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !user.roles?.includes('ADMIN')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         // Use cache wrapper with 5 minute TTL
@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
             // Compter les utilisateurs par rôle - EN PARALLÈLE
             const [totalUsers, buyers, sellers, admins] = await Promise.all([
                 prisma.user.count(),
-                prisma.user.count({ where: { role: 'BUYER' } }),
-                prisma.user.count({ where: { role: 'SELLER' } }),
-                prisma.user.count({ where: { role: 'ADMIN' } })
+                prisma.user.count({ where: { roles: { has: 'BUYER' } } }),
+                prisma.user.count({ where: { roles: { has: 'SELLER' } } }),
+                prisma.user.count({ where: { roles: { has: 'ADMIN' } } })
             ]);
 
             // Compter les produits par statut

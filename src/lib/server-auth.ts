@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { verifyToken } from './auth-token';
 import { redirect } from 'next/navigation';
+import { hasRole, hasAnyRole } from './role-helpers';
 
 /**
  * Server-side authentication utilities for Next.js Server Components.
@@ -25,7 +26,7 @@ export async function requireAuth() {
 
 export async function requireAdmin() {
     const user = await requireAuth();
-    if (user.role !== 'ADMIN') {
+    if (!hasRole(user, 'ADMIN')) {
         redirect('/');
     }
     return user;
@@ -33,7 +34,7 @@ export async function requireAdmin() {
 
 export async function requireSeller() {
     const user = await requireAuth();
-    if (user.role !== 'SELLER' && user.role !== 'ADMIN') {
+    if (!hasAnyRole(user, ['SELLER', 'ADMIN'])) {
         // Redirect BUYER to store creation page instead of why-sell
         redirect('/become-seller');
     }
@@ -60,7 +61,7 @@ export async function requireAdminApi() {
     }
 
     const user = await verifyToken(token);
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !hasRole(user, 'ADMIN')) {
         throw new Error('Forbidden');
     }
 
