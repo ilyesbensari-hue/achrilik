@@ -3,15 +3,46 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Grid3x3, ShoppingCart, User, Heart } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const [cartCount, setCartCount] = useState(0);
+
+    useEffect(() => {
+        // Get cart count from localStorage
+        const updateCartCount = () => {
+            const cart = localStorage.getItem('cart');
+            if (cart) {
+                try {
+                    const cartItems = JSON.parse(cart);
+                    const totalCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0);
+                    setCartCount(totalCount);
+                } catch (e) {
+                    console.error('Error parsing cart:', e);
+                }
+            } else {
+                setCartCount(0);
+            }
+        };
+
+        updateCartCount();
+
+        // Listen for cart updates
+        window.addEventListener('storage', updateCartCount);
+        window.addEventListener('cartUpdate', updateCartCount);
+
+        return () => {
+            window.removeEventListener('storage', updateCartCount);
+            window.removeEventListener('cartUpdate', updateCartCount);
+        };
+    }, []);
 
     const navItems = [
         { href: '/', label: 'Home', icon: Home },
         { href: '/categories', label: 'Catégories', icon: Grid3x3 },
-        { href: '/wishlist', label: 'Favoris', icon: Heart }, // Added Wishlist
-        { href: '/cart', label: 'Panier', icon: ShoppingCart },
+        { href: '/wishlist', label: 'Favoris', icon: Heart },
+        { href: '/cart', label: 'Panier', icon: ShoppingCart, count: cartCount },
         { href: '/profile', label: 'Profil', icon: User },
     ];
 
@@ -41,6 +72,13 @@ export default function BottomNav() {
                                 />
                                 {isActive && (
                                     <div className="absolute inset-0 bg-red-500/10 rounded-2xl blur-lg scale-150 active-glow" />
+                                )}
+
+                                {/* Cart Count Badge */}
+                                {item.count !== undefined && item.count > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1 shadow-lg">
+                                        {item.count > 99 ? '99+' : item.count}
+                                    </span>
                                 )}
                             </div>
 
