@@ -7,15 +7,21 @@ import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
     try {
-        // Rate limiting check
+        // Rate limiting check with fallback
         const ip = getClientIp(request);
-        const { success } = await loginRateLimit.limit(ip);
 
-        if (!success) {
-            return NextResponse.json(
-                { error: 'Trop de tentatives de connexion. Réessayez dans 1 minute.' },
-                { status: 429 }
-            );
+        try {
+            const { success } = await loginRateLimit.limit(ip);
+            if (!success) {
+                return NextResponse.json(
+                    { error: 'Trop de tentatives de connexion. Réessayez dans 1 minute.' },
+                    { status: 429 }
+                );
+            }
+        } catch (rateLimitError) {
+            // Log the error but allow login to proceed (graceful degradation)
+            logger.error('Rate limit error (Upstash unavailable):', rateLimitError);
+            // Continue with login - rate limiting temporarily disabled
         }
 
         const { email, password, loginType } = await request.json();
