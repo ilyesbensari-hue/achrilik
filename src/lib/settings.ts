@@ -68,7 +68,7 @@ export async function setSetting(
  */
 export async function setSettingJson(
     key: string,
-    value: any,
+    value: unknown,
     category: string = 'GENERAL',
     description?: string
 ) {

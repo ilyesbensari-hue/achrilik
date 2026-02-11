@@ -2,8 +2,8 @@
 // For production, use Redis or Vercel KV
 import { logger } from './logger';
 
-interface CacheEntry {
-    data: any;
+interface CacheEntry<T = unknown> {
+    data: T;
     timestamp: number;
 }
 
@@ -16,15 +16,15 @@ class SimpleCache {
         this.defaultTTL = defaultTTL;
     }
 
-    set(key: string, data: any, ttl?: number): void {
-        const entry: CacheEntry = {
+    set<T>(key: string, data: T, ttl?: number): void {
+        const entry: CacheEntry<T> = {
             data,
             timestamp: Date.now() + (ttl || this.defaultTTL) * 1000
         };
-        this.cache.set(key, entry);
+        this.cache.set(key, entry as CacheEntry);
     }
 
-    get(key: string): any | null {
+    get<T = unknown>(key: string): T | null {
         const entry = this.cache.get(key);
 
         if (!entry) {
@@ -37,7 +37,7 @@ class SimpleCache {
             return null;
         }
 
-        return entry.data;
+        return entry.data as T;
     }
 
     delete(key: string): void {

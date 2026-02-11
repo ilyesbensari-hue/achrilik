@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         return response;
 
     } catch (error) {
-        logger.error('Register error:', error);
+        logger.error('Register error', { error: error as Error });
         return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
     }
 }

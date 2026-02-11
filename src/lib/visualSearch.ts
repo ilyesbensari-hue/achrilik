@@ -1,7 +1,7 @@
 // IMPORTANT: TensorFlow.js est importé dynamiquement pour éviter les crashes
 // La recherche visuelle est désactivée par défaut
 import { logger } from './logger';
-let model: any | null = null;
+let model: unknown | null = null;
 
 /**
  * Charge le modèle MobileNet (une seule fois) - avec lazy loading
@@ -35,7 +35,7 @@ export async function loadModel(): Promise<any> {
 
         return model;
     } catch (error) {
-        logger.error('[VisualSearch] Failed to load model:', error);
+        logger.error('[VisualSearch] Failed to load model', { error: error as Error });
         return null;
     }
 }

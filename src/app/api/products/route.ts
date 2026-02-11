@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error('GET /api/products error:', error);
+    logger.error('GET /api/products error', { error: error as Error });
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }
@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(product);
   } catch (error) {
-    logger.error('POST /api/products error:', error);
+    logger.error('POST /api/products error', { error: error as Error });
     return NextResponse.json({ error: 'Failed to create product', details: error }, { status: 500 });
   }
 }

@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(orders);
 
     } catch (error) {
-        logger.error('GET /api/orders error:', error);
+        logger.error('GET /api/orders error', { error: error as Error });
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 }
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
 
                 emailPromises.push(
                     sendOrderConfirmation(order.User.email, order)
-                        .catch(e => logger.error('[EMAIL ERROR] Buyer confirmation failed:', e))
+                        .catch(e => logger.error('[EMAIL ERROR] Buyer confirmation failed', { error: e as Error }))
                 );
             }
 
@@ -272,14 +272,14 @@ export async function POST(request: NextRequest) {
 
 
         } catch (emailErr) {
-            logger.error('[ORDER] Critical error in email dispatch:', emailErr);
+            logger.error('[ORDER] Critical error in email dispatch', { error: emailErr as Error });
             // Non-blocking error for client, but logged
         }
 
         return NextResponse.json({ success: true, orderId: order.id });
 
     } catch (error: any) {
-        logger.error('[ORDER] Create error:', error);
+        logger.error('[ORDER] Create error', { error: error as Error });
         return NextResponse.json({ error: error.message || 'Erreur lors de la commande' }, { status: 500 });
     }
 }

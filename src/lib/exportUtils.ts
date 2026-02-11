@@ -5,7 +5,7 @@
 /**
  * Convert array of objects to CSV string
  */
-export function arrayToCSV(data: any[], headers?: string[]): string {
+export function arrayToCSV<T extends Record<string, unknown>>(data: T[], headers?: string[]): string {
     if (data.length === 0) return '';
 
     // Get headers from first object if not provided
@@ -25,14 +25,14 @@ export function arrayToCSV(data: any[], headers?: string[]): string {
             }
 
             // Convert to string
-            value = String(value);
+            const stringValue = String(value);
 
             // Escape quotes and wrap in quotes if contains comma, newline, or quote
-            if (value.includes(',') || value.includes('\n') || value.includes('"')) {
-                value = `"${value.replace(/"/g, '""')}"`;
+            if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
+                return `"${stringValue.replace(/"/g, '""')}"`;
             }
 
-            return value;
+            return stringValue;
         }).join(',');
     });
 
@@ -42,7 +42,7 @@ export function arrayToCSV(data: any[], headers?: string[]): string {
 /**
  * Generate CSV download response
  */
-export function generateCSVResponse(data: any[], filename: string, headers?: string[]) {
+export function generateCSVResponse<T extends Record<string, unknown>>(data: T[], filename: string, headers?: string[]) {
     const csv = arrayToCSV(data, headers);
 
     return new Response(csv, {
@@ -57,7 +57,7 @@ export function generateCSVResponse(data: any[], filename: string, headers?: str
  * Simple HTML to PDF conversion for basic tables
  * For production, consider using libraries like puppeteer or pdfkit
  */
-export function generateSimplePDF(title: string, data: any[], columns: { key: string, label: string }[]): string {
+export function generateSimplePDF<T extends Record<string, unknown>>(title: string, data: T[], columns: { key: string, label: string }[]): string {
     const html = `
 <!DOCTYPE html>
 <html>

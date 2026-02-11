@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             }
         } catch (rateLimitError) {
             // Log the error but allow login to proceed (graceful degradation)
-            logger.error('Rate limit error (Upstash unavailable):', rateLimitError);
+            logger.error('Rate limit error (Upstash unavailable)', { error: rateLimitError as Error });
             // Continue with login - rate limiting temporarily disabled
         }
 
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
         return response;
 
     } catch (error) {
-        logger.error('Login error:', error);
+        logger.error('Login error', { error: error as Error });
         return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
     }
 }

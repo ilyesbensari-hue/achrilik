@@ -5,39 +5,49 @@
 
 const isDev = process.env.NODE_ENV !== 'production';
 
+type LogMessage = string;
+
 export const logger = {
     /**
      * Log informational messages (dev only)
      */
-    log: (...args: any[]) => {
-        if (isDev) console.log(...args);
+    log: (message: LogMessage, ...args: unknown[]) => {
+        if (isDev) {
+            console.log(message, ...args);
+        }
     },
 
     /**
      * Log errors (always logged for Sentry/monitoring)
      */
-    error: (...args: any[]) => {
-        console.error(...args);
+    error: (message: LogMessage, ...args: unknown[]) => {
+        console.error(message, ...args);
     },
 
     /**
      * Log warnings (dev only)
      */
-    warn: (...args: any[]) => {
-        if (isDev) console.warn(...args);
+    warn: (message: LogMessage, ...args: unknown[]) => {
+        if (isDev) {
+            console.warn(message, ...args);
+        }
     },
 
     /**
      * Log debug information (dev only)
      */
-    debug: (...args: any[]) => {
-        if (isDev) console.debug(...args);
+    debug: (message: LogMessage, ...args: unknown[]) => {
+        if (isDev) {
+            console.debug(message, ...args);
+        }
     },
 
     /**
      * Log info messages (dev only)
      */
-    info: (...args: any[]) => {
-        if (isDev) console.info(...args);
+    info: (message: LogMessage, ...args: unknown[]) => {
+        if (isDev) {
+            console.info(message, ...args);
+        }
     },
 };

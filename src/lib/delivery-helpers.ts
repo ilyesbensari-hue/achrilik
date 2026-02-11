@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import type { PrismaClient } from '@prisma/client';
 
 /**
  * Generate a unique tracking number for deliveries
@@ -46,31 +47,23 @@ export function calculateEstimatedDelivery(wilaya: string): Date {
  * - Lowest active deliveries
  */
 export async function findBestDeliveryAgent(
-    prisma: any,
+    prisma: PrismaClient,
     wilaya: string
 ): Promise<string | null> {
+    // Find agents covering this wilaya
     const agents = await prisma.deliveryAgent.findMany({
         where: {
-            wilaya,
-            isAvailable: true,
+            wilayasCovered: {
+                has: wilaya
+            },
+            isActive: true,
         },
-        include: {
-            deliveries: {
-                where: {
-                    status: {
-                        in: ['ASSIGNED', 'ACCEPTED', 'IN_TRANSIT']
-                    }
-                }
-            }
+        orderBy: {
+            totalDeliveries: 'asc' // Agents with fewer total deliveries first
         }
     });
 
-    if (agents.length === 0) return null;
-
-    // Sort by number of active deliveries (ascending)
-    agents.sort((a: any, b: any) => a.deliveries.length - b.deliveries.length);
-
-    return agents[0].id;
+    return agents.length > 0 ? agents[0].id : null;
 }
 
 /**
@@ -128,21 +121,21 @@ export function getDeliveryStatusLabel(status: string): string {
 /**
  * Calculate delivery agent statistics
  */
-export async function calculateAgentStats(prisma: any, agentId: string) {
+export async function calculateAgentStats(prisma: PrismaClient, agentId: string) {
     const deliveries = await prisma.delivery.findMany({
         where: { agentId }
     });
 
     const total = deliveries.length;
-    const delivered = deliveries.filter((d: any) => d.status === 'DELIVERED').length;
-    const failed = deliveries.filter((d: any) => d.status === 'FAILED').length;
-    const inProgress = deliveries.filter((d: any) =>
+    const delivered = deliveries.filter((d) => d.status === 'DELIVERED').length;
+    const failed = deliveries.filter((d) => d.status === 'FAILED').length;
+    const inProgress = deliveries.filter((d) =>
         ['ASSIGNED', 'ACCEPTED', 'IN_TRANSIT'].includes(d.status)
     ).length;
 
     const totalCOD = deliveries
-        .filter((d: any) => d.status === 'DELIVERED' && d.codCollected)
-        .reduce((sum: number, d: any) => sum + (d.codAmount || 0), 0);
+        .filter((d) => d.status === 'DELIVERED' && d.codCollected)
+        .reduce((sum, d) => sum + (d.codAmount || 0), 0);
 
     const successRate = total > 0 ? (delivered / total) * 100 : 0;
 

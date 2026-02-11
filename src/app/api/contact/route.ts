@@ -93,7 +93,7 @@ export async function POST(request: Request) {
             logger.log('[Contact Form] ✅ Email sent successfully');
             return NextResponse.json({ success: true });
         } catch (emailError: any) {
-            logger.error('[Contact Form] ❌ Resend API Error:', emailError);
+            logger.error('[Contact Form] ❌ Resend API Error', { error: emailError as Error });
             logger.error('[Contact Form] Error details:', {
                 message: emailError?.message,
                 name: emailError?.name,
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
             });
         }
     } catch (error) {
-        logger.error('[Contact Form] Server error:', error);
+        logger.error('[Contact Form] Server error', { error: error as Error });
         return NextResponse.json(
             { error: 'Erreur lors de l\'envoi du message' },
             { status: 500 }

@@ -1,11 +1,29 @@
 import { prisma } from '@/lib/prisma';
 
+interface DeliveryFeeConfig {
+    id: string;
+    fromCity: string;
+    toWilaya: string;
+    baseFee: number;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface CartItem {
+    storeId: string;
+    price: number;
+    quantity: number;
+    productId?: string;
+    variantId?: string;
+}
+
 /**
  * Calcule les frais de livraison pour une commande
  * Basé sur la ville de stockage des produits et la wilaya de destination
  */
 export async function calculateDeliveryFee(
-    cart: Array<{ storeId: string; price: number; quantity: number;[key: string]: any }>,
+    cart: CartItem[],
     destinationWilaya: string
 ): Promise<{
     totalFee: number;
@@ -97,7 +115,7 @@ export async function calculateDeliveryFee(
         // Sinon, calculer frais normaux
         let fee: number | null = null;
         const exactConfig = feeConfigs.find(
-            (config: any) => config.fromCity === storageCity && config.toWilaya === destinationWilaya
+            (config) => config.fromCity === storageCity && config.toWilaya === destinationWilaya
         );
 
         if (exactConfig) {
@@ -105,7 +123,7 @@ export async function calculateDeliveryFee(
         } else {
             // Chercher une configuration "Autre" comme fallback
             const fallbackConfig = feeConfigs.find(
-                (config: any) => config.fromCity === storageCity && config.toWilaya === 'Autre'
+                (config) => config.fromCity === storageCity && config.toWilaya === 'Autre'
             );
 
             if (fallbackConfig) {

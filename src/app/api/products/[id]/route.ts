@@ -200,12 +200,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
       logger.log(`[Cache] Revalidated homepage + categories after product ${id} update`);
     } catch (revalidateError) {
-      logger.error('Cache revalidation error:', revalidateError);
+      logger.error('Cache revalidation error', { error: revalidateError as Error });
     }
 
     return NextResponse.json(product);
   } catch (error) {
-    logger.error('Product update error:', error);
+    logger.error('Product update error', { error: error as Error });
     return NextResponse.json({ error: 'Failed to update product', details: error }, { status: 500 });
   }
 }
