@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface Stats {
     users: {
@@ -53,7 +54,7 @@ export default function AdminDashboard() {
             const data = await res.json();
             setStats(data);
         } catch (error) {
-            console.error('Error fetching stats:', error);
+            logger.error('Error fetching stats:', { error });
         } finally {
             setLoading(false);
         }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface Setting {
     id: string;
@@ -38,7 +39,7 @@ export default function AdminSettingsPage() {
             const data = await res.json();
             setSettings(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error('Error fetching settings:', error);
+            logger.error('Error fetching settings:', { error });
         } finally {
             setLoading(false);
         }
@@ -70,7 +71,7 @@ export default function AdminSettingsPage() {
                 alert('Erreur lors de la sauvegarde');
             }
         } catch (error) {
-            console.error('Error saving setting:', error);
+            logger.error('Error saving setting:', { error });
             alert('Erreur lors de la sauvegarde');
         }
     };

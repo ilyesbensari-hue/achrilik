@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import AssignDeliveryModal from '@/components/admin/AssignDeliveryModal';
+import DeliveryTracking from '@/components/DeliveryTracking';
+import { logger } from '@/lib/logger';
 
 interface Order {
     id: string;
@@ -85,7 +89,7 @@ export default function AdminOrdersClient() {
             setOrders(data.orders);
             setStats(data.stats || {});
         } catch (error) {
-            console.error('Error fetching orders:', error);
+            logger.error('Error fetching orders', { error });
         } finally {
             setLoading(false);
         }
@@ -271,7 +275,7 @@ export default function AdminOrdersClient() {
                                                             } else {
                                                                 alert('Erreur lors de la suppression');
                                                             }
-                                                        } catch (err) { console.error(err); }
+                                                        } catch (err) { logger.error('Error in status update', { err }); }
                                                     }}
                                                     className="ml-4 text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >

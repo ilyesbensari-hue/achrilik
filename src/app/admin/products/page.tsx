@@ -29,6 +29,7 @@ interface Product {
 }
 
 import Toast from '@/components/Toast';
+import { logger } from '@/lib/logger';
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -56,7 +57,7 @@ export default function AdminProductsPage() {
             const data = await res.json();
             setProducts(data.products || []);
         } catch (error) {
-            console.error('Error fetching products:', error);
+            logger.error('Error fetching products:', { error });
             showToastNotification('Erreur lors du chargement des produits', 'error');
         } finally {
             setLoading(false);
@@ -80,7 +81,7 @@ export default function AdminProductsPage() {
                 showToastNotification(err.error || 'Erreur', 'error');
             }
         } catch (error) {
-            console.error(error);
+            logger.error("Error", { error: error });
             showToastNotification('Erreur technique', 'error');
         }
     };
@@ -105,7 +106,7 @@ export default function AdminProductsPage() {
                 showToastNotification(err.error || 'Erreur', 'error');
             }
         } catch (error) {
-            console.error(error);
+            logger.error("Error", { error: error });
             showToastNotification('Erreur technique', 'error');
         }
     };
@@ -125,7 +126,7 @@ export default function AdminProductsPage() {
                 showToastNotification('Erreur lors de la suppression', 'error');
             }
         } catch (error) {
-            console.error(error);
+            logger.error("Error", { error: error });
             showToastNotification('Erreur technique', 'error');
         }
     };

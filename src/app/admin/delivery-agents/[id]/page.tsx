@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getDeliveryStatusLabel, getDeliveryStatusColor } from '@/lib/delivery-helpers';
+import { logger } from '@/lib/logger';
 
 export default function DeliveryAgentDetailsPage({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function DeliveryAgentDetailsPage({ params }: { params: { id: str
                 fetchAgentDetails();
             }
         } catch (err) {
-            console.error('Error toggling status:', err);
+            logger.error('Error toggling status:', { err });
         }
     };
 

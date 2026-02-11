@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface User {
     id: string;
@@ -41,7 +42,7 @@ export default function AdminUsers() {
             const data = await res.json();
             setUsers(data.users);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            logger.error('Error fetching users', { error });
         } finally {
             setLoading(false);
         }
@@ -62,7 +63,7 @@ export default function AdminUsers() {
                 fetchUsers();
             }
         } catch (error) {
-            console.error('Error updating role:', error);
+            logger.error('Error updating role', { error, userId, newRole });
             alert('Erreur lors de la mise à jour');
         }
     };
@@ -80,7 +81,7 @@ export default function AdminUsers() {
                 fetchUsers();
             }
         } catch (error) {
-            console.error('Error deleting user:', error);
+            logger.error('Error deleting user', { error, userId });
             alert('Erreur lors de la suppression');
         }
     };
@@ -100,7 +101,7 @@ export default function AdminUsers() {
                 fetchUsers();
             }
         } catch (error) {
-            console.error('Error toggling verification:', error);
+            logger.error('Error toggling verification', { error, storeId });
             alert('Erreur lors de la certification');
         }
     };
@@ -129,7 +130,7 @@ export default function AdminUsers() {
                 alert(data.error || 'Erreur lors de la réinitialisation');
             }
         } catch (error) {
-            console.error('Error resetting password:', error);
+            logger.error('Error resetting password', { error, userId });
             alert('Erreur lors de la réinitialisation');
         }
     };

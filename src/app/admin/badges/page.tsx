@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { requireAdmin } from '@/lib/server-auth';
+import { logger } from '@/lib/logger';
 
 interface Product {
     id: string;
@@ -30,7 +31,7 @@ export default function AdminBadgesPage() {
             const data = await res.json();
             setProducts(data);
         } catch (error) {
-            console.error('Failed to fetch products:', error);
+            logger.error('Failed to fetch products', { error });
         } finally {
             setLoading(false);
         }
@@ -56,7 +57,7 @@ export default function AdminBadgesPage() {
                 alert('Erreur lors de la mise à jour');
             }
         } catch (error) {
-            console.error('Failed to update badge:', error);
+            logger.error('Failed to update badge', { error, productId, badge });
             alert('Erreur technique');
         } finally {
             setUpdating(null);
@@ -82,7 +83,7 @@ export default function AdminBadgesPage() {
                 alert('Erreur lors du recalcul');
             }
         } catch (error) {
-            console.error('Failed to recalculate badges:', error);
+            logger.error('Failed to recalculate badges', { error });
             alert('Erreur technique');
         } finally {
             setRecalculating(false);
@@ -175,8 +176,8 @@ export default function AdminBadgesPage() {
                                             onClick={() => toggleBadge(product.id, 'isNew', product.isNew)}
                                             disabled={updating === product.id}
                                             className={`w-16 h-8 rounded-full transition-colors ${product.isNew
-                                                    ? 'bg-green-500'
-                                                    : 'bg-gray-300'
+                                                ? 'bg-green-500'
+                                                : 'bg-gray-300'
                                                 } relative`}
                                         >
                                             <div
@@ -193,8 +194,8 @@ export default function AdminBadgesPage() {
                                             onClick={() => toggleBadge(product.id, 'isTrending', product.isTrending)}
                                             disabled={updating === product.id}
                                             className={`w-16 h-8 rounded-full transition-colors ${product.isTrending
-                                                    ? 'bg-orange-500'
-                                                    : 'bg-gray-300'
+                                                ? 'bg-orange-500'
+                                                : 'bg-gray-300'
                                                 } relative`}
                                         >
                                             <div
@@ -208,8 +209,8 @@ export default function AdminBadgesPage() {
                                             onClick={() => toggleBadge(product.id, 'isBestSeller', product.isBestSeller)}
                                             disabled={updating === product.id}
                                             className={`w-16 h-8 rounded-full transition-colors ${product.isBestSeller
-                                                    ? 'bg-yellow-500'
-                                                    : 'bg-gray-300'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-gray-300'
                                                 } relative`}
                                         >
                                             <div

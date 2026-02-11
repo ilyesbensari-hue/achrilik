@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Image as ImageIcon, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface Banner {
     id: string;
@@ -54,7 +55,7 @@ export default function BannersManagementPage() {
             const data = await res.json();
             setBanners(data || []);
         } catch (error) {
-            console.error('Error fetching banners:', error);
+            logger.error('Error fetching banners:', { error });
         } finally {
             setLoading(false);
         }
@@ -138,11 +139,11 @@ export default function BannersManagementPage() {
                 alert(editingBanner ? 'Banner modifié avec succès!' : 'Banner créé avec succès!');
             } else {
                 const errorData = await res.json();
-                console.error('API Error:', errorData);
+                logger.error('API Error:', { errorData });
                 alert(`Erreur: ${errorData.error || 'Impossible de sauvegarder le banner'}`);
             }
         } catch (error) {
-            console.error('Error saving banner:', error);
+            logger.error('Error saving banner:', { error });
             alert('Erreur serveur: vérifiez la taille des fichiers (Image: max 5MB, Vidéo: max 10MB)');
         }
     }
@@ -160,7 +161,7 @@ export default function BannersManagementPage() {
                 alert('Banner supprimé!');
             }
         } catch (error) {
-            console.error('Error deleting banner:', error);
+            logger.error('Error deleting banner:', { error });
         }
     }
 
@@ -179,7 +180,7 @@ export default function BannersManagementPage() {
                 await fetchBanners();
             }
         } catch (error) {
-            console.error('Error toggling active:', error);
+            logger.error('Error toggling active:', { error });
         }
     }
 

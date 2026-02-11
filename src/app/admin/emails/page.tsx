@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface EmailTemplate {
     id: string;
@@ -29,7 +30,7 @@ export default function AdminEmailsPage() {
             const data = await res.json();
             setTemplates(data);
         } catch (error) {
-            console.error('Error fetching templates:', error);
+            logger.error('Error fetching templates:', { error });
         } finally {
             setLoading(false);
         }
@@ -65,7 +66,7 @@ export default function AdminEmailsPage() {
                 alert('Erreur lors de la mise à jour');
             }
         } catch (error) {
-            console.error('Error updating template:', error);
+            logger.error('Error updating template:', { error });
             alert('Erreur lors de la mise à jour');
         }
     };

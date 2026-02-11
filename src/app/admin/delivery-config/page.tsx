@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { logger } from '@/lib/logger';
 
 interface DeliveryAgent {
     id: string;
@@ -49,7 +50,7 @@ export default function DeliveryConfigPage() {
                 setWilayaAgents(configData.wilayaAgents);
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            logger.error('Error fetching data:', { error });
         } finally {
             setLoading(false);
         }
@@ -73,7 +74,7 @@ export default function DeliveryConfigPage() {
                 alert(`❌ ${data.error}`);
             }
         } catch (error) {
-            console.error('Error assigning agent:', error);
+            logger.error('Error assigning agent:', { error });
             alert('Erreur technique');
         } finally {
             setSaving(false);

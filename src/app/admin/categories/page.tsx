@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
+import { logger } from '@/lib/logger';
 
 interface Category {
     id: string;
@@ -39,7 +40,7 @@ export default function AdminCategoriesPage() {
             const data = await res.json();
             setCategories(data);
         } catch (error) {
-            console.error(error);
+            logger.error("Error", { error: error });
             showToastNotification('Erreur lors du chargement', 'error');
         } finally {
             setLoading(false);
@@ -63,7 +64,7 @@ export default function AdminCategoriesPage() {
                 showToastNotification('Erreur lors de la création', 'error');
             }
         } catch (error) {
-            console.error(error);
+            logger.error("Error", { error: error });
             showToastNotification('Erreur technique', 'error');
         }
     };
@@ -84,7 +85,7 @@ export default function AdminCategoriesPage() {
                 showToastNotification(err.error || 'Erreur', 'error');
             }
         } catch (error) {
-            console.error(error);
+            logger.error("Error", { error: error });
             showToastNotification('Erreur technique', 'error');
         }
     };

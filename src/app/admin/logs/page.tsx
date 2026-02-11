@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface AdminLog {
     id: string;
@@ -39,7 +40,7 @@ export default function AdminLogsPage() {
             const data = await res.json();
             setLogs(data.logs || []);
         } catch (error) {
-            console.error('Error fetching logs:', error);
+            logger.error('Error fetching logs:', { error });
         } finally {
             setLoading(false);
         }

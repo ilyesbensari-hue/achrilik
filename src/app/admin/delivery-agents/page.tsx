@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DeliveryAgentForm from '@/components/admin/DeliveryAgentForm';
+import { logger } from '@/lib/logger';
 
 export default function DeliveryAgentsPage() {
     const router = useRouter();
@@ -28,7 +29,7 @@ export default function DeliveryAgentsPage() {
             const data = await res.json();
             setAgents(data.agents || []);
         } catch (err) {
-            console.error('Error fetching agents:', err);
+            logger.error('Error fetching agents:', { err });
         } finally {
             setLoading(false);
         }
@@ -46,7 +47,7 @@ export default function DeliveryAgentsPage() {
                 fetchAgents();
             }
         } catch (err) {
-            console.error('Error toggling status:', err);
+            logger.error('Error toggling status:', { err });
         }
     };
 

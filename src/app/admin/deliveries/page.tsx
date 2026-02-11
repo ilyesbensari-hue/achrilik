@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import AssignDeliveryModal from '@/components/admin/AssignDeliveryModal';
 import { getDeliveryStatusLabel, getDeliveryStatusColor } from '@/lib/delivery-helpers';
+import { logger } from '@/lib/logger';
 
 export default function DeliveriesPage() {
     const [deliveries, setDeliveries] = useState<any[]>([]);
@@ -28,7 +29,7 @@ export default function DeliveriesPage() {
             setDeliveries(data.deliveries || []);
             setStats(data.stats || {});
         } catch (err) {
-            console.error('Error fetching deliveries:', err);
+            logger.error('Error fetching deliveries:', { err });
         } finally {
             setLoading(false);
         }

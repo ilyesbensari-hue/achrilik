@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { logger } from '@/lib/logger';
 
 interface Vendor {
     id: string;
@@ -56,7 +57,7 @@ export default function VendorsPage() {
             const data = await res.json();
             setVendors(data.vendors);
         } catch (error) {
-            console.error('Error fetching vendors:', error);
+            logger.error('Error fetching vendors', { error });
         } finally {
             setLoading(false);
         }
@@ -70,7 +71,7 @@ export default function VendorsPage() {
                 setDeliveryAgents(data.agents.filter((a: DeliveryAgent) => a.isActive));
             }
         } catch (error) {
-            console.error('Error fetching delivery agents:', error);
+            logger.error('Error fetching delivery agents', { error });
         }
     };
 
@@ -90,42 +91,42 @@ export default function VendorsPage() {
                 alert(`Erreur: ${data.error}`);
             }
         } catch (error) {
-            console.error('Error assigning default agent:', error);
+            logger.error('Error assigning default agent', { error, storeId, agentId });
             alert('Erreur technique');
         }
     };
 
     const handleVerify = async (storeId: string, currentStatus: boolean) => {
-        console.log('[VENDOR CERTIFICATION] handleVerify called', { storeId, currentStatus });
+        logger.debug('VENDOR CERTIFICATION: handleVerify called', { storeId, currentStatus });
 
         const action = currentStatus ? 'retirer la certification' : 'certifier';
 
-        console.log('[VENDOR CERTIFICATION] About to show confirm dialog', { action });
+        logger.debug('VENDOR CERTIFICATION: About to show confirm dialog', { action });
         if (!confirm(`Voulez-vous ${action} ce vendeur ?`)) {
-            console.log('[VENDOR CERTIFICATION] User cancelled certification');
+            logger.debug('VENDOR CERTIFICATION: User cancelled certification');
             return;
         }
 
-        console.log('[VENDOR CERTIFICATION] User confirmed, sending API request to:', `/api/admin/stores/${storeId}/verify`);
+        logger.info('VENDOR CERTIFICATION: User confirmed, sending API request', { endpoint: `/api/admin/stores/${storeId}/verify` });
         try {
             const res = await fetch(`/api/admin/stores/${storeId}/verify`, {
                 method: 'POST'
             });
 
-            console.log('[VENDOR CERTIFICATION] API response received', { ok: res.ok, status: res.status });
+            logger.info('VENDOR CERTIFICATION: API response received', { ok: res.ok, status: res.status });
 
             if (res.ok) {
                 const data = await res.json();
-                console.log('[VENDOR CERTIFICATION] Response data:', data);
+                logger.info('VENDOR CERTIFICATION: Response data', { data });
                 alert(data.verified ? '✅ Vendeur certifié ! Email envoyé.' : 'Certification retirée');
                 fetchVendors();
             } else {
                 const errorText = await res.text();
-                console.error('[VENDOR CERTIFICATION] API error response:', errorText);
+                logger.error('VENDOR CERTIFICATION: API error response', { errorText });
                 alert('Erreur lors de la certification');
             }
         } catch (error) {
-            console.error('[VENDOR CERTIFICATION] Exception caught:', error);
+            logger.error('VENDOR CERTIFICATION: Exception caught', { error });
             alert('Erreur technique');
         }
     };

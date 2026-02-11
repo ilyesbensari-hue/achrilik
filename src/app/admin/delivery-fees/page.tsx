@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 
 interface DeliveryFee {
@@ -33,7 +34,7 @@ export default function DeliveryFeesPage() {
             const data = await res.json();
             setFees(data);
         } catch (error) {
-            console.error('Error fetching fees:', error);
+            logger.error('Error fetching fees', { error });
         } finally {
             setIsLoading(false);
         }
@@ -58,7 +59,7 @@ export default function DeliveryFeesPage() {
                 alert(error.error || 'Erreur lors de la création');
             }
         } catch (error) {
-            console.error('Error creating fee:', error);
+            logger.error('Error creating fee', { error });
             alert('Erreur lors de la création');
         }
     };
@@ -76,7 +77,7 @@ export default function DeliveryFeesPage() {
                 setEditingId(null);
             }
         } catch (error) {
-            console.error('Error updating fee:', error);
+            logger.error('Error updating fee', { error, id, baseFee });
         }
     };
 
@@ -92,7 +93,7 @@ export default function DeliveryFeesPage() {
                 await fetchFees();
             }
         } catch (error) {
-            console.error('Error deleting fee:', error);
+            logger.error('Error deleting fee', { error, id });
         }
     };
 
@@ -108,7 +109,7 @@ export default function DeliveryFeesPage() {
                 await fetchFees();
             }
         } catch (error) {
-            console.error('Error toggling active:', error);
+            logger.error('Error toggling active', { error, id, isActive });
         }
     };
 
