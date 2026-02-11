@@ -156,21 +156,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 )}
                             </div>
 
-                            {/* Product Rating Stars */}
-                            {product.Review && product.Review.length > 0 && (
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex text-yellow-400 text-lg">
-                                        {(() => {
-                                            const avg = product.Review.reduce((acc: number, r: any) => acc + r.rating, 0) / product.Review.length;
-                                            return Array.from({ length: 5 }).map((_, i) => (
-                                                <span key={i}>{i < Math.round(avg) ? '★' : '☆'}</span>
-                                            ));
-                                        })()}
-                                    </div>
-                                    <span className="text-sm text-gray-500 font-medium">({product.Review.length} avis)</span>
-                                </div>
-                            )}
-
                             <div className="flex flex-col gap-1 mt-4">
                                 <div className="flex items-baseline gap-3">
                                     {product.discountPrice ? (
