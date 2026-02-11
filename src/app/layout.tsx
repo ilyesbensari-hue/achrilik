@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import NavbarWrapper from "@/components/NavbarWrapper";
-import DeliveryBanner from "@/components/DeliveryBanner";
 import ToastContainer from "@/components/ToastContainer";
-import { PHProvider } from "@/providers/PosthogProvider";
-import { GoogleAnalytics } from '@next/third-parties/google';
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -86,20 +83,15 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={inter.className}>
-        <PHProvider>
-          <Providers>
-            <ErrorBoundary>
-              <NavbarWrapper />
-              <div className="pb-[120px] md:pb-0">
-                {children}
-              </div>
-              <ToastContainer />
-            </ErrorBoundary>
-          </Providers>
-        </PHProvider>
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        )}
+        <Providers>
+          <ErrorBoundary>
+            <NavbarWrapper />
+            <div className="pb-[120px] md:pb-0">
+              {children}
+            </div>
+            <ToastContainer />
+          </ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );

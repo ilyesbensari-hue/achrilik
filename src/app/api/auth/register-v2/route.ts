@@ -4,11 +4,24 @@ import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth-token';
 import { sendWelcomeEmail } from '@/lib/mail';
 import { randomBytes } from 'crypto';
+import { registerRateLimit, getClientIp } from '@/lib/ratelimit';
+import { logger } from '@/lib/logger';
 
 const PHONE_REGEX = /^(0)(5|6|7)[0-9]{8}$/;
 
 export async function POST(request: Request) {
     try {
+        // Rate limiting check
+        const ip = getClientIp(request);
+        const { success } = await registerRateLimit.limit(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Trop de tentatives d\'inscription. Réessayez dans 1 minute.' },
+                { status: 429 }
+            );
+        }
+
         const { email, password, name, phone, address, wilaya, city } = await request.json();
 
         // 1. Strict Validation
@@ -44,7 +57,7 @@ export async function POST(request: Request) {
         });
 
         // 4. Send Email (Async, don't block)
-        sendWelcomeEmail(email, user.name || 'Client').catch(console.error);
+        sendWelcomeEmail(email, user.name || 'Client').catch(logger.error);
 
         // 5. Auto Login - Manual Set-Cookie (workaround for Next.js 15+ Vercel bug)
         const token = await signToken({
@@ -83,7 +96,7 @@ export async function POST(request: Request) {
         return response;
 
     } catch (error) {
-        console.error('Register error:', error);
+        logger.error('Register error:', error);
         return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
     }
 }

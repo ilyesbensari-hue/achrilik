@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface HeroBanner {
     id: string;
@@ -76,7 +77,7 @@ export default function HeroVideoBanner() {
                     setLoading(false);
                 })
                 .catch(error => {
-                    console.error('Error fetching banners:', error);
+                    logger.error('Error fetching banners:', error);
                     // Load default banner on error
                     const defaultBanner: HeroBanner = {
                         id: 'default-1',
@@ -124,7 +125,7 @@ export default function HeroVideoBanner() {
             if (!video) return;
 
             if (index === currentSlide) {
-                video.play().catch(err => console.log('Autoplay blocked:', err));
+                video.play().catch(err => logger.log('Autoplay blocked:', err));
             } else {
                 video.pause();
             }

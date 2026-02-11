@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
-
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth-token';
+import { loginRateLimit, getClientIp } from '@/lib/ratelimit';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
     try {
+        // Rate limiting check
+        const ip = getClientIp(request);
+        const { success } = await loginRateLimit.limit(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Trop de tentatives de connexion. Réessayez dans 1 minute.' },
+                { status: 429 }
+            );
+        }
+
         const { email, password, loginType } = await request.json();
 
         // 1. Find User
@@ -17,13 +29,7 @@ export async function POST(request: Request) {
         // 2. Check Password
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            // Fallback for legacy plain text (migration)
-            if (password === user.password) {
-                const hashed = await bcrypt.hash(password, 10);
-                await prisma.user.update({ where: { id: user.id }, data: { password: hashed } });
-            } else {
-                return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 });
-            }
+            return NextResponse.json({ error: 'Email ou mot de passe incorrect' }, { status: 401 });
         }
 
         // 3. Generate Token with roles (handle null/undefined roles safely)
@@ -79,7 +85,7 @@ export async function POST(request: Request) {
         return response;
 
     } catch (error) {
-        console.error('Login error:', error);
+        logger.error('Login error:', error);
         return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
     }
 }

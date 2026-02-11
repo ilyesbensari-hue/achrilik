@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import ReviewList from '@/components/ReviewList';
-import ReviewForm from '@/components/ReviewForm';
 import SellerRating from '@/components/SellerRating';
 import ProductPageClient from './ProductPageClient';
 import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
@@ -29,7 +27,6 @@ async function getProduct(id: string) {
             include: {
                 Store: true,
                 Category: true,
-                Review: true,
                 Variant: true
             }
         });
@@ -333,15 +330,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     )}
                 </div>
 
-                {/* Reviews Section */}
-                <div className="mt-16 grid lg:grid-cols-3 gap-12 border-t pt-12">
-                    <div className="lg:col-span-1">
-                        <ReviewForm productId={product.id} />
-                    </div>
-                    <div className="lg:col-span-2">
-                        <ReviewList productId={product.id} />
-                    </div>
-                </div>
             </div>
         </div>
     );

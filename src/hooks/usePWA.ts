@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export default function usePWA() {
     useEffect(() => {
         if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-            console.log('[PWA] Service Workers not supported');
+            logger.log('[PWA] Service Workers not supported');
             return;
         }
 
@@ -13,7 +14,7 @@ export default function usePWA() {
         navigator.serviceWorker
             .register('/sw.js')
             .then((registration) => {
-                console.log('[PWA] Service Worker registered:', registration.scope);
+                logger.log('[PWA] Service Worker registered:', registration.scope);
 
                 // Check for updates every hour
                 setInterval(() => {
@@ -27,7 +28,7 @@ export default function usePWA() {
 
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('[PWA] New version available!');
+                            logger.log('[PWA] New version available!');
                             // Show update notification to user
                             if (confirm('Une nouvelle version d\'Achrilik est disponible. Recharger maintenant?')) {
                                 window.location.reload();
@@ -37,17 +38,17 @@ export default function usePWA() {
                 });
             })
             .catch((error) => {
-                console.error('[PWA] Service Worker registration failed:', error);
+                logger.error('[PWA] Service Worker registration failed:', error);
             });
 
         // Handle offline/online events
         const handleOnline = () => {
-            console.log('[PWA] Back online');
+            logger.log('[PWA] Back online');
             // Optionally show toast notification
         };
 
         const handleOffline = () => {
-            console.log('[PWA] You are offline');
+            logger.log('[PWA] You are offline');
             // Optionally show toast notification
         };
 

@@ -2,8 +2,9 @@ import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendOrderConfirmation, sendNewOrderNotification } from '@/lib/mail';
 import { verifyToken } from '@/lib/auth-token';
-
 import { randomBytes } from 'crypto';
+import { apiRateLimit, getClientIp } from '@/lib/ratelimit';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch orders for a user or store
 export async function GET(request: NextRequest) {
@@ -92,14 +93,24 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(orders);
 
     } catch (error) {
-        console.error('GET /api/orders error:', error);
+        logger.error('GET /api/orders error:', error);
         return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 }
 
-// POST - Create a new order
 export async function POST(request: NextRequest) {
     try {
+        // Rate limiting check
+        const ip = getClientIp(request);
+        const { success } = await apiRateLimit.limit(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Trop de commandes. Réessayez dans 1 minute.' },
+                { status: 429 }
+            );
+        }
+
         const token = request.cookies.get('auth_token')?.value;
 
         if (!token) {
@@ -229,7 +240,7 @@ export async function POST(request: NextRequest) {
 
                 emailPromises.push(
                     sendOrderConfirmation(order.User.email, order)
-                        .catch(e => console.error('[EMAIL ERROR] Buyer confirmation failed:', e))
+                        .catch(e => logger.error('[EMAIL ERROR] Buyer confirmation failed:', e))
                 );
             }
 
@@ -246,7 +257,7 @@ export async function POST(request: NextRequest) {
 
                         emailPromises.push(
                             sendNewOrderNotification(store.User.email, order)
-                                .catch(e => console.error(`[EMAIL ERROR] Seller notification failed for ${store.id}:`, e))
+                                .catch(e => logger.error(`[EMAIL ERROR] Seller notification failed for ${store.id}:`, e))
                         );
                     }
                 }
@@ -261,14 +272,14 @@ export async function POST(request: NextRequest) {
 
 
         } catch (emailErr) {
-            console.error('[ORDER] Critical error in email dispatch:', emailErr);
+            logger.error('[ORDER] Critical error in email dispatch:', emailErr);
             // Non-blocking error for client, but logged
         }
 
         return NextResponse.json({ success: true, orderId: order.id });
 
     } catch (error: any) {
-        console.error('[ORDER] Create error:', error);
+        logger.error('[ORDER] Create error:', error);
         return NextResponse.json({ error: error.message || 'Erreur lors de la commande' }, { status: 500 });
     }
 }

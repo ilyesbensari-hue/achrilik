@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ClientPersistenceService } from '@/services/clientPersistence';
+import { logger } from '@/lib/logger';
 
 /**
  * Hook pour auto-save toutes les 5 secondes
@@ -37,7 +38,7 @@ export function useAutoSave(formData: any, enabled: boolean = true) {
 
             // Ne sauvegarder que si changement détecté
             if (currentData !== lastSavedRef.current) {
-                console.log('[AutoSave] Brouillon sauvegardé à', new Date().toLocaleTimeString());
+                logger.log('[AutoSave] Brouillon sauvegardé à', new Date().toLocaleTimeString());
                 ClientPersistenceService.saveDraft(formData);
                 lastSavedRef.current = currentData;
             }

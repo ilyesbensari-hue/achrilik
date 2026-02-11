@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { logger } from '@/lib/logger';
 
 export default function PWAInstallPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -9,7 +10,7 @@ export default function PWAInstallPrompt() {
     useEffect(() => {
         // Check if already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
-            console.log('[PWA] App is already installed');
+            logger.log('[PWA] App is already installed');
             return;
         }
 
@@ -37,7 +38,7 @@ export default function PWAInstallPrompt() {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
 
-        console.log(`[PWA] User response: ${outcome}`);
+        logger.log(`[PWA] User response: ${outcome}`);
         setDeferredPrompt(null);
         setShowPrompt(false);
     };

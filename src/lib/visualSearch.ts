@@ -1,5 +1,6 @@
 // IMPORTANT: TensorFlow.js est importé dynamiquement pour éviter les crashes
 // La recherche visuelle est désactivée par défaut
+import { logger } from './logger';
 let model: any | null = null;
 
 /**
@@ -9,18 +10,18 @@ let model: any | null = null;
 export async function loadModel(): Promise<any> {
     // Feature flag: désactiver si pas explicitement activé
     if (typeof window === 'undefined') {
-        console.warn('[VisualSearch] Server-side - returning null');
+        logger.warn('[VisualSearch] Server-side - returning null');
         return null;
     }
 
     if (!process.env.NEXT_PUBLIC_ENABLE_VISUAL_SEARCH || process.env.NEXT_PUBLIC_ENABLE_VISUAL_SEARCH !== 'true') {
-        console.warn('[VisualSearch] Feature disabled via NEXT_PUBLIC_ENABLE_VISUAL_SEARCH');
+        logger.warn('[VisualSearch] Feature disabled via NEXT_PUBLIC_ENABLE_VISUAL_SEARCH');
         return null;
     }
 
     if (model) return model;
 
-    console.log('[VisualSearch] Loading TensorFlow.js and MobileNet (lazy)...');
+    logger.log('[VisualSearch] Loading TensorFlow.js and MobileNet (lazy)...');
 
     try {
         // Lazy import pour éviter de charger au démarrage
@@ -30,11 +31,11 @@ export async function loadModel(): Promise<any> {
         ]);
 
         model = await mobilenet.load();
-        console.log('[VisualSearch] MobileNet model loaded successfully!');
+        logger.log('[VisualSearch] MobileNet model loaded successfully!');
 
         return model;
     } catch (error) {
-        console.error('[VisualSearch] Failed to load model:', error);
+        logger.error('[VisualSearch] Failed to load model:', error);
         return null;
     }
 }
@@ -50,7 +51,7 @@ export async function extractImageFeatures(
     const loadedModel = await loadModel();
 
     if (!loadedModel) {
-        console.error('[VisualSearch] Model not available - cannot extract features');
+        logger.error('[VisualSearch] Model not available - cannot extract features');
         throw new Error('Visual search is disabled. Please enable NEXT_PUBLIC_ENABLE_VISUAL_SEARCH');
     }
 

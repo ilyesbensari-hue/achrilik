@@ -1,5 +1,6 @@
 // Simple in-memory cache for Next.js API routes
 // For production, use Redis or Vercel KV
+import { logger } from './logger';
 
 interface CacheEntry {
     data: any;
@@ -77,12 +78,12 @@ export async function withCache<T>(
     // Check cache first
     const cached = cache.get(key);
     if (cached !== null) {
-        console.log(`[CACHE HIT] ${key}`);
+        logger.log(`[CACHE HIT] ${key}`);
         return cached as T;
     }
 
     // Fetch fresh data
-    console.log(`[CACHE MISS] ${key}`);
+    logger.log(`[CACHE MISS] ${key}`);
     const data = await fetcher();
 
     // Store in cache

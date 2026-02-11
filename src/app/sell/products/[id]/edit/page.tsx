@@ -174,7 +174,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     console.log('Cache revalidation failed (non-critical)');
                 }
 
-                router.push(`/sell/products/${id}/analytics`);
+                router.push(`/sell`);
             } else {
                 const error = await res.json();
                 alert('Erreur lors de la mise à jour: ' + (error.error || 'Erreur inconnue'));

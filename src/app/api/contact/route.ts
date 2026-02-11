@@ -1,10 +1,23 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { contactRateLimit, getClientIp } from '@/lib/ratelimit';
+import { logger } from '@/lib/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_for_build');
 
 export async function POST(request: Request) {
     try {
+        // Rate limiting check
+        const ip = getClientIp(request);
+        const { success } = await contactRateLimit.limit(ip);
+
+        if (!success) {
+            return NextResponse.json(
+                { error: 'Trop de tentatives. Réessayez dans 1 minute.' },
+                { status: 429 }
+            );
+        }
+
         const { name, email, subject, message } = await request.json();
 
         // Validation
@@ -77,11 +90,11 @@ export async function POST(request: Request) {
             `,
             });
 
-            console.log('[Contact Form] ✅ Email sent successfully');
+            logger.log('[Contact Form] ✅ Email sent successfully');
             return NextResponse.json({ success: true });
         } catch (emailError: any) {
-            console.error('[Contact Form] ❌ Resend API Error:', emailError);
-            console.error('[Contact Form] Error details:', {
+            logger.error('[Contact Form] ❌ Resend API Error:', emailError);
+            logger.error('[Contact Form] Error details:', {
                 message: emailError?.message,
                 name: emailError?.name,
                 apiKeySet: process.env.RESEND_API_KEY ? 'YES ✓' : 'NO ✗'
@@ -94,7 +107,7 @@ export async function POST(request: Request) {
             });
         }
     } catch (error) {
-        console.error('[Contact Form] Server error:', error);
+        logger.error('[Contact Form] Server error:', error);
         return NextResponse.json(
             { error: 'Erreur lors de l\'envoi du message' },
             { status: 500 }

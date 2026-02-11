@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Grid, ShoppingCart, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export default function BottomNav() {
     const pathname = usePathname();
@@ -13,18 +14,18 @@ export default function BottomNav() {
         const updateCounts = () => {
             try {
                 const cartStorage = localStorage.getItem('cart');
-                console.log('[BottomNav] Cart raw:', cartStorage);
+                logger.log('[BottomNav] Cart raw:', cartStorage);
 
                 if (cartStorage) {
                     const cart = JSON.parse(cartStorage);
                     const count = cart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-                    console.log('[BottomNav] Calculated count:', count);
+                    logger.log('[BottomNav] Calculated count:', count);
                     setCartCount(count);
                 } else {
                     setCartCount(0);
                 }
             } catch (error) {
-                console.error('[BottomNav] Error:', error);
+                logger.error('[BottomNav] Error:', error);
                 setCartCount(0);
             }
         };

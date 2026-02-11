@@ -197,14 +197,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         revalidatePath(`/categories/${newCategory.slug}`);
       }
 
-      console.log(`[Cache] Revalidated homepage + categories after product ${id} update`);
+      logger.log(`[Cache] Revalidated homepage + categories after product ${id} update`);
     } catch (revalidateError) {
-      console.error('Cache revalidation error:', revalidateError);
+      logger.error('Cache revalidation error:', revalidateError);
     }
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error('Product update error:', error);
+    logger.error('Product update error:', error);
     return NextResponse.json({ error: 'Failed to update product', details: error }, { status: 500 });
   }
 }

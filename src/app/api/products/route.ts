@@ -4,6 +4,8 @@ import { randomBytes } from 'crypto';
 import { verifyToken } from '@/lib/auth-token';
 import { getProductStatus } from '@/lib/productHelpers';
 import { revalidatePath } from 'next/cache';
+import { parseSafeInt } from '@/lib/parseHelpers';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,22 +27,17 @@ export async function GET(request: NextRequest) {
 
     if (categoryId) {
       if (includeChildren) {
-        // Fetch all descendant category IDs recursively
-        const getDescendantIds = async (parentId: string): Promise<string[]> => {
-          const children = await prisma.category.findMany({
-            where: { parentId },
-            select: { id: true }
-          });
+        // FIX Bug #6: N+1 Query - Fetch all categories once
+        const allCategories = await prisma.category.findMany({
+          select: { id: true, parentId: true }
+        });
 
-          let allIds = [parentId];
-          for (const child of children) {
-            const descendants = await getDescendantIds(child.id);
-            allIds = [...allIds, ...descendants];
-          }
-          return allIds;
+        const buildTree = (pid: string): string[] => {
+          const children = allCategories.filter(c => c.parentId === pid);
+          return [pid, ...children.flatMap(c => buildTree(c.id))];
         };
 
-        const categoryIds = await getDescendantIds(categoryId);
+        const categoryIds = buildTree(categoryId);
         whereClause.categoryId = { in: categoryIds };
       } else {
         whereClause.categoryId = categoryId;
@@ -56,13 +53,16 @@ export async function GET(request: NextRequest) {
 
     // ===== ADVANCED FILTERS =====
 
-    // Price Range Filter
+    // Price Range Filter - FIX Bug #4: parseInt validation
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
-    if (minPrice || maxPrice) {
+    const parsedMinPrice = parseSafeInt(minPrice);
+    const parsedMaxPrice = parseSafeInt(maxPrice);
+
+    if (parsedMinPrice !== undefined || parsedMaxPrice !== undefined) {
       whereClause.price = {
-        ...(minPrice && { gte: parseInt(minPrice) }),
-        ...(maxPrice && { lte: parseInt(maxPrice) }),
+        ...(parsedMinPrice !== undefined && { gte: parsedMinPrice }),
+        ...(parsedMaxPrice !== undefined && { lte: parsedMaxPrice }),
       };
     }
 
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('GET /api/products error:', error);
+    logger.error('GET /api/products error:', error);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }
@@ -287,7 +287,7 @@ export async function POST(request: NextRequest) {
 
     // Log auto-approval for monitoring
     if (productStatus === 'APPROVED') {
-      console.log(`[Auto-Approval] Product "${title}" (${product.id}) auto-approved from verified store ${storeId}`);
+      logger.log(`[Auto-Approval] Product "${title}" (${product.id}) auto-approved from verified store ${storeId}`);
 
       // Invalidate homepage cache so new product appears immediately
       revalidatePath('/');
@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error('POST /api/products error:', error);
+    logger.error('POST /api/products error:', error);
     return NextResponse.json({ error: 'Failed to create product', details: error }, { status: 500 });
   }
 }
