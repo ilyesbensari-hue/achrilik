@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
 
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
 
         const user = await verifyToken(token);
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !hasRole(user, 'ADMIN')) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         const { searchParams } = new URL(request.url);

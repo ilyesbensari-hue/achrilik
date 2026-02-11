@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 import { verifyToken } from '@/lib/auth-token';
@@ -212,7 +213,7 @@ export async function POST(request: NextRequest) {
 
     // Strict Role Check - Safe includes
     const userRoles = user.roles || [];
-    const isSeller = (Array.isArray(userRoles) && userRoles.includes('SELLER')) || user.role === 'SELLER';
+    const isSeller = (Array.isArray(userRoles) && userRoles.includes('SELLER')) || hasRole(user, 'SELLER');
     if (!isSeller) {
       return NextResponse.json({ error: 'Must be a SELLER to create products' }, { status: 403 });
     }

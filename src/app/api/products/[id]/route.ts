@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
 import { verifyToken } from '@/lib/auth-token';
@@ -88,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    if (user.role !== 'ADMIN' && existingProduct.Store.ownerId !== user.id) {
+    if (!hasRole(user, 'ADMIN') && existingProduct.Store.ownerId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -104,7 +105,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { isProductNew, isProductBestSeller } = await import('@/lib/badge-helpers');
 
     // Calculer les badges selon le rôle
-    const badges = user.role === 'ADMIN' ? {
+    const badges = hasRole(user, 'ADMIN') ? {
       // Admin peut override manuellement
       isNew: isNew !== undefined ? isNew : existingProduct.isNew,
       isTrending: isTrending !== undefined ? isTrending : existingProduct.isTrending,
@@ -236,7 +237,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    if (user.role !== 'ADMIN' && existingProduct.Store.ownerId !== user.id) {
+    if (!hasRole(user, 'ADMIN') && existingProduct.Store.ownerId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

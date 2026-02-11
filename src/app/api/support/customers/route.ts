@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth-token';
 import { prisma } from '@/lib/prisma';
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
             where: { id: payload.id as string }
         });
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !hasRole(user, 'ADMIN')) {
             return NextResponse.json({ error: 'Accès refusé - Admin uniquement' }, { status: 403 });
         }
 

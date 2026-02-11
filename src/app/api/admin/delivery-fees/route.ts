@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
 
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
         }
 
         const user = await verifyToken(token);
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !hasRole(user, 'ADMIN')) {
             return NextResponse.json({ error: 'Accès refusé - Admin seulement' }, { status: 403 });
         }
 
@@ -73,7 +74,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const user = await verifyToken(token);
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !hasRole(user, 'ADMIN')) {
             return NextResponse.json({ error: 'Accès refusé - Admin seulement' }, { status: 403 });
         }
 
@@ -108,7 +109,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         const user = await verifyToken(token);
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !hasRole(user, 'ADMIN')) {
             return NextResponse.json({ error: 'Accès refusé - Admin seulement' }, { status: 403 });
         }
 

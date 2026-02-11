@@ -38,11 +38,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
         }
 
-        const roles = user.role.split(',');
+        // Use roles array from user schema
+        const userRoles = user.roles || [];
 
         // Check if switching to seller mode
         if (mode === 'seller') {
-            if (!roles.includes('SELLER')) {
+            if (!userRoles.includes('SELLER')) {
                 return NextResponse.json({
                     error: 'Vous n\'avez pas de compte vendeur'
                 }, { status: 403 });
@@ -62,8 +63,7 @@ export async function POST(request: Request) {
             id: user.id,
             email: user.email,
             name: user.name || '',
-            role: user.role,
-            roles: roles,
+            roles: user.roles,
             activeMode: mode,
             storeId: user.Store?.id
         });

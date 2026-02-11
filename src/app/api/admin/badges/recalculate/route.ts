@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { verifyToken } from '@/lib/auth-token';
 import { recalculateAllBadges } from '@/lib/badge-helpers';
 
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
 
         const user = await verifyToken(token);
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || !hasRole(user, 'ADMIN')) {
             return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
         }
 
