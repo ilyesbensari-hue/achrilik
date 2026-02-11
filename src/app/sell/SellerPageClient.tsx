@@ -304,9 +304,6 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                         <Link href="/sell/settings" className="btn btn-outline whitespace-nowrap">
                             ⚙️ Paramètres
                         </Link>
-                        <Link href="/sell/analytics" className="btn btn-outline whitespace-nowrap">
-                            📊 Analytics
-                        </Link>
                         <Link href="/sell/new" className="btn btn-primary whitespace-nowrap">
                             + Ajouter un produit
                         </Link>

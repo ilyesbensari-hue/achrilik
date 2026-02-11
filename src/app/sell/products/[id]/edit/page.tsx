@@ -201,8 +201,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         <div className="container py-10">
             <div className="card max-w-2xl mx-auto p-8">
                 <div className="mb-6">
-                    <Link href={`/sell/products/${id}/analytics`} className="text-[#006233] hover:underline">
-                        ← Retour aux analytics
+                    <Link href="/sell" className="text-[#006233] hover:underline">
+                        ← Retour au tableau de bord
                     </Link>
                     <h1 className="text-2xl font-bold mt-4">Modifier le produit</h1>
                 </div>
@@ -364,7 +364,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     </div>
 
                     <div className="flex justify-end gap-4">
-                        <Link href={`/sell/products/${id}/analytics`} className="btn btn-outline">
+                        <Link href="/sell" className="btn btn-outline">
                             Annuler
                         </Link>
                         <button type="submit" disabled={loading} className="btn btn-primary">
