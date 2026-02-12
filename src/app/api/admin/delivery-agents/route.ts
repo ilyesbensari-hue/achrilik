@@ -77,10 +77,12 @@ export async function GET(request: Request) {
                 email: agent.user.email,
                 phone: agent.user.phone,
                 provider: agent.provider,
+                wilaya: agent.wilayasCovered[0] || 'N/A', // First wilaya for display
                 wilayasCovered: agent.wilayasCovered,
                 vehicleType: agent.vehicleType,
                 licenseNumber: agent.licenseNumber,
                 isActive: agent.isActive,
+                isAvailable: agent.isActive, // Alias for frontend compatibility
                 isVerified: agent.isVerified,
                 createdAt: agent.createdAt,
                 stats: {

@@ -465,6 +465,7 @@ enum OrderStatus {
   READY_FOR_PICKUP     // Prête pour enlèvement livreur
   WITH_DELIVERY_AGENT  // Chez le livreur
   OUT_FOR_DELIVERY     // En cours de livraison
+  SHIPPED              // Expédiée (en transit)
   DELIVERED            // Livrée
   RETURNED             // Retournée (échec livraison)
   CANCELLED            // Annulée

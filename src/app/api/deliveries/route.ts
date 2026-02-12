@@ -65,8 +65,18 @@ export async function GET() {
                 .reduce((sum, d) => sum + (d.codAmount || 0), 0)
         };
 
+        // Map deliveries to include totalAmount
+        const deliveriesWithTotal = deliveries.map(d => ({
+            ...d,
+            totalAmount: d.order?.total || 0,
+            customerName: d.order?.shippingName || '',
+            customerPhone: d.order?.shippingPhone || '',
+            deliveryAddress: d.order?.shippingAddress || '',
+            pickupAddress: 'Magasin' // Will be enhanced later
+        }));
+
         return NextResponse.json({
-            deliveries,
+            deliveries: deliveriesWithTotal,
             stats
         });
 

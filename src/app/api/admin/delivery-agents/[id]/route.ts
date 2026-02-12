@@ -128,10 +128,12 @@ export async function PATCH(
         }
 
         const body = await request.json();
-        const { isActive, wilayasCovered, vehicleType, licenseNumber, provider } = body;
+        const { isActive, isAvailable, wilayasCovered, vehicleType, licenseNumber, provider } = body;
 
         const updateData: any = {};
+        // Support both isActive and isAvailable for compatibility
         if (isActive !== undefined) updateData.isActive = isActive;
+        if (isAvailable !== undefined) updateData.isActive = isAvailable;
         if (wilayasCovered) updateData.wilayasCovered = wilayasCovered;
         if (vehicleType) updateData.vehicleType = vehicleType;
         if (licenseNumber) updateData.licenseNumber = licenseNumber;
