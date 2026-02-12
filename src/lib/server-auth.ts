@@ -66,12 +66,15 @@ export async function requireAdminApi() {
     }
 
     const user = await verifyToken(token);
+    if (!user) {
+        throw new Error('Forbidden');
+    }
 
     // Allow access if user has ADMIN role OR if email matches ADMIN_EMAIL env var
     const isAdmin = hasRole(user, 'ADMIN') ||
-        (process.env.ADMIN_EMAIL && user?.email === process.env.ADMIN_EMAIL);
+        (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL);
 
-    if (!user || !isAdmin) {
+    if (!isAdmin) {
         throw new Error('Forbidden');
     }
 
