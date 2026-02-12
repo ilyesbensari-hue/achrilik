@@ -95,8 +95,9 @@ export default function AdminOrdersClient() {
         }
     };
 
-    const totalOrders = Object.values(stats).reduce((sum, count) => sum + count, 0);
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+    const totalOrders = stats ? Object.values(stats).reduce((sum, count) => sum + (count || 0), 0) : 0;
+    const totalRevenue = orders && orders.length > 0 ? orders.reduce((sum, order) => sum + (order?.total || 0), 0) : 0;
+
 
     return (
         <div>
