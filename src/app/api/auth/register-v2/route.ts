@@ -12,16 +12,22 @@ const PHONE_REGEX = /^(0)(5|6|7)[0-9]{8}$/;
 
 export async function POST(request: Request) {
     try {
-        // Rate limiting check
-        const ip = getClientIp(request);
-        const { success } = await registerRateLimit.limit(ip);
+        try {
+            // Rate limiting check (Skip if Redis unavailable)
+            const ip = getClientIp(request);
+            const { success } = await registerRateLimit.limit(ip);
 
-        if (!success) {
-            return NextResponse.json(
-                { error: 'Trop de tentatives d\'inscription. Réessayez dans 1 minute.' },
-                { status: 429 }
-            );
+            if (!success) {
+                return NextResponse.json(
+                    { error: 'Trop de tentatives d\'inscription. Réessayez dans 1 minute.' },
+                    { status: 429 }
+                );
+            }
+        } catch (rateLimitErr) {
+            // Bypass rate limiting if Redis fails
+            logger.warn('Rate limiting skipped for registration due to Redis error', { error: rateLimitErr as Error });
         }
+
 
         const { email, password, name, phone, address, wilaya, city } = await request.json();
 

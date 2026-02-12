@@ -101,16 +101,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        // Rate limiting check
-        const ip = getClientIp(request);
-        const { success } = await apiRateLimit.limit(ip);
+        try {
+            // Rate limiting check (Skip if Redis unavailable)
+            const ip = getClientIp(request);
+            const { success } = await apiRateLimit.limit(ip);
 
-        if (!success) {
-            return NextResponse.json(
-                { error: 'Trop de commandes. Réessayez dans 1 minute.' },
-                { status: 429 }
-            );
+            if (!success) {
+                return NextResponse.json(
+                    { error: 'Trop de commandes. Réessayez dans 1 minute.' },
+                    { status: 429 }
+                );
+            }
+        } catch (rateLimitErr) {
+            // Bypass rate limiting if Redis fails
+            logger.warn('Rate limiting skipped due to Redis error', { error: rateLimitErr as Error });
         }
+
 
         const token = request.cookies.get('auth_token')?.value;
 
