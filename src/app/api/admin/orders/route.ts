@@ -53,9 +53,36 @@ export async function GET(request: NextRequest) {
 
         // Format orders for client with store info from products
         const formattedOrders = orders.map(order => {
+            // Defensive: check if OrderItem exists and has valid structure
+            if (!order.OrderItem || order.OrderItem.length === 0) {
+                return {
+                    id: order.id,
+                    userId: order.userId,
+                    status: order.status,
+                    total: order.total,
+                    paymentMethod: order.paymentMethod,
+                    deliveryType: order.deliveryType,
+                    createdAt: order.createdAt,
+                    shippingAddress: order.shippingAddress,
+                    shippingCity: order.shippingCity,
+                    shippingPhone: order.shippingPhone,
+                    shippingName: order.shippingName,
+                    storeAddress: order.storeAddress,
+                    storeCity: order.storeCity,
+                    storeName: order.storeName,
+                    trackingNumber: order.trackingNumber,
+                    notes: order.notes,
+                    user: order.User,
+                    store: null,
+                    items: []
+                };
+            }
+
             // Get unique stores from order items
             const stores = Array.from(new Set(
-                order.OrderItem.map(item => item.Variant.Product.Store)
+                order.OrderItem
+                    .filter(item => item?.Variant?.Product?.Store) // defensive filter
+                    .map(item => item.Variant.Product.Store)
             ));
 
             // For single-vendor orders, use the store info
@@ -88,19 +115,21 @@ export async function GET(request: NextRequest) {
                     sellerEmail: primaryStore.User?.email,
                     sellerPhone: primaryStore.User?.phone
                 } : null,
-                items: order.OrderItem.map(item => ({
-                    quantity: item.quantity,
-                    price: item.price,
-                    variant: {
-                        size: item.Variant.size,
-                        color: item.Variant.color,
-                        product: {
-                            title: item.Variant.Product.title,
-                            images: item.Variant.Product.images,
-                            storeName: item.Variant.Product.Store.name
+                items: order.OrderItem
+                    .filter(item => item?.Variant?.Product) // defensive filter
+                    .map(item => ({
+                        quantity: item.quantity,
+                        price: item.price,
+                        variant: {
+                            size: item.Variant.size,
+                            color: item.Variant.color,
+                            product: {
+                                title: item.Variant.Product.title,
+                                images: item.Variant.Product.images,
+                                storeName: item.Variant.Product.Store?.name || 'N/A'
+                            }
                         }
-                    }
-                }))
+                    }))
             };
         });
 
