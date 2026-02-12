@@ -26,7 +26,12 @@ export async function requireAuth() {
 
 export async function requireAdmin() {
     const user = await requireAuth();
-    if (!hasRole(user, 'ADMIN')) {
+
+    // Allow access if user has ADMIN role OR if email matches ADMIN_EMAIL env var
+    const isAdmin = hasRole(user, 'ADMIN') ||
+        (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL);
+
+    if (!isAdmin) {
         redirect('/');
     }
     return user;
@@ -61,7 +66,12 @@ export async function requireAdminApi() {
     }
 
     const user = await verifyToken(token);
-    if (!user || !hasRole(user, 'ADMIN')) {
+
+    // Allow access if user has ADMIN role OR if email matches ADMIN_EMAIL env var
+    const isAdmin = hasRole(user, 'ADMIN') ||
+        (process.env.ADMIN_EMAIL && user?.email === process.env.ADMIN_EMAIL);
+
+    if (!user || !isAdmin) {
         throw new Error('Forbidden');
     }
 
