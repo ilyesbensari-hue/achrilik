@@ -12,18 +12,24 @@ export async function PATCH(
         const { role } = body;
 
         // Valider le rôle
-        if (role && !['BUYER', 'SELLER', 'ADMIN'].includes(role)) {
+        if (role && !['BUYER', 'SELLER', 'ADMIN', 'DELIVERY_AGENT'].includes(role)) {
             return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
         }
 
+        // IMPORTANT: Mettre à jour à la fois 'role' (legacy) ET 'roles' (array actif)
+        // pour que hasRole() fonctionne correctement
         const user = await prisma.user.update({
             where: { id },
-            data: { role },
+            data: {
+                role,  // Legacy string field
+                roles: role ? [role as any] : undefined  // Active array field
+            },
             select: {
                 id: true,
                 email: true,
                 name: true,
-                role: true
+                role: true,
+                roles: true
             }
         });
 
