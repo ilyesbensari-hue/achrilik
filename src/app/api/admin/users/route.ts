@@ -1,22 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // GET /api/admin/users - Liste tous les utilisateurs
 export async function GET(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
+        await requireAdminApi();
 
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '50');
@@ -46,6 +36,7 @@ export async function GET(request: NextRequest) {
                     email: true,
                     name: true,
                     role: true,
+                    roles: true,
                     createdAt: true,
                     _count: {
                         select: {
@@ -56,6 +47,7 @@ export async function GET(request: NextRequest) {
                         select: {
                             id: true,
                             name: true,
+                            verified: true,
                             _count: {
                                 select: {
                                     Product: true
@@ -68,8 +60,31 @@ export async function GET(request: NextRequest) {
             prisma.user.count({ where })
         ]);
 
+        // Map Prisma PascalCase to client-expected lowercase
+        const mappedUsers = users.map(u => ({
+            id: u.id,
+            email: u.email,
+            name: u.name,
+            role: u.roles?.includes('ADMIN') ? 'ADMIN' :
+                u.roles?.includes('SELLER') ? 'SELLER' :
+                    u.roles?.includes('DELIVERY_AGENT') ? 'DELIVERY_AGENT' : u.role,
+            roles: u.roles,
+            createdAt: u.createdAt,
+            _count: {
+                orders: u._count.Order
+            },
+            store: u.Store ? {
+                id: u.Store.id,
+                name: u.Store.name,
+                verified: u.Store.verified,
+                _count: {
+                    products: u.Store._count.Product
+                }
+            } : null
+        }));
+
         return NextResponse.json({
-            users,
+            users: mappedUsers,
             total,
             page,
             limit,

@@ -27,7 +27,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
 
         const userData = JSON.parse(userStr);
-        if (userData.role !== 'ADMIN') {
+        // Check both legacy 'role' string AND 'roles' array, plus ADMIN_EMAIL match
+        const isAdmin = userData.role === 'ADMIN' ||
+            userData.roles?.includes('ADMIN') ||
+            userData.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+        if (!isAdmin) {
             router.push('/');
             return;
         }

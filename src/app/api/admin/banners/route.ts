@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 import { withCache } from '@/lib/cache';
 import cache from '@/lib/cache';
 import { revalidatePath } from 'next/cache';
@@ -37,17 +36,7 @@ export async function GET(request: NextRequest) {
 // POST - Create a new banner (Admin only)
 export async function POST(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        await requireAdminApi();
 
         const body = await request.json();
         const { title, subtitle, image, videoUrl, link, buttonText, isActive, order } = body;
@@ -87,17 +76,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update a banner (Admin only)
 export async function PUT(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        await requireAdminApi();
 
         const body = await request.json();
         const { id, title, subtitle, image, videoUrl, link, buttonText, isActive, order } = body;
@@ -137,17 +116,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete a banner (Admin only)
 export async function DELETE(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        await requireAdminApi();
 
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

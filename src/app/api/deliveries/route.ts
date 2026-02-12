@@ -65,13 +65,15 @@ export async function GET() {
                 .reduce((sum, d) => sum + (d.codAmount || 0), 0)
         };
 
-        // Map deliveries to include totalAmount
+        // Map deliveries to include totalAmount and GPS coords
         const deliveriesWithTotal = deliveries.map(d => ({
             ...d,
             totalAmount: d.order?.total || 0,
             customerName: d.order?.shippingName || '',
             customerPhone: d.order?.shippingPhone || '',
             deliveryAddress: d.order?.shippingAddress || '',
+            deliveryLatitude: d.order?.deliveryLatitude || null,
+            deliveryLongitude: d.order?.deliveryLongitude || null,
             pickupAddress: 'Magasin' // Will be enhanced later
         }));
 

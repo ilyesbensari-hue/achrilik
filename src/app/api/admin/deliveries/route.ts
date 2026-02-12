@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 
 /**
  * GET /api/admin/deliveries
@@ -8,16 +8,7 @@ import { verifyToken } from '@/lib/auth-token';
  */
 export async function GET(request: Request) {
     try {
-        // Verify admin
-        const token = request.headers.get('cookie')?.split('auth_token=')[1]?.split(';')[0];
-        if (!token) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || !(payload.roles as string[])?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         // Get query params
         const { searchParams } = new URL(request.url);
@@ -52,7 +43,9 @@ export async function GET(request: Request) {
                         shippingName: true,
                         shippingPhone: true,
                         shippingAddress: true,
-                        shippingWilaya: true
+                        shippingWilaya: true,
+                        deliveryLatitude: true,
+                        deliveryLongitude: true
                     }
                 }
             },
@@ -89,6 +82,8 @@ export async function GET(request: Request) {
                 wilaya: d.order.shippingWilaya,
                 codAmount: d.codAmount,
                 codCollected: d.codCollected,
+                deliveryLatitude: d.order.deliveryLatitude || null,
+                deliveryLongitude: d.order.deliveryLongitude || null,
                 createdAt: d.createdAt,
                 updatedAt: d.updatedAt
             })),

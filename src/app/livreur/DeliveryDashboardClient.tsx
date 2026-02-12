@@ -16,6 +16,8 @@ interface Delivery {
     customerName: string;
     customerPhone: string;
     totalAmount: number;
+    deliveryLatitude: number | null;
+    deliveryLongitude: number | null;
     createdAt: string;
 }
 
@@ -167,10 +169,10 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                     <div className="text-gray-600 mb-1">Adresse livraison</div>
                                     <div className="font-bold text-gray-900">{delivery.deliveryAddress}</div>
 
-                                    {/* GPS Navigation Button - NOUVEAU */}
-                                    {(delivery as any).deliveryLatitude && (delivery as any).deliveryLongitude && (
+                                    {/* GPS Navigation Button */}
+                                    {delivery.deliveryLatitude && delivery.deliveryLongitude && (
                                         <a
-                                            href={`https://www.google.com/maps/dir/?api=1&destination=${(delivery as any).deliveryLatitude},${(delivery as any).deliveryLongitude}`}
+                                            href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.deliveryLatitude},${delivery.deliveryLongitude}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             onClick={(e) => e.stopPropagation()}

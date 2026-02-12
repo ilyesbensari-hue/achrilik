@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // PATCH /api/admin/users/[id] - Modifier un utilisateur
 export async function PATCH(
@@ -7,6 +8,7 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        await requireAdminApi();
         const { id } = await params;
         const body = await request.json();
         const { role } = body;
@@ -46,6 +48,7 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        await requireAdminApi();
         const { id } = await params;
 
         // Utiliser une transaction pour tout supprimer proprement

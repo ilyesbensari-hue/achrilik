@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 
 /**
  * GET /api/admin/delivery-config
@@ -9,16 +9,7 @@ import { verifyToken } from '@/lib/auth-token';
  */
 export async function GET(request: Request) {
     try {
-        // Verify admin
-        const token = request.headers.get('cookie')?.split('auth_token=')[1]?.split(';')[0];
-        if (!token) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || !(payload.roles as string[])?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         // Get all system settings for delivery configuration
         const configs = await prisma.systemSettings.findMany({
@@ -50,16 +41,7 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
     try {
-        // Verify admin
-        const token = request.headers.get('cookie')?.split('auth_token=')[1]?.split(';')[0];
-        if (!token) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || !(payload.roles as string[])?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         const body = await request.json();
         const { wilaya, deliveryAgentId } = body;

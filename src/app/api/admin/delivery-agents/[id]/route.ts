@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 
 /**
  * GET /api/admin/delivery-agents/[id]
@@ -12,16 +12,7 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        // Verify admin
-        const token = request.headers.get('cookie')?.split('auth_token=')[1]?.split(';')[0];
-        if (!token) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || !(payload.roles as string[])?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         const agent = await prisma.deliveryAgent.findUnique({
             where: { id },
@@ -116,16 +107,7 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        // Verify admin
-        const token = request.headers.get('cookie')?.split('auth_token=')[1]?.split(';')[0];
-        if (!token) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || !(payload.roles as string[])?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         const body = await request.json();
         const { isActive, isAvailable, wilayasCovered, vehicleType, licenseNumber, provider } = body;
@@ -182,16 +164,7 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        // Verify admin
-        const token = request.headers.get('cookie')?.split('auth_token=')[1]?.split(';')[0];
-        if (!token) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
-
-        const payload = await verifyToken(token);
-        if (!payload || !(payload.roles as string[])?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         // Check for active deliveries
         const activeDeliveries = await prisma.delivery.count({

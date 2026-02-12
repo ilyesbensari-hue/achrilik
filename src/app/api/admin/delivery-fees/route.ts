@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 
 // GET: Fetch all delivery fee configurations
 export async function GET(request: NextRequest) {
@@ -24,15 +23,7 @@ export async function GET(request: NextRequest) {
 // POST: Create delivery fee configuration (Admin only)
 export async function POST(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) {
-            return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé - Admin seulement' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         const { fromCity, toWilaya, baseFee } = await request.json();
 
@@ -68,15 +59,7 @@ export async function POST(request: NextRequest) {
 // PUT: Update delivery fee configuration (Admin only)
 export async function PUT(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) {
-            return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé - Admin seulement' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         const { id, baseFee, isActive } = await request.json();
 
@@ -103,15 +86,7 @@ export async function PUT(request: NextRequest) {
 // DELETE: Delete delivery fee configuration (Admin only)
 export async function DELETE(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) {
-            return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-        if (!user || !hasRole(user, 'ADMIN')) {
-            return NextResponse.json({ error: 'Accès refusé - Admin seulement' }, { status: 403 });
-        }
+        await requireAdminApi();
 
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

@@ -1,22 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth-token';
+import { requireAdminApi } from '@/lib/server-auth';
 import { logger } from '@/lib/logger';
 
-// GET /api/admin/stats - Simplified version without cache to identify issue
+// GET /api/admin/stats
 export async function GET(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-
-        if (!token) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await verifyToken(token);
-
-        if (!user || !user.roles?.includes('ADMIN')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        await requireAdminApi();
 
         // Simplified stats - just counts first
         try {
