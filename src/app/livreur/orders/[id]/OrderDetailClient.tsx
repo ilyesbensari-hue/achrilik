@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Phone, Package, DollarSign, Clock, Check Circle, AlertCircle, Navigation } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Package, DollarSign, Clock, CheckCircle, AlertCircle, Navigation } from 'lucide-react';
 
 interface OrderDetailClientProps {
     deliveryId: string;
