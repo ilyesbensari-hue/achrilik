@@ -48,10 +48,23 @@ export default function SellerOrderDetailPage() {
 
             // 2. Fetch order
             const res = await fetch(`/api/orders/${params.id}`);
+            if (!res.ok) {
+                console.error('Failed to fetch order:', res.status);
+                setLoading(false);
+                return;
+            }
+
             const data = await res.json();
 
+            // NULL SAFETY: Check if data and OrderItem exist
+            if (!data || !data.OrderItem) {
+                console.error('Invalid order data:', data);
+                setLoading(false);
+                return;
+            }
+
             // 3. Filter items by vendor's store
-            const storeItems = data.OrderItem?.filter(
+            const storeItems = data.OrderItem.filter(
                 (item: any) => item.Variant?.Product?.storeId === myStore.id
             ) || [];
 
