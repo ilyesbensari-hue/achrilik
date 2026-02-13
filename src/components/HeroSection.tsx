@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { Truck, Wallet, MessageCircle } from 'lucide-react';
+import { Truck, Wallet } from 'lucide-react';
 
 export default function HeroSection() {
     return (
@@ -13,54 +12,34 @@ export default function HeroSection() {
                 }} />
             </div>
 
-            <div className="relative max-w-7xl mx-auto px-4 py-6 sm:py-8 md:py-10">
+            <div className="relative max-w-7xl mx-auto px-4 py-8 sm:py-10 md:py-12">
                 {/* Main Content */}
                 <div className="text-center mb-6">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 leading-tight text-gray-900">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-gray-900">
                         Mode & Tendance Algérie 🇩🇿
                     </h1>
-                    <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 max-w-2xl mx-auto">
-                        Découvrez les dernières tendances avec livraison rapide
-                    </p>
-                    <Link
-                        href="/categories"
-                        className="inline-block bg-gradient-to-r from-rose-500 to-pink-600 text-white px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-sm sm:text-base hover:from-rose-600 hover:to-pink-700 transition-all shadow-lg"
-                    >
-                        Découvrir
-                    </Link>
                 </div>
 
-                {/* 3 Features - Compact */}
-                <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-4xl mx-auto">
+                {/* 2 Features - Simple & Clean */}
+                <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8 max-w-3xl mx-auto">
                     {/* Feature 1: Livraison */}
-                    <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-md">
                         <div className="flex flex-col items-center text-center">
-                            <Truck className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2 text-emerald-600" />
-                            <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1 text-gray-900">Livraison 48h</h3>
-                            <p className="text-gray-500 text-[10px] sm:text-xs hidden sm:block">
-                                Oran
+                            <Truck className="w-8 h-8 sm:w-10 sm:h-10 mb-3 text-emerald-600" />
+                            <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-gray-900">Livraison Oran</h3>
+                            <p className="text-gray-600 text-sm sm:text-base">
+                                24-48h
                             </p>
                         </div>
                     </div>
 
                     {/* Feature 2: Paiement */}
-                    <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-md">
                         <div className="flex flex-col items-center text-center">
-                            <Wallet className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2 text-rose-600" />
-                            <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1 text-gray-900">Paiement Cash</h3>
-                            <p className="text-gray-500 text-[10px] sm:text-xs hidden sm:block">
+                            <Wallet className="w-8 h-8 sm:w-10 sm:h-10 mb-3 text-rose-600" />
+                            <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-gray-900">Paiement Cash</h3>
+                            <p className="text-gray-600 text-sm sm:text-base">
                                 À la livraison
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Feature 3: Service Client */}
-                    <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-100 shadow-sm">
-                        <div className="flex flex-col items-center text-center">
-                            <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2 text-pink-600" />
-                            <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1 text-gray-900">WhatsApp</h3>
-                            <p className="text-gray-500 text-[10px] sm:text-xs hidden sm:block">
-                                9h-18h
                             </p>
                         </div>
                     </div>
