@@ -90,7 +90,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">Commande n°</p>
-                                <p className="font-mono font-bold text-lg text-gray-900">#{order.id.slice(0, 8).toUpperCase()}</p>
+                                <p className="font-mono font-bold text-lg text-gray-900">#{order.id.slice(-8).toUpperCase()}</p>
                                 <p className="text-xs text-gray-400 mt-1">Passée le {new Date(order.createdAt).toLocaleDateString('fr-FR')} à {new Date(order.createdAt).toLocaleTimeString('fr-FR')}</p>
                             </div>
                             <span className={`px-4 py-2 rounded-lg text-sm font-bold 

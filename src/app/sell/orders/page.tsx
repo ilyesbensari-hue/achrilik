@@ -60,6 +60,13 @@ export default function SellerOrdersPage() {
         };
 
         fetchStoreAndOrders();
+
+        // Auto-refresh every 15 seconds
+        const interval = setInterval(() => {
+            fetchStoreAndOrders();
+        }, 15000);
+
+        return () => clearInterval(interval);
     }, [router]);
 
     const transitionStatus = async (orderId: string, newStatus: OrderStatus, notes?: string) => {
@@ -150,8 +157,8 @@ export default function SellerOrdersPage() {
                 <button
                     onClick={() => setSelectedStatus('ALL')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'ALL'
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                 >
                     Toutes ({orders.length})
@@ -159,8 +166,8 @@ export default function SellerOrdersPage() {
                 <button
                     onClick={() => setSelectedStatus('PENDING')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'PENDING'
-                            ? 'bg-yellow-600 text-white'
-                            : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
                         }`}
                 >
                     En attente ({statusCounts['PENDING'] || 0})
@@ -168,8 +175,8 @@ export default function SellerOrdersPage() {
                 <button
                     onClick={() => setSelectedStatus('CONFIRMED')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'CONFIRMED'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
                         }`}
                 >
                     Confirmées ({statusCounts['CONFIRMED'] || 0})
@@ -177,8 +184,8 @@ export default function SellerOrdersPage() {
                 <button
                     onClick={() => setSelectedStatus('AT_MERCHANT')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'AT_MERCHANT'
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
                         }`}
                 >
                     En préparation ({statusCounts['AT_MERCHANT'] || 0})
@@ -186,8 +193,8 @@ export default function SellerOrdersPage() {
                 <button
                     onClick={() => setSelectedStatus('READY_FOR_PICKUP')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'READY_FOR_PICKUP'
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                         }`}
                 >
                     Prêtes pour enlèvement ({statusCounts['READY_FOR_PICKUP'] || 0})
@@ -195,8 +202,8 @@ export default function SellerOrdersPage() {
                 <button
                     onClick={() => setSelectedStatus('DELIVERED')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'DELIVERED'
-                            ? 'bg-green-600 text-white'
-                            : 'bg-green-50 text-green-700 hover:bg-green-100'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-green-50 text-green-700 hover:bg-green-100'
                         }`}
                 >
                     Livrées ({statusCounts['DELIVERED'] || 0})
@@ -221,7 +228,7 @@ export default function SellerOrdersPage() {
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <span className="font-bold text-xl">#{order.id.slice(-6)}</span>
+                                        <span className="font-bold text-xl">#{order.id.slice(-8).toUpperCase()}</span>
                                         <span className="text-sm text-gray-500">
                                             {new Date(order.createdAt).toLocaleDateString('fr-FR')}
                                         </span>

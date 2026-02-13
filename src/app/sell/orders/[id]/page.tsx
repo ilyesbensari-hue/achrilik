@@ -109,7 +109,7 @@ export default function SellerOrderDetailPage() {
             </button>
 
             <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Commande #{order.id.slice(0, 8)}
+                Commande #{order.id.slice(-8).toUpperCase()}
             </h1>
 
             {/* Informations Client */}

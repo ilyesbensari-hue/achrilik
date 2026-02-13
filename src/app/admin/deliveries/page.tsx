@@ -15,6 +15,13 @@ export default function DeliveriesPage() {
 
     useEffect(() => {
         fetchDeliveries();
+
+        // Auto-refresh every 15 seconds
+        const interval = setInterval(() => {
+            fetchDeliveries();
+        }, 15000);
+
+        return () => clearInterval(interval);
     }, [filterStatus, filterAgent]);
 
     const fetchDeliveries = async () => {
@@ -155,7 +162,7 @@ export default function DeliveriesPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-sm">
-                                                    <p className="text-gray-900">#{delivery.orderId.slice(0, 8)}</p>
+                                                    <p className="text-gray-900">#{delivery.orderId.slice(-8).toUpperCase()}</p>
                                                     <p className="text-gray-500">{delivery.orderTotal.toLocaleString()} DA</p>
                                                 </div>
                                             </td>

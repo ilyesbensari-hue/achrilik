@@ -47,6 +47,13 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
 
     useEffect(() => {
         fetchDeliveries();
+
+        // Auto-refresh every 15 seconds
+        const interval = setInterval(() => {
+            fetchDeliveries();
+        }, 15000);
+
+        return () => clearInterval(interval);
     }, []);
 
     const fetchDeliveries = async () => {
@@ -160,7 +167,7 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                 <div>
                                     <div className="text-xs text-gray-500 mb-1">Commande Client</div>
                                     <div className="font-mono text-lg font-black text-gray-900">
-                                        #{delivery.orderId.slice(0, 8).toUpperCase()}
+                                        #{delivery.orderId.slice(-8).toUpperCase()}
                                     </div>
                                     <div className="text-xs text-gray-400 mt-1">
                                         Livraison: {delivery.id.slice(0, 6)}

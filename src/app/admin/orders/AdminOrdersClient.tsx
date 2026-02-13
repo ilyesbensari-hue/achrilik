@@ -77,6 +77,13 @@ export default function AdminOrdersClient() {
 
     useEffect(() => {
         fetchOrders();
+
+        // Auto-refresh every 15 seconds
+        const interval = setInterval(() => {
+            fetchOrders();
+        }, 15000);
+
+        return () => clearInterval(interval);
     }, [statusFilter]);
 
     const fetchOrders = async () => {

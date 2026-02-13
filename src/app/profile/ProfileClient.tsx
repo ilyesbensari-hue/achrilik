@@ -283,7 +283,7 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     <div key={order.id} className="border rounded-lg p-4 hover:border-green-500 transition-colors">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
-                                                <p className="font-bold">Commande #{order.id.slice(-6)}</p>
+                                                <p className="font-bold">Commande #{order.id.slice(-8).toUpperCase()}</p>
                                                 <p className="text-sm text-gray-500">
                                                     {new Date(order.createdAt).toLocaleDateString('fr-FR')}
                                                 </p>
