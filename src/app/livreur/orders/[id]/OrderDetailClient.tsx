@@ -127,7 +127,14 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                         Retour
                     </button>
                     <h1 className="text-2xl font-bold">Détails de la Livraison</h1>
-                    <p className="text-sm opacity-90">#{delivery.orderId.slice(0, 8)}</p>
+                    <div className="flex gap-3 items-center mt-2">
+                        <p className="text-sm opacity-90 font-mono">
+                            📦 Commande #{delivery.orderId.slice(0, 8).toUpperCase()}
+                        </p>
+                        <span className="text-xs opacity-70">
+                            • Livraison {delivery.id.slice(0, 6)}
+                        </span>
+                    </div>
                 </div>
             </div>
 

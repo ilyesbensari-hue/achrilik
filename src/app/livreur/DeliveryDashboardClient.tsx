@@ -158,11 +158,14 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                             {/* Header: Order ID + Status */}
                             <div className="flex justify-between items-start mb-6 pb-4 border-b border-gray-200">
                                 <div>
-                                    <div className="text-xs text-gray-500 mb-1">Commande</div>
-                                    <div className="font-mono text-sm font-bold text-gray-900">
+                                    <div className="text-xs text-gray-500 mb-1">Commande Client</div>
+                                    <div className="font-mono text-lg font-black text-gray-900">
                                         #{delivery.orderId.slice(0, 8).toUpperCase()}
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-1">
+                                    <div className="text-xs text-gray-400 mt-1">
+                                        Livraison: {delivery.id.slice(0, 6)}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-2">
                                         {new Date(delivery.createdAt).toLocaleDateString('fr-FR', {
                                             day: 'numeric',
                                             month: 'short',
@@ -172,8 +175,8 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${delivery.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                        delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
-                                            'bg-green-100 text-green-700'
+                                    delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
+                                        'bg-green-100 text-green-700'
                                     }`}>
                                     {delivery.status === 'PENDING' ? 'En attente' :
                                         delivery.status === 'IN_TRANSIT' ? 'En cours' : 'Livrée'}
