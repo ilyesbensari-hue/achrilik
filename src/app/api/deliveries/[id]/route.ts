@@ -41,10 +41,28 @@ export async function GET(
                         shippingPhone: true,
                         shippingAddress: true,
                         shippingWilaya: true,
+                        shippingCity: true,
                         deliveryLatitude: true,
                         deliveryLongitude: true,
                         total: true,
                         createdAt: true,
+                        Store: {
+                            select: {
+                                name: true,
+                                address: true,
+                                city: true,
+                                storageCity: true,
+                                phone: true,
+                                latitude: true,
+                                longitude: true,
+                                User: {
+                                    select: {
+                                        name: true,
+                                        phone: true
+                                    }
+                                }
+                            }
+                        },
                         OrderItem: {
                             include: {
                                 Variant: {

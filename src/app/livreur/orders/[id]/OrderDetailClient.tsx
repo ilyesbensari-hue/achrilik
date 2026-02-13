@@ -142,17 +142,65 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                     </div>
                 </div>
 
-                {/* Customer Info */}
-                <div className="bg-white rounded-lg p-4 shadow space-y-3">
-                    <h2 className="font-bold text-lg flex items-center gap-2">
+                {/* Point A - PICKUP at Store */}
+                {delivery.order.Store && (
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow space-y-3">
+                        <h2 className="font-bold text-lg flex items-center gap-2 text-green-800">
+                            <Package className="w-5 h-5" />
+                            📦 Point A - RÉCUPÉRATION (Magasin)
+                        </h2>
+                        <div className="space-y-2">
+                            <p><strong>Magasin:</strong> {delivery.order.Store.name}</p>
+                            <p><strong>Adresse:</strong> {delivery.order.Store.address || 'Non renseignée'}</p>
+                            <p><strong>Ville:</strong> {delivery.order.Store.city || delivery.order.Store.storageCity || 'Non renseignée'}</p>
+                            {delivery.order.Store.phone && (
+                                <p><strong>Téléphone:</strong> <a href={`tel:${delivery.order.Store.phone}`} className="link link-primary">{delivery.order.Store.phone}</a></p>
+                            )}
+                            {delivery.order.Store.User?.name && (
+                                <p><strong>Contact:</strong> {delivery.order.Store.User.name}</p>
+                            )}
+                            {delivery.order.Store.latitude && delivery.order.Store.longitude && (
+                                <button
+                                    onClick={() => {
+                                        const url = `https://www.google.com/maps/dir/?api=1&destination=${delivery.order.Store.latitude},${delivery.order.Store.longitude}`;
+                                        window.open(url, '_blank');
+                                    }}
+                                    className="btn btn-sm btn-success gap-2 mt-2"
+                                >
+                                    <Navigation className="w-4 h-4" />
+                                    🗺️ Itinéraire vers le magasin
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Point B - DELIVERY to Customer */}
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 shadow space-y-3">
+                    <h2 className="font-bold text-lg flex items-center gap-2 text-blue-800">
                         <MapPin className="w-5 h-5" />
-                        Informations Client
+                        🚚 Point B - LIVRAISON (Client)
                     </h2>
                     <div className="space-y-2">
                         <p><strong>Nom:</strong> {delivery.order.shippingName}</p>
                         <p><strong>Téléphone:</strong> <a href={`tel:${delivery.order.shippingPhone}`} className="link link-primary">{delivery.order.shippingPhone}</a></p>
                         <p><strong>Adresse:</strong> {delivery.order.shippingAddress}</p>
+                        {delivery.order.shippingCity && (
+                            <p><strong>Ville:</strong> {delivery.order.shippingCity}</p>
+                        )}
                         <p><strong>Wilaya:</strong> {delivery.order.shippingWilaya}</p>
+                        {delivery.order.deliveryLatitude && delivery.order.deliveryLongitude && (
+                            <button
+                                onClick={() => {
+                                    const url = `https://www.google.com/maps/dir/?api=1&destination=${delivery.order.deliveryLatitude},${delivery.order.deliveryLongitude}`;
+                                    window.open(url, '_blank');
+                                }}
+                                className="btn btn-sm btn-info gap-2 mt-2"
+                            >
+                                <Navigation className="w-4 h-4" />
+                                🗺️ Itinéraire vers le client
+                            </button>
+                        )}
                     </div>
                 </div>
 
