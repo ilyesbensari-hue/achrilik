@@ -189,9 +189,6 @@ export default function PromotionsBanner({ featuredProducts = [] }: PromotionsBa
                                                 <span className="text-xs font-semibold text-[#8a1c1c] mr-8 flex items-center bg-white/40 px-2 py-0.5 rounded-full border border-rose-100/50">
                                                     💳 Paiement à la Livraison
                                                 </span>
-                                                <span className="text-xs font-semibold text-[#8a1c1c] mr-8 flex items-center bg-white/40 px-2 py-0.5 rounded-full border border-rose-100/50">
-                                                    🌟 Satisfait ou Remboursé
-                                                </span>
                                                 {/* Duplicate for seamless loop */}
                                                 <span className="text-xs font-semibold text-[#8a1c1c] mr-8 flex items-center bg-white/40 px-2 py-0.5 rounded-full border border-rose-100/50">
                                                     🔥 Livraison Gratuite à Oran !

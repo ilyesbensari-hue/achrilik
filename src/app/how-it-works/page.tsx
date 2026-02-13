@@ -126,11 +126,6 @@ export default function HowItWorksPage() {
                                 Payez en espèces lors de la réception de votre commande. C'est simple, sécurisé et sans engagement !
                                 Vous pouvez inspecter votre colis avant de payer.
                             </p>
-                            <div className="mt-4 bg-green-50 p-4 rounded-xl border-l-4 border-green-500">
-                                <p className="text-sm text-gray-700">
-                                    <strong>✨ Garantie :</strong> Satisfait ou remboursé ! Si le produit ne correspond pas, vous pouvez le refuser.
-                                </p>
-                            </div>
                         </div>
                     </div>
 

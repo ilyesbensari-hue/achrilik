@@ -36,16 +36,6 @@ export default function Footer() {
                             <p className="text-gray-500 text-xs">À la livraison (Main à main)</p>
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                        <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0 text-purple-600">
-                            <ShieldCheck className="h-5 w-5" strokeWidth={1.5} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 text-sm">Garantie 100%</h3>
-                            <p className="text-gray-500 text-xs">Satisfait ou remboursé</p>
-                        </div>
-                    </div>
                 </div>
 
                 <hr className="border-gray-200 mb-8" />

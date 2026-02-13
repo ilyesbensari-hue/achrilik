@@ -1,6 +1,6 @@
 'use client';
 
-import { Truck, CreditCard, ShieldCheck } from 'lucide-react';
+import { Truck, CreditCard } from 'lucide-react';
 
 export default function ReassuranceBar() {
     return (
@@ -25,17 +25,6 @@ export default function ReassuranceBar() {
                     <div className="flex flex-col">
                         <span className="text-sm font-bold text-gray-900 leading-tight">Paiement Cash</span>
                         <span className="text-[10px] text-gray-500 font-medium">À la livraison</span>
-                    </div>
-                </div>
-
-                {/* Garantie */}
-                <div className="flex-shrink-0 flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl p-3 min-w-[200px]">
-                    <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0 text-purple-600 shadow-sm">
-                        <ShieldCheck className="h-5 w-5" strokeWidth={1.5} />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900 leading-tight">Garantie 100%</span>
-                        <span className="text-[10px] text-gray-500 font-medium">Satisfait ou Remboursé</span>
                     </div>
                 </div>
             </div>
