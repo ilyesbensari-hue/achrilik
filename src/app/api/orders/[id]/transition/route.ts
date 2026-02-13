@@ -234,6 +234,41 @@ export async function POST(
             }
         }
 
+        // =========================================
+        // SYNC ORDER STATUS → DELIVERY STATUS
+        // =========================================
+        // When order status changes, sync to existing delivery
+        const existingDelivery = await prisma.delivery.findUnique({
+            where: { orderId: orderId }
+        });
+
+        if (existingDelivery) {
+            const reverseMapping: Record<string, 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'FAILED'> = {
+                'READY_FOR_PICKUP': 'PENDING',
+                'OUT_FOR_DELIVERY': 'IN_TRANSIT',
+                'DELIVERED': 'DELIVERED',
+                'CANCELLED': 'FAILED'  // Map order CANCELLED to delivery FAILED
+            };
+
+            const mappedDeliveryStatus = reverseMapping[newStatus as string];
+            if (mappedDeliveryStatus && mappedDeliveryStatus !== existingDelivery.status) {
+                await prisma.delivery.update({
+                    where: { id: existingDelivery.id },
+                    data: {
+                        status: mappedDeliveryStatus,
+                        updatedAt: new Date()
+                    }
+                });
+
+                console.log('[STATUS SYNC] Order → Delivery', {
+                    orderId: orderId,
+                    deliveryId: existingDelivery.id,
+                    orderStatus: newStatus,
+                    deliveryStatus: mappedDeliveryStatus
+                });
+            }
+        }
+
         return NextResponse.json({
             success: true,
             order: updatedOrder,

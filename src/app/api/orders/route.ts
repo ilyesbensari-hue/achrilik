@@ -140,8 +140,30 @@ export async function POST(request: NextRequest) {
 
 
 
+
+
         if (!userId || !cart || cart.length === 0) {
             return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+        }
+
+        // =========================================
+        // VALIDATION REQUIRED FIELDS FOR DELIVERY
+        // =========================================
+        if (deliveryMethod === 'DELIVERY') {
+            // Check required fields
+            if (!address || !phone || !name || !wilaya || !city) {
+                return NextResponse.json({
+                    error: 'Pour la livraison, veuillez renseigner : adresse complète, téléphone, nom, wilaya et ville'
+                }, { status: 400 });
+            }
+
+            // Validate Algerian phone format (05/06/07 + 8 digits)
+            const cleanPhone = phone.replace(/\s+/g, '');
+            if (!/^0[567]\d{8}$/.test(cleanPhone)) {
+                return NextResponse.json({
+                    error: 'Numéro de téléphone invalide. Format attendu: 05XXXXXXXX, 06XXXXXXXX ou 07XXXXXXXX'
+                }, { status: 400 });
+            }
         }
 
         // GPS coordinates are optional but highly recommended

@@ -175,6 +175,39 @@ export async function PATCH(request: Request) {
             }
         });
 
+        // =========================================
+        // SYNC DELIVERY STATUS → ORDER STATUS
+        // =========================================
+        // When delivery agent updates status, sync it back to order
+        if (status && status !== delivery.status) {
+            const statusMapping: Record<string, 'READY_FOR_PICKUP' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' | 'RETURNED'> = {
+                'PENDING': 'READY_FOR_PICKUP',
+                'IN_TRANSIT': 'OUT_FOR_DELIVERY',
+                'DELIVERED': 'DELIVERED',
+                'FAILED': 'CANCELLED',  // Map delivery FAILED to order CANCELLED
+                'RETURNED': 'RETURNED'  // Map delivery RETURNED to order RETURNED
+            };
+
+            const mappedStatus = statusMapping[status];
+            if (mappedStatus) {
+                await prisma.order.update({
+                    where: { id: delivery.orderId },
+                    data: {
+                        status: mappedStatus,
+                        lastUpdatedAt: new Date(),
+                        lastUpdatedBy: deliveryAgent.userId
+                    }
+                });
+
+                console.log('[STATUS SYNC] Delivery → Order', {
+                    deliveryId: deliveryId,
+                    orderId: delivery.orderId,
+                    deliveryStatus: status,
+                    orderStatus: mappedStatus
+                });
+            }
+        }
+
         // Update agent stats if delivered
         if (status === 'DELIVERED' && delivery.status !== 'DELIVERED') {
             await prisma.deliveryAgent.update({
