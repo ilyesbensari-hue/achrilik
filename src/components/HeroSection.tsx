@@ -13,60 +13,54 @@ export default function HeroSection() {
                 }} />
             </div>
 
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+            <div className="relative max-w-7xl mx-auto px-4 py-6 sm:py-8 md:py-10">
                 {/* Main Content */}
-                <div className="text-center mb-12">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                <div className="text-center mb-6">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 leading-tight">
                         Mode & Tendance Algérie 🇩🇿
                     </h1>
-                    <p className="text-lg sm:text-xl md:text-2xl text-purple-100 mb-8 max-w-3xl mx-auto">
-                        Découvrez les dernières tendances de mode féminine et masculine avec livraison rapide dans toute l'Algérie
+                    <p className="text-sm sm:text-base md:text-lg text-purple-100 mb-4 max-w-2xl mx-auto">
+                        Découvrez les dernières tendances avec livraison rapide
                     </p>
                     <Link
                         href="/categories"
-                        className="inline-block bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-50 transition-all transform hover:scale-105 shadow-2xl"
+                        className="inline-block bg-white text-purple-600 px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-sm sm:text-base hover:bg-purple-50 transition-all shadow-lg"
                     >
-                        Découvrir la Collection
+                        Découvrir
                     </Link>
                 </div>
 
-                {/* 3 Features */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                {/* 3 Features - Compact */}
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 max-w-4xl mx-auto">
                     {/* Feature 1: Livraison */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/20">
                         <div className="flex flex-col items-center text-center">
-                            <div className="bg-white/20 p-4 rounded-full mb-4">
-                                <Truck className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Livraison Rapide</h3>
-                            <p className="text-purple-100 text-sm">
-                                Livraison express 48h-72h dans toute l'Algérie (58 wilayas)
+                            <Truck className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2" />
+                            <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1">Livraison 48h</h3>
+                            <p className="text-purple-100 text-[10px] sm:text-xs hidden sm:block">
+                                58 wilayas
                             </p>
                         </div>
                     </div>
 
                     {/* Feature 2: Paiement */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/20">
                         <div className="flex flex-col items-center text-center">
-                            <div className="bg-white/20 p-4 rounded-full mb-4">
-                                <Wallet className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Paiement à la Livraison</h3>
-                            <p className="text-purple-100 text-sm">
-                                Payez en espèces à la réception de votre commande
+                            <Wallet className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2" />
+                            <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1">Paiement Cash</h3>
+                            <p className="text-purple-100 text-[10px] sm:text-xs hidden sm:block">
+                                À la livraison
                             </p>
                         </div>
                     </div>
 
                     {/* Feature 3: Service Client */}
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/20">
                         <div className="flex flex-col items-center text-center">
-                            <div className="bg-white/20 p-4 rounded-full mb-4">
-                                <MessageCircle className="w-8 h-8" />
-                            </div>
-                            <h3 className="text-xl font-bold mb-2">Service Client WhatsApp</h3>
-                            <p className="text-purple-100 text-sm">
-                                Support réactif sur WhatsApp de 9h à 18h
+                            <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2" />
+                            <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1">WhatsApp</h3>
+                            <p className="text-purple-100 text-[10px] sm:text-xs hidden sm:block">
+                                9h-18h
                             </p>
                         </div>
                     </div>
