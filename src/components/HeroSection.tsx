@@ -38,7 +38,7 @@ export default function HeroSection() {
                             <Truck className="w-5 h-5 sm:w-6 sm:h-6 mb-1.5 sm:mb-2" />
                             <h3 className="text-xs sm:text-sm md:text-base font-bold mb-1">Livraison 48h</h3>
                             <p className="text-purple-100 text-[10px] sm:text-xs hidden sm:block">
-                                58 wilayas
+                                Oran
                             </p>
                         </div>
                     </div>

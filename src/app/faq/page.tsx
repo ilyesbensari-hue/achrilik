@@ -111,9 +111,7 @@ export default function FAQPage() {
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    • <strong>Oran :</strong> 24-48h ouvrables<br />
-                                    • <strong>Alger, Blida, Tizi Ouzou :</strong> 48-72h ouvrables<br />
-                                    • <strong>Autres wilayas :</strong> 3-7 jours ouvrables
+                                    Nous livrons actuellement uniquement sur <strong>Oran</strong> dans un délai de 24-48h ouvrables.
                                 </p>
                             </details>
 
@@ -125,7 +123,7 @@ export default function FAQPage() {
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    Oui ! Nous livrons dans les 58 wilayas d'Algérie. Les frais de livraison sont calculés automatiquement en fonction de votre wilaya lors du passage de commande.
+                                    Actuellement, nous livrons uniquement sur <strong>Oran</strong>. Nous prévoyons d'étendre notre zone de livraison prochainement.
                                 </p>
                             </details>
 
@@ -137,7 +135,7 @@ export default function FAQPage() {
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    Les frais de livraison varient selon votre wilaya et sont affichés avant la validation de votre commande. Certaines boutiques offrent la livraison gratuite à partir d'un montant minimum d'achat (cette information est visible sur la fiche produit).
+                                    Les frais de livraison sont affichés avant la validation de votre commande. Certaines boutiques offrent la livraison gratuite à partir d'un montant minimum d'achat (cette information est visible sur la fiche produit).
                                 </p>
                             </details>
 

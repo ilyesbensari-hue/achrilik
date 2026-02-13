@@ -91,19 +91,17 @@ export default function CGVPage() {
 
                         <h3 className="text-xl font-semibold text-gray-800 mb-3">Zones de livraison</h3>
                         <p className="text-gray-700 mb-4">
-                            Achrilik livre dans toute l'Algérie (58 wilayas).
+                            Achrilik livre actuellement uniquement sur <strong>Oran</strong>.
                         </p>
 
                         <h3 className="text-xl font-semibold text-gray-800 mb-3">Délais de livraison</h3>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
                             <li><strong>Oran</strong> : 24-48h ouvrables</li>
-                            <li><strong>Alger, Blida, Tizi Ouzou</strong> : 48-72h ouvrables</li>
-                            <li><strong>Autres wilayas</strong> : 3-7 jours ouvrables</li>
                         </ul>
 
                         <h3 className="text-xl font-semibold text-gray-800 mb-3">Frais de livraison</h3>
                         <p className="text-gray-700 mb-4">
-                            Les frais de livraison sont calculés automatiquement en fonction de votre wilaya et affichés avant la validation de la commande.
+                            Les frais de livraison sont affichés avant la validation de la commande.
                         </p>
                         <div className="bg-white p-4 rounded-lg">
                             <p className="text-sm text-gray-700">
