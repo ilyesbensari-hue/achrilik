@@ -131,7 +131,6 @@ export default function PolitiqueConfidentialite() {
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
                             <li><strong>Cookies fonctionnels</strong> : mémoriser votre panier d'achat</li>
-                            <li><strong>Cookies analytiques</strong> : analyser le trafic via Google Analytics (optionnel)</li>
                         </ul>
                         <p className="text-gray-700 mt-4">
                             Vous pouvez refuser les cookies dans les paramètres de votre navigateur.
