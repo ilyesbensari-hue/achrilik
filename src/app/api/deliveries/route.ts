@@ -62,24 +62,6 @@ export async function GET() {
                                     }
                                 }
                             }
-                        },
-                        OrderItem: {
-                            select: {
-                                quantity: true,
-                                price: true,
-                                Variant: {
-                                    select: {
-                                        size: true,
-                                        color: true,
-                                        Product: {
-                                            select: {
-                                                title: true,
-                                                images: true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -102,20 +84,7 @@ export async function GET() {
                 .reduce((sum, d) => sum + (d.codAmount || 0), 0)
         };
 
-        // Helper to safely parse product images
-        const parseProductImage = (images: string | null): string | null => {
-            if (!images) return null;
-            try {
-                // Try to parse as JSON array
-                const parsed = JSON.parse(images);
-                return Array.isArray(parsed) ? parsed[0] : images;
-            } catch {
-                // If not JSON, assume it's a plain URL string
-                return images;
-            }
-        };
-
-        // Map deliveries with complete pickup/delivery info
+        // Map deliveries with pickup/delivery info (without items for now)
         const deliveriesWithDetails = deliveries.map(d => ({
             ...d,
             // Delivery info (Point B - client)
@@ -139,15 +108,8 @@ export async function GET() {
                 ? `${d.order.Store.address}, ${d.order.Store.city || d.order.Store.storageCity || ''}`.trim()
                 : 'Adresse non renseignée',
 
-            // Order items details
-            items: (d.order?.OrderItem || []).map((item: any) => ({
-                productName: item.Variant?.Product?.title || 'Produit',
-                image: parseProductImage(item.Variant?.Product?.images),
-                size: item.Variant?.size || '',
-                color: item.Variant?.color || '',
-                quantity: item.quantity,
-                price: item.price
-            }))
+            // Items will be added back after fixing
+            items: []
         }));
 
         return NextResponse.json({
