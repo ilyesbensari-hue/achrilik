@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { verifyToken } from '@/lib/auth-token';
 import OrderDetailClient from './OrderDetailClient';
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
 
@@ -17,5 +17,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
         redirect('/');
     }
 
-    return <OrderDetailClient deliveryId={params.id} initialUser={user} />;
+    const { id } = await params;
+
+    return <OrderDetailClient deliveryId={id} initialUser={user} />;
 }
