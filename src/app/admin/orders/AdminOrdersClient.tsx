@@ -255,6 +255,17 @@ export default function AdminOrdersClient() {
                                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${STATUS_COLORS[order.status]}`}>
                                                     {STATUS_LABELS[order.status] || order.status}
                                                 </span>
+                                                {/* Status context for better clarity */}
+                                                {order.status === 'PENDING' && (
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        ⏳ En attente vendeur
+                                                    </div>
+                                                )}
+                                                {order.status === 'READY_FOR_PICKUP' && (
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        📦 Prêt - attente livreur
+                                                    </div>
+                                                )}
                                                 {order.trackingNumber && (
                                                     <div className="text-xs text-gray-500 mt-1">
                                                         🔍 {order.trackingNumber}
@@ -336,8 +347,16 @@ export default function AdminOrdersClient() {
                                                                         {order.store.sellerEmail && (
                                                                             <p className="text-xs text-gray-600">📧 {order.store.sellerEmail}</p>
                                                                         )}
-                                                                        {order.store.sellerPhone && (
-                                                                            <p className="text-xs text-gray-600">📞 {order.store.sellerPhone}</p>
+                                                                        {order.store.sellerPhone ? (
+                                                                            <a
+                                                                                href={`tel:${order.store.sellerPhone}`}
+                                                                                className="text-xs text-blue-600 hover:underline font-medium"
+                                                                                onClick={(e) => e.stopPropagation()}
+                                                                            >
+                                                                                📞 {order.store.sellerPhone}
+                                                                            </a>
+                                                                        ) : (
+                                                                            <p className="text-xs text-red-500">⚠️ Téléphone vendeur manquant</p>
                                                                         )}
                                                                         {order.store.address && (
                                                                             <p className="text-xs text-gray-600">📍 {order.store.address}, {order.store.city}</p>
