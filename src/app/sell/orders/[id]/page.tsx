@@ -7,6 +7,9 @@ export default function SellerOrderDetailPage() {
     const params = useParams();
     const router = useRouter();
     const [order, setOrder] = useState<any>(null);
+    const [store, setStore] = useState<any>(null);
+    const [filteredItems, setFilteredItems] = useState<any[]>([]);
+    const [filteredTotal, setFilteredTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -24,8 +27,42 @@ export default function SellerOrderDetailPage() {
 
     const fetchOrder = async () => {
         try {
+            // 1. Get vendor's store
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                router.push('/login');
+                return;
+            }
+            const user = JSON.parse(userStr);
+
+            const storesRes = await fetch('/api/stores');
+            const stores = await storesRes.json();
+            const myStore = stores.find((s: any) => s.ownerId === user.id);
+
+            if (!myStore) {
+                alert('Vous n\'avez pas de boutique active');
+                router.push('/sell');
+                return;
+            }
+            setStore(myStore);
+
+            // 2. Fetch order
             const res = await fetch(`/api/orders/${params.id}`);
             const data = await res.json();
+
+            // 3. Filter items by vendor's store
+            const storeItems = data.OrderItem?.filter(
+                (item: any) => item.Variant?.Product?.storeId === myStore.id
+            ) || [];
+
+            // 4. Calculate filtered total
+            const storeTotal = storeItems.reduce(
+                (acc: number, item: any) => acc + (item.price * item.quantity),
+                0
+            );
+
+            setFilteredItems(storeItems);
+            setFilteredTotal(storeTotal);
             setOrder(data);
 
             // Pré-remplir le formulaire
@@ -137,22 +174,22 @@ export default function SellerOrderDetailPage() {
             {/* Produits */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                    📦 Produits ({order.OrderItem?.length || 0})
+                    📦 Produits ({filteredItems.length})
                 </h2>
 
-                {order.storeName && (
+                {store && (
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm font-medium text-blue-900">
-                            🏪 Magasin: {order.storeName}
+                            🏪 Magasin: {store.name}
                         </p>
-                        {order.storeAddress && (
-                            <p className="text-sm text-blue-700">{order.storeAddress}</p>
+                        {store.address && (
+                            <p className="text-sm text-blue-700">{store.address}</p>
                         )}
                     </div>
                 )}
 
                 <div className="space-y-4">
-                    {order.OrderItem?.map((item: any) => (
+                    {filteredItems.map((item: any) => (
                         <div key={item.id} className="flex gap-4 pb-4 border-b last:border-0">
                             <div className="flex-1">
                                 <p className="font-medium text-gray-900">{item.Variant.Product.title}</p>
@@ -177,7 +214,7 @@ export default function SellerOrderDetailPage() {
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-lg font-bold text-gray-900">Total</p>
                         <p className="text-2xl font-bold text-[#006233]">
-                            {order.total.toLocaleString('fr-DZ')} DA
+                            {filteredTotal.toLocaleString('fr-DZ')} DA
                         </p>
                     </div>
                     <p className="text-sm text-gray-600">
