@@ -102,6 +102,19 @@ export async function GET() {
                 .reduce((sum, d) => sum + (d.codAmount || 0), 0)
         };
 
+        // Helper to safely parse product images
+        const parseProductImage = (images: string | null): string | null => {
+            if (!images) return null;
+            try {
+                // Try to parse as JSON array
+                const parsed = JSON.parse(images);
+                return Array.isArray(parsed) ? parsed[0] : images;
+            } catch {
+                // If not JSON, assume it's a plain URL string
+                return images;
+            }
+        };
+
         // Map deliveries with complete pickup/delivery info
         const deliveriesWithDetails = deliveries.map(d => ({
             ...d,
@@ -129,7 +142,7 @@ export async function GET() {
             // Order items details
             items: (d.order?.OrderItem || []).map((item: any) => ({
                 productName: item.Variant?.Product?.title || 'Produit',
-                image: item.Variant?.Product?.images ? JSON.parse(item.Variant.Product.images)[0] : null,
+                image: parseProductImage(item.Variant?.Product?.images),
                 size: item.Variant?.size || '',
                 color: item.Variant?.color || '',
                 quantity: item.quantity,
