@@ -40,17 +40,23 @@ export default function Footer() {
                             ℹ️ Informations
                         </h3>
                         <div className="space-y-3 text-sm">
-                            <Link href="/comment-ca-marche" className="block hover:text-pink-300 transition-colors">
+                            <Link href="/how-it-works" className="block hover:text-pink-300 transition-colors">
                                 Comment ça marche
-                            </Link>
-                            <Link href="/politique-confidentialite" className="block hover:text-pink-300 transition-colors">
-                                Politique de confidentialité
                             </Link>
                             <Link href="/contact" className="block hover:text-pink-300 transition-colors">
                                 Contact
                             </Link>
                             <Link href="/faq" className="block hover:text-pink-300 transition-colors">
                                 FAQ
+                            </Link>
+                            <Link href="/cgv" className="block hover:text-pink-300 transition-colors">
+                                CGV
+                            </Link>
+                            <Link href="/mentions-legales" className="block hover:text-pink-300 transition-colors">
+                                Mentions légales
+                            </Link>
+                            <Link href="/politique-confidentialite" className="block hover:text-pink-300 transition-colors">
+                                Politique de confidentialité
                             </Link>
                         </div>
                     </div>

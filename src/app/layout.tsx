@@ -4,6 +4,7 @@ import "./globals.css";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import ToastContainer from "@/components/ToastContainer";
 import Footer from "@/components/Footer";
+import CookieBanner from "@/components/CookieBanner";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -92,6 +93,7 @@ export default function RootLayout({
             </div>
             <Footer />
             <ToastContainer />
+            <CookieBanner />
           </ErrorBoundary>
         </Providers>
       </body>

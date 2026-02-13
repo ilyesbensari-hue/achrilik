@@ -4,6 +4,7 @@ import MobileHeader from '@/components/home/MobileHeader';
 import Navbar from '@/components/Navbar';
 import JsonLd, { generateOrganizationSchema } from '@/components/JsonLd';
 import { prisma } from '@/lib/prisma';
+import HeroSection from '@/components/HeroSection';
 
 // Lazy load heavy components
 const HeroVideoBanner = dynamic(() => import('@/components/home/HeroVideoBanner'), {
@@ -400,6 +401,9 @@ export default async function Home() {
 
         {/* 1. Hero Video Banner - Compact (max 450px) */}
         <HeroVideoBanner />
+
+        {/* 1.5. Hero Section avec Features */}
+        <HeroSection />
 
         {/* 2. Category Circles */}
         <CategoryCircles />
