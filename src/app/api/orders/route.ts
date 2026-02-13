@@ -154,12 +154,19 @@ export async function POST(request: NextRequest) {
 
         const order = await prisma.$transaction(async (tx) => {
             let total = 0;
+            let storeInfo = null;
 
-            // 1. Validate Stock & Price
+            // 1. Validate Stock & Price + Extract Store Info
             for (const item of cart) {
                 const variant = await tx.variant.findUnique({
                     where: { id: item.variantId },
-                    include: { Product: true }
+                    include: {
+                        Product: {
+                            include: {
+                                Store: true
+                            }
+                        }
+                    }
                 });
 
                 if (!variant) {
@@ -171,6 +178,11 @@ export async function POST(request: NextRequest) {
                 }
 
                 total += variant.Product.price * item.quantity;
+
+                // Extract store info from first item
+                if (!storeInfo && variant.Product.Store) {
+                    storeInfo = variant.Product.Store;
+                }
             }
 
             // Add delivery fee
@@ -187,11 +199,18 @@ export async function POST(request: NextRequest) {
                     paymentMethod,
                     deliveryType: deliveryMethod,
 
+                    // Store Info (from first cart item)
+                    storeId: storeInfo?.id || null,
+                    storeName: storeInfo?.name || null,
+                    storeAddress: storeInfo?.address || null,
+                    storeCity: storeInfo?.city || storeInfo?.storageCity || null,
+
                     // Shipping Info
                     shippingName: name,
                     shippingPhone: phone,
                     shippingAddress: address,
-                    shippingCity: `${city}, ${wilaya}`,
+                    shippingCity: city,
+                    shippingWilaya: wilaya,
                     deliveryLatitude: deliveryLatitude || null,
                     deliveryLongitude: deliveryLongitude || null,
 

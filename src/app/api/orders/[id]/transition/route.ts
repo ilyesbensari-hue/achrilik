@@ -179,6 +179,61 @@ export async function POST(
             }
         });
 
+        // =========================================
+        // AUTO-CREATE DELIVERY ON READY_FOR_PICKUP
+        // =========================================
+        // When seller marks order as ready for pickup, automatically create delivery
+        if (newStatus === 'READY_FOR_PICKUP') {
+            try {
+                // Check if delivery already exists
+                const existingDelivery = await prisma.delivery.findUnique({
+                    where: { orderId: orderId }
+                });
+
+                if (!existingDelivery) {
+                    // Find default delivery agent
+                    const defaultAgent = await prisma.deliveryAgent.findFirst({
+                        where: {
+                            user: { email: 'livreur@achrilik.com' },
+                            isActive: true
+                        }
+                    });
+
+                    if (defaultAgent) {
+                        // Generate tracking number
+                        const timestamp = Date.now();
+                        const random = Math.random().toString(36).substr(2, 6).toUpperCase();
+                        const trackingNumber = `ACH-${timestamp}-${random}`;
+
+                        // Create delivery
+                        await prisma.delivery.create({
+                            data: {
+                                id: require('crypto').randomBytes(12).toString('hex'),
+                                orderId: orderId,
+                                agentId: defaultAgent.id,
+                                trackingNumber: trackingNumber,
+                                status: 'PENDING',
+                                assignedAt: new Date(),
+                                codAmount: updatedOrder.paymentMethod === 'COD' ? updatedOrder.total : 0,
+                                codCollected: false
+                            }
+                        });
+
+                        console.log('[DELIVERY AUTO-CREATED]', {
+                            orderId: orderId,
+                            agentId: defaultAgent.id,
+                            trackingNumber
+                        });
+                    } else {
+                        console.warn('[DELIVERY AUTO-CREATE] No default agent found');
+                    }
+                }
+            } catch (deliveryErr) {
+                console.error('[DELIVERY AUTO-CREATE ERROR]', deliveryErr);
+                // Non-blocking error - order status still updated
+            }
+        }
+
         return NextResponse.json({
             success: true,
             order: updatedOrder,
