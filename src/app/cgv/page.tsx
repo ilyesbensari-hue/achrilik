@@ -201,21 +201,6 @@ export default function CGVPage() {
                             Les présentes CGV sont soumises au droit algérien. En cas de litige, une solution amiable sera recherchée en priorité. À défaut, les tribunaux algériens seront seuls compétents.
                         </p>
                     </section>
-
-                    {/* Footer */}
-                    <div className="mt-12 pt-8 border-t border-gray-200">
-                        <div className="text-center space-y-2">
-                            <p className="text-lg font-semibold text-gray-900">Achrilik</p>
-                            <p className="text-gray-600">Shopping Mode en Ligne - Oran, Algérie 🇩🇿</p>
-                            <div className="flex justify-center space-x-4 text-sm text-gray-600 mt-4">
-                                <a href="mailto:contact@achrilik.com" className="hover:text-purple-600">
-                                    📧 contact@achrilik.com
-                                </a>
-                                <span>|</span>
-                                <span>📱 WhatsApp: +213 551 22 33 44</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

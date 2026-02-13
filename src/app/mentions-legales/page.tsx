@@ -148,15 +148,6 @@ export default function MentionsLegalesPage() {
                             <p className="text-gray-700">🕐 <strong>Horaires :</strong> Lundi - Samedi, 9h - 18h</p>
                         </div>
                     </section>
-
-                    {/* Footer */}
-                    <div className="mt-12 pt-8 border-t border-gray-200">
-                        <div className="text-center space-y-2">
-                            <p className="text-lg font-semibold text-gray-900">Achrilik</p>
-                            <p className="text-gray-600">Shopping Mode en Ligne - Oran, Algérie 🇩🇿</p>
-                            <p className="text-sm text-gray-500 mt-4">Conformité loi 18-07 • © 2026 Achrilik. Tous droits réservés.</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
