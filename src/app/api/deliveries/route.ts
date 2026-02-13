@@ -40,10 +40,47 @@ export async function GET() {
                         shippingPhone: true,
                         shippingAddress: true,
                         shippingWilaya: true,
+                        shippingCity: true,
                         deliveryLatitude: true,
                         deliveryLongitude: true,
                         total: true,
-                        createdAt: true
+                        createdAt: true,
+                        Store: {
+                            select: {
+                                name: true,
+                                address: true,
+                                city: true,
+                                storageCity: true,
+                                phone: true,
+                                latitude: true,
+                                longitude: true,
+                                User: {
+                                    select: {
+                                        name: true,
+                                        phone: true,
+                                        email: true
+                                    }
+                                }
+                            }
+                        },
+                        OrderItem: {
+                            select: {
+                                quantity: true,
+                                price: true,
+                                Variant: {
+                                    select: {
+                                        size: true,
+                                        color: true,
+                                        Product: {
+                                            select: {
+                                                title: true,
+                                                images: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -65,20 +102,43 @@ export async function GET() {
                 .reduce((sum, d) => sum + (d.codAmount || 0), 0)
         };
 
-        // Map deliveries to include totalAmount and GPS coords
-        const deliveriesWithTotal = deliveries.map(d => ({
+        // Map deliveries with complete pickup/delivery info
+        const deliveriesWithDetails = deliveries.map(d => ({
             ...d,
+            // Delivery info (Point B - client)
             totalAmount: d.order?.total || 0,
             customerName: d.order?.shippingName || '',
             customerPhone: d.order?.shippingPhone || '',
-            deliveryAddress: d.order?.shippingAddress || '',
+            deliveryAddress: `${d.order?.shippingAddress || ''}, ${d.order?.shippingCity || ''}, ${d.order?.shippingWilaya || ''}`.trim(),
             deliveryLatitude: d.order?.deliveryLatitude || null,
             deliveryLongitude: d.order?.deliveryLongitude || null,
-            pickupAddress: 'Magasin' // Will be enhanced later
+            deliveryWilaya: d.order?.shippingWilaya || '',
+
+            // Pickup info (Point A - vendor/store)
+            storeName: d.order?.Store?.name || 'Magasin',
+            storeAddress: d.order?.Store?.address || '',
+            storeCity: d.order?.Store?.city || d.order?.Store?.storageCity || '',
+            storePhone: d.order?.Store?.phone || d.order?.Store?.User?.phone || '',
+            storeContact: d.order?.Store?.User?.name || '',
+            storeLatitude: d.order?.Store?.latitude || null,
+            storeLongitude: d.order?.Store?.longitude || null,
+            pickupAddress: d.order?.Store?.address
+                ? `${d.order.Store.address}, ${d.order.Store.city || d.order.Store.storageCity || ''}`.trim()
+                : 'Adresse non renseignée',
+
+            // Order items details
+            items: (d.order?.OrderItem || []).map((item: any) => ({
+                productName: item.Variant?.Product?.title || 'Produit',
+                image: item.Variant?.Product?.images ? JSON.parse(item.Variant.Product.images)[0] : null,
+                size: item.Variant?.size || '',
+                color: item.Variant?.color || '',
+                quantity: item.quantity,
+                price: item.price
+            }))
         }));
 
         return NextResponse.json({
-            deliveries: deliveriesWithTotal,
+            deliveries: deliveriesWithDetails,
             stats
         });
 

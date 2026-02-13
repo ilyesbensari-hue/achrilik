@@ -11,13 +11,32 @@ interface Delivery {
     id: string;
     orderId: string;
     status: string;
+    // Pickup (Point A)
     pickupAddress: string;
+    storeName: string;
+    storeAddress: string;
+    storeCity: string;
+    storePhone: string;
+    storeContact: string;
+    storeLatitude: number | null;
+    storeLongitude: number | null;
+    // Delivery (Point B)
     deliveryAddress: string;
+    deliveryWilaya: string;
     customerName: string;
     customerPhone: string;
-    totalAmount: number;
     deliveryLatitude: number | null;
     deliveryLongitude: number | null;
+    // Order details
+    totalAmount: number;
+    items: Array<{
+        productName: string;
+        image: string | null;
+        size: string;
+        color: string;
+        quantity: number;
+        price: number;
+    }>;
     createdAt: string;
 }
 
@@ -133,43 +152,105 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                     {filteredDeliveries.map(delivery => (
                         <Link
                             key={delivery.id}
-                            href={`/livreur/orders/${delivery.orderId}`}
-                            className="block bg-white p-6 rounded-xl border border-gray-200 hover:border-[#006233] hover:shadow-md transition-all"
+                            href={`/livreur/orders/${delivery.id}`}
+                            className="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
                         >
-                            <div className="flex justify-between items-start mb-4">
+                            {/* Header: Order ID + Status */}
+                            <div className="flex justify-between items-start mb-6 pb-4 border-b border-gray-200">
                                 <div>
-                                    <div className="font-bold text-lg text-gray-900">
-                                        Commande #{delivery.orderId.slice(0, 8)}
+                                    <div className="text-xs text-gray-500 mb-1">Commande</div>
+                                    <div className="font-mono text-sm font-bold text-gray-900">
+                                        #{delivery.orderId.slice(0, 8).toUpperCase()}
                                     </div>
-                                    <div className="text-sm text-gray-600 mt-1">
+                                    <div className="text-xs text-gray-500 mt-1">
                                         {new Date(delivery.createdAt).toLocaleDateString('fr-FR', {
                                             day: 'numeric',
-                                            month: 'long',
+                                            month: 'short',
                                             hour: '2-digit',
                                             minute: '2-digit'
                                         })}
                                     </div>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${delivery.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                    delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-green-100 text-green-700'
+                                        delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
+                                            'bg-green-100 text-green-700'
                                     }`}>
                                     {delivery.status === 'PENDING' ? 'En attente' :
                                         delivery.status === 'IN_TRANSIT' ? 'En cours' : 'Livrée'}
                                 </span>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <div className="text-gray-600 mb-1">Client</div>
-                                    <div className="font-bold text-gray-900">{delivery.customerName}</div>
-                                    <div className="text-gray-600">{delivery.customerPhone}</div>
+                            {/* 📦 PICKUP - Point A (Magasin) */}
+                            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-2xl">📦</span>
+                                    <div className="font-bold text-green-800">RÉCUPÉRATION (Point A)</div>
                                 </div>
-                                <div>
-                                    <div className="text-gray-600 mb-1">Adresse livraison</div>
-                                    <div className="font-bold text-gray-900">{delivery.deliveryAddress}</div>
+                                <div className="space-y-2 text-sm">
+                                    <div>
+                                        <div className="text-gray-600 text-xs mb-1">Magasin</div>
+                                        <div className="font-bold text-gray-900">{delivery.storeName}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-600 text-xs mb-1">Adresse pickup</div>
+                                        <div className="font-semibold text-gray-900">{delivery.pickupAddress}</div>
+                                    </div>
+                                    {delivery.storePhone && (
+                                        <div>
+                                            <div className="text-gray-600 text-xs mb-1">Téléphone magasin</div>
+                                            <a href={`tel:${delivery.storePhone}`}
+                                                className="font-semibold text-green-700 hover:underline"
+                                                onClick={(e) => e.stopPropagation()}>
+                                                📞 {delivery.storePhone}
+                                            </a>
+                                        </div>
+                                    )}
+                                    {delivery.storeContact && (
+                                        <div>
+                                            <div className="text-gray-600 text-xs mb-1">Contact vendeur</div>
+                                            <div className="text-gray-800">{delivery.storeContact}</div>
+                                        </div>
+                                    )}
+                                    {delivery.storeLatitude && delivery.storeLongitude && (
+                                        <a
+                                            href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.storeLatitude},${delivery.storeLongitude}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="inline-flex items-center gap-1 mt-2 px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition-colors"
+                                        >
+                                            🗺️ GPS vers magasin
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
 
-                                    {/* GPS Navigation Button */}
+                            {/* 🚚 DELIVERY - Point B (Client) */}
+                            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-2xl">🚚</span>
+                                    <div className="font-bold text-blue-800">LIVRAISON (Point B)</div>
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div>
+                                        <div className="text-gray-600 text-xs mb-1">Client</div>
+                                        <div className="font-bold text-gray-900">{delivery.customerName}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-600 text-xs mb-1">Téléphone client</div>
+                                        <a href={`tel:${delivery.customerPhone}`}
+                                            className="font-semibold text-blue-700 hover:underline"
+                                            onClick={(e) => e.stopPropagation()}>
+                                            📞 {delivery.customerPhone}
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-600 text-xs mb-1">Adresse livraison</div>
+                                        <div className="font-semibold text-gray-900">{delivery.deliveryAddress}</div>
+                                        {delivery.deliveryWilaya && (
+                                            <div className="text-xs text-gray-600 mt-1">Wilaya: {delivery.deliveryWilaya}</div>
+                                        )}
+                                    </div>
                                     {delivery.deliveryLatitude && delivery.deliveryLongitude && (
                                         <a
                                             href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.deliveryLatitude},${delivery.deliveryLongitude}`}
@@ -178,14 +259,48 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                             onClick={(e) => e.stopPropagation()}
                                             className="inline-flex items-center gap-1 mt-2 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors"
                                         >
-                                            🚗 Ouvrir itinéraire
+                                            🗺️ GPS vers client
                                         </a>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
-                                <div className="font-bold text-[#006233]">
+                            {/* 📋 PRODUITS À TRANSPORTER */}
+                            {delivery.items && delivery.items.length > 0 && (
+                                <div className="mb-6">
+                                    <div className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                        <span>📋</span>
+                                        Produits ({delivery.items.length})
+                                    </div>
+                                    <div className="space-y-2">
+                                        {delivery.items.map((item, idx) => (
+                                            <div key={idx} className="flex gap-3 bg-gray-50 rounded-lg p-3 text-sm">
+                                                {item.image && (
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.productName}
+                                                        className="w-16 h-16 object-cover rounded-md"
+                                                    />
+                                                )}
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-gray-900">{item.productName}</div>
+                                                    <div className="text-xs text-gray-600 mt-1">
+                                                        {item.size && <span className="mr-2">Taille: {item.size}</span>}
+                                                        {item.color && <span>Couleur: {item.color}</span>}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        Qté: {item.quantity} × {item.price.toLocaleString()} DA
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 💰 TOTAL */}
+                            <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
+                                <div className="font-bold text-[#006233] text-xl">
                                     {(delivery.totalAmount || 0).toLocaleString()} DA
                                 </div>
                                 <div className="text-[#006233] font-bold flex items-center gap-1">
