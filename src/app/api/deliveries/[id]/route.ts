@@ -71,7 +71,26 @@ export async function GET(
                                             select: {
                                                 title: true,
                                                 images: true,
-                                                price: true
+                                                price: true,
+                                                storeId: true,
+                                                Store: {
+                                                    select: {
+                                                        id: true,
+                                                        name: true,
+                                                        address: true,
+                                                        city: true,
+                                                        storageCity: true,
+                                                        phone: true,
+                                                        latitude: true,
+                                                        longitude: true,
+                                                        User: {
+                                                            select: {
+                                                                name: true,
+                                                                phone: true
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }

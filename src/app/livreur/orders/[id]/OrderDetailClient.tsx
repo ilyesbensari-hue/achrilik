@@ -3,11 +3,25 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Phone, Package, DollarSign, Clock, CheckCircle, AlertCircle, Navigation } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Package, DollarSign, Clock, Check Circle, AlertCircle, Navigation } from 'lucide-react';
 
 interface OrderDetailClientProps {
     deliveryId: string;
     initialUser: any;
+}
+
+// Helper to extract unique stores from OrderItems
+function extractUniqueStores(orderItems: any[]) {
+    const storesMap = new Map();
+
+    orderItems?.forEach((item: any) => {
+        const store = item.Variant?.Product?.Store;
+        if (store && !storesMap.has(store.id)) {
+            storesMap.set(store.id, store);
+        }
+    });
+
+    return Array.from(storesMap.values());
 }
 
 export default function OrderDetailClient({ deliveryId, initialUser }: OrderDetailClientProps) {
@@ -16,6 +30,7 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [notes, setNotes] = useState('');
+    const [uniqueStores, setUniqueStores] = useState<any[]>([]);
 
     useEffect(() => {
         fetchDeliveryDetails();
@@ -27,6 +42,10 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
             const data = await res.json();
             setDelivery(data);
             setNotes(data.agentNotes || '');
+
+            // Extract unique stores from order items
+            const stores = extractUniqueStores(data.order?.OrderItem || []);
+            setUniqueStores(stores);
         } catch (error) {
             console.error('Failed to fetch delivery:', error);
         } finally {
@@ -114,6 +133,16 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
         CANCELLED: 'Annulée'
     };
 
+    // Group items by store
+    const itemsByStore: Record<string, any[]> = {};
+    delivery.order.OrderItem?.forEach((item: any) => {
+        const storeId = item.Variant?.Product?.Store?.id || 'unknown';
+        if (!itemsByStore[storeId]) {
+            itemsByStore[storeId] = [];
+        }
+        itemsByStore[storeId].push(item);
+    });
+
     return (
         <div className="min-h-screen bg-base-200 pb-20">
             {/* Header */}
@@ -149,38 +178,75 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                     </div>
                 </div>
 
-                {/* Point A - PICKUP at Store */}
-                {delivery.order.Store && (
-                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow space-y-3">
-                        <h2 className="font-bold text-lg flex items-center gap-2 text-green-800">
-                            <Package className="w-5 h-5" />
-                            📦 Point A - RÉCUPÉRATION (Magasin)
-                        </h2>
-                        <div className="space-y-2">
-                            <p><strong>Magasin:</strong> {delivery.order.Store.name}</p>
-                            <p><strong>Adresse:</strong> {delivery.order.Store.address || 'Non renseignée'}</p>
-                            <p><strong>Ville:</strong> {delivery.order.Store.city || delivery.order.Store.storageCity || 'Non renseignée'}</p>
-                            {delivery.order.Store.phone && (
-                                <p><strong>Téléphone:</strong> <a href={`tel:${delivery.order.Store.phone}`} className="link link-primary">{delivery.order.Store.phone}</a></p>
-                            )}
-                            {delivery.order.Store.User?.name && (
-                                <p><strong>Contact:</strong> {delivery.order.Store.User.name}</p>
-                            )}
-                            {delivery.order.Store.latitude && delivery.order.Store.longitude && (
-                                <button
-                                    onClick={() => {
-                                        const url = `https://www.google.com/maps/dir/?api=1&destination=${delivery.order.Store.latitude},${delivery.order.Store.longitude}`;
-                                        window.open(url, '_blank');
-                                    }}
-                                    className="btn btn-sm btn-success gap-2 mt-2"
-                                >
-                                    <Navigation className="w-4 h-4" />
-                                    🗺️ Itinéraire vers le magasin
-                                </button>
-                            )}
+                {/* MULTI-VENDOR INDICATOR */}
+                {uniqueStores.length > 1 && (
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 shadow-md">
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl">⚠️</span>
+                            <div>
+                                <p className="font-bold text-amber-900">
+                                    Commande Multi-Vendeur - {uniqueStores.length} points de collecte
+                                </p>
+                                <p className="text-sm text-amber-800">
+                                    Vous devez récupérer les colis chez {uniqueStores.length} magasins différents
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}
+
+                {/* POINTS A - PICKUP (All Stores) */}
+                {uniqueStores.map((store, index) => {
+                    const storeItems = itemsByStore[store.id] || [];
+
+                    return (
+                        <div key={store.id} className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow space-y-3">
+                            <h2 className="font-bold text-lg flex items-center gap-2 text-green-800">
+                                <Package className="w-5 h-5" />
+                                📦 Point A{uniqueStores.length > 1 ? ` ${index + 1}/${uniqueStores.length}` : ''} - RÉCUPÉRATION
+                            </h2>
+
+                            <div className="bg-white p-3 rounded-lg space-y-2">
+                                <p className="text-lg"><strong>🏪 {store.name}</strong></p>
+                                <p><strong>Adresse:</strong> {store.address || 'Non renseignée'}</p>
+                                <p><strong>Ville:</strong> {store.city || store.storageCity || 'Non renseignée'}</p>
+                                {store.phone && (
+                                    <p><strong>Téléphone:</strong> <a href={`tel:${store.phone}`} className="link link-primary">{store.phone}</a></p>
+                                )}
+                                {store.User?.name && (
+                                    <p><strong>Contact:</strong> {store.User.name}</p>
+                                )}
+
+                                {/* Items from this store */}
+                                <div className="mt-3 pt-3 border-t border-green-200">
+                                    <p className="text-sm font-semibold mb-2">
+                                        Articles à récupérer ({storeItems.length}):
+                                    </p>
+                                    <div className="space-y-1">
+                                        {storeItems.map((item: any, idx: number) => (
+                                            <div key={idx} className="text-sm bg-green-50 p-2 rounded">
+                                                • {item.Variant?.Product?.title} (x{item.quantity})
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {store.latitude && store.longitude && (
+                                    <button
+                                        onClick={() => {
+                                            const url = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
+                                            window.open(url, '_blank');
+                                        }}
+                                        className="btn btn-sm btn-success gap-2 mt-2"
+                                    >
+                                        <Navigation className="w-4 h-4" />
+                                        🗺️ Itinéraire vers {store.name}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
 
                 {/* Point B - DELIVERY to Customer */}
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 shadow space-y-3">
@@ -254,34 +320,6 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                         </div>
                     </div>
                 </div>
-
-                {/* Order Items */}
-                {delivery.order.OrderItem && delivery.order.OrderItem.length > 0 && (
-                    <div className="bg-white rounded-lg p-4 shadow">
-                        <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
-                            <Package className="w-5 h-5" />
-                            Articles ({delivery.order.OrderItem.length})
-                        </h2>
-                        <div className="space-y-2">
-                            {delivery.order.OrderItem.map((item: any, idx: number) => (
-                                <div key={idx} className="flex gap-3 p-2 bg-base-100 rounded">
-                                    {item.Variant?.Product?.images?.[0] && (
-                                        <img
-                                            src={item.Variant.Product.images[0]}
-                                            alt={item.Variant.Product.title}
-                                            className="w-16 h-16 object-cover rounded"
-                                        />
-                                    )}
-                                    <div className="flex-1">
-                                        <p className="font-medium text-sm">{item.Variant?.Product?.title}</p>
-                                        <p className="text-xs text-gray-600">Quantité: {item.quantity}</p>
-                                        <p className="text-xs text-gray-600">{item.price} DA × {item.quantity}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 {/* Payment Info */}
                 <div className="bg-white rounded-lg p-4 shadow">
