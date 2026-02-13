@@ -1,6 +1,6 @@
 'use client';
 
-import { Truck, CreditCard, ShieldCheck, Phone, Mail, HelpCircle, Facebook, Instagram } from 'lucide-react';
+import { Phone, Mail, HelpCircle, Facebook, Instagram } from 'lucide-react';
 import Link from 'next/link';
 
 // TikTok custom icon (lucide-react doesn't have TikTok, so we create a simple SVG)
@@ -14,31 +14,6 @@ export default function Footer() {
     return (
         <footer className="bg-gray-50 pt-8 pb-24 border-t border-gray-100 mt-8">
             <div className="container mx-auto px-4">
-
-                {/* Reassurance Section (Moved from Top) */}
-                <div className="grid grid-cols-1 gap-4 mb-8">
-                    <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600">
-                            <Truck className="h-5 w-5" strokeWidth={1.5} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 text-sm">Livraison Rapide</h3>
-                            <p className="text-gray-500 text-xs">Oran et ses environs</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                        <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 text-green-600">
-                            <CreditCard className="h-5 w-5" strokeWidth={1.5} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 text-sm">Paiement Cash</h3>
-                            <p className="text-gray-500 text-xs">À la livraison (Main à main)</p>
-                        </div>
-                    </div>
-                </div>
-
-                <hr className="border-gray-200 mb-8" />
 
                 {/* Links Section */}
                 <div className="grid grid-cols-2 gap-8 mb-8">
