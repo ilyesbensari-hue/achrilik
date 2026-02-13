@@ -144,7 +144,11 @@ export async function GET() {
 
     } catch (error) {
         console.error('Error fetching deliveries:', error);
-        return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        return NextResponse.json({
+            error: 'Erreur serveur',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }
 
