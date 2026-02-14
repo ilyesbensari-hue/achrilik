@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface User {
@@ -51,6 +52,7 @@ export default function AdminUsers() {
     const changeUserRole = async (userId: string, newRole: string) => {
         if (!confirm(`Changer le rôle en ${newRole} ?`)) return;
 
+        const toastId = toast.loading('Mise à jour du rôle...');
         try {
             const res = await fetch(`/api/admin/users/${userId}`, {
                 method: 'PATCH',
@@ -59,30 +61,35 @@ export default function AdminUsers() {
             });
 
             if (res.ok) {
-                alert('Rôle mis à jour !');
-                fetchUsers();
+                toast.success('✅ Rôle mis à jour avec succès', { id: toastId });
+                setTimeout(() => fetchUsers(), 500);
+            } else {
+                toast.error('❌ Erreur lors de la mise à jour', { id: toastId });
             }
         } catch (error) {
             logger.error('Error updating role', { error, userId, newRole });
-            alert('Erreur lors de la mise à jour');
+            toast.error('❌ Erreur réseau', { id: toastId });
         }
     };
 
     const deleteUser = async (userId: string) => {
         if (!confirm('Supprimer cet utilisateur ? Cette action est irréversible.')) return;
 
+        const toastId = toast.loading('Suppression en cours...');
         try {
             const res = await fetch(`/api/admin/users/${userId}`, {
                 method: 'DELETE'
             });
 
             if (res.ok) {
-                alert('Utilisateur supprimé');
-                fetchUsers();
+                toast.success('✅ Utilisateur supprimé avec succès', { id: toastId });
+                setTimeout(() => fetchUsers(), 500);
+            } else {
+                toast.error('❌ Erreur lors de la suppression', { id: toastId });
             }
         } catch (error) {
             logger.error('Error deleting user', { error, userId });
-            alert('Erreur lors de la suppression');
+            toast.error('❌ Erreur réseau', { id: toastId });
         }
     };
 
@@ -90,6 +97,7 @@ export default function AdminUsers() {
         const action = currentStatus ? 'retirer la certification' : 'certifier';
         if (!confirm(`Voulez-vous ${action} ce vendeur ?`)) return;
 
+        const toastId = toast.loading('Mise à jour en cours...');
         try {
             const res = await fetch(`/api/admin/stores/${storeId}/verify`, {
                 method: 'POST'
@@ -97,12 +105,14 @@ export default function AdminUsers() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(data.verified ? '✅ Vendeur certifié !' : 'Certification retirée');
-                fetchUsers();
+                toast.success(data.verified ? '✅ Vendeur certifié avec succès' : 'Certification retirée', { id: toastId });
+                setTimeout(() => fetchUsers(), 500);
+            } else {
+                toast.error('❌ Erreur lors de la certification', { id: toastId });
             }
         } catch (error) {
             logger.error('Error toggling verification', { error, storeId });
-            alert('Erreur lors de la certification');
+            toast.error('❌ Erreur réseau', { id: toastId });
         }
     };
 
@@ -111,10 +121,11 @@ export default function AdminUsers() {
         if (!newPassword) return;
 
         if (newPassword.length < 8) {
-            alert('Le mot de passe doit contenir au moins 8 caractères');
+            toast.error('Le mot de passe doit contenir au moins 8 caractères');
             return;
         }
 
+        const toastId = toast.loading('Réinitialisation...');
         try {
             const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
                 method: 'POST',
@@ -125,13 +136,13 @@ export default function AdminUsers() {
             const data = await res.json();
 
             if (res.ok) {
-                alert(`✅ Mot de passe réinitialisé!\n\nNouveau mot de passe: ${newPassword}\n\nCommuniquez-le à l'utilisateur.`);
+                toast.success(`✅ Mot de passe réinitialisé!\n\nNouveau mot de passe: ${newPassword}\n\nCommuniquez-le à l'utilisateur.`, { id: toastId, duration: 8000 });
             } else {
-                alert(data.error || 'Erreur lors de la réinitialisation');
+                toast.error(data.error || '❌ Erreur lors de la réinitialisation', { id: toastId });
             }
         } catch (error) {
             logger.error('Error resetting password', { error, userId });
-            alert('Erreur lors de la réinitialisation');
+            toast.error('❌ Erreur réseau', { id: toastId });
         }
     };
 

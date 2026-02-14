@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import AssignDeliveryModal from '@/components/admin/AssignDeliveryModal';
 import DeliveryTracking from '@/components/DeliveryTracking';
 import { logger } from '@/lib/logger';
@@ -286,15 +287,22 @@ export default function AdminOrdersClient() {
                                                     onClick={async (e) => {
                                                         e.stopPropagation();
                                                         if (!confirm('Supprimer cette commande définitivement ?')) return;
+
+                                                        const toastId = toast.loading('Suppression en cours...');
                                                         try {
                                                             const res = await fetch(`/api/admin/orders/${order.id}`, { method: 'DELETE' });
                                                             if (res.ok) {
-                                                                fetchOrders();
-                                                                alert('Commande supprimée');
+                                                                toast.success('✅ Commande supprimée avec succès', { id: toastId });
+                                                                // Wait for toast to be visible before refreshing
+                                                                setTimeout(() => fetchOrders(), 500);
                                                             } else {
-                                                                alert('Erreur lors de la suppression');
+                                                                const error = await res.json().catch(() => ({}));
+                                                                toast.error(error.error || '❌ Erreur lors de la suppression', { id: toastId });
                                                             }
-                                                        } catch (err) { logger.error('Error in status update', { err }); }
+                                                        } catch (err) {
+                                                            toast.error('❌ Erreur réseau lors de la suppression', { id: toastId });
+                                                            logger.error('Delete error', { err });
+                                                        }
                                                     }}
                                                     className="ml-4 text-red-600 hover:text-red-800 text-sm font-medium"
                                                 >
