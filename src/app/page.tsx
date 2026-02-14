@@ -1,4 +1,4 @@
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import CategoryCircles from '@/components/home/CategoryCircles';
 import MobileHeader from '@/components/home/MobileHeader';
 import Navbar from '@/components/Navbar';
@@ -7,15 +7,15 @@ import { prisma } from '@/lib/prisma';
 import HeroSection from '@/components/HeroSection';
 
 // Lazy load heavy components
-const HeroVideoBanner = dynamic(() => import('@/components/home/HeroVideoBanner'), {
+const HeroVideoBanner = dynamicImport(() => import('@/components/home/HeroVideoBanner'), {
   loading: () => <div className="h-96 bg-gradient-to-r from-emerald-50 to-green-50 animate-pulse" />,
 });
 
-const ClothingProductSections = dynamic(() => import('@/components/home/ClothingProductSections'), {
+const ClothingProductSections = dynamicImport(() => import('@/components/home/ClothingProductSections'), {
   loading: () => <div className="h-96 bg-white animate-pulse" />,
 });
 
-const BottomNav = dynamic(() => import('@/components/home/BottomNav'));
+const BottomNav = dynamicImport(() => import('@/components/home/BottomNav'));
 
 export const metadata = {
   title: 'Achrilik - Shopping en Ligne Algérie | Mode, Tech & Maison',
