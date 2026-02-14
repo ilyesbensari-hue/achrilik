@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,11 +31,38 @@ async function getProduct(id: string) {
                 Variant: true
             }
         });
-        return product;
+
+        if (!product) return null;
+
+        // Build breadcrumb hierarchy
+        const breadcrumbs = product.categoryId
+            ? await getCategoryBreadcrumbs(product.categoryId)
+            : [];
+
+        return { ...product, breadcrumbs };
     } catch (error) {
         console.error('Failed to fetch product:', error);
         return null;
     }
+}
+
+async function getCategoryBreadcrumbs(categoryId: string) {
+    const breadcrumbs: Array<{ name: string; slug: string }> = [];
+    let currentCategoryId: string | null = categoryId;
+
+    while (currentCategoryId) {
+        const category: { name: string; slug: string; parentId: string | null } | null = await prisma.category.findUnique({
+            where: { id: currentCategoryId },
+            select: { name: true, slug: true, parentId: true }
+        });
+
+        if (!category) break;
+
+        breadcrumbs.unshift({ name: category.name, slug: category.slug });
+        currentCategoryId = category.parentId;
+    }
+
+    return breadcrumbs;
 }
 
 async function getRecommendations(currentProduct: any) {
@@ -101,11 +129,20 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     return (
         <div className="min-h-screen bg-gray-50 py-12">
             <div className="container">
-                {/* Breadcrumb */}
-                <nav className="mb-8 flex items-center gap-2 text-sm text-gray-600">
+                {/* Breadcrumb with full hierarchy */}
+                <nav className="mb-8 flex items-center gap-2 text-sm text-gray-600 flex-wrap">
                     <Link href="/" className="hover:text-indigo-600">Accueil</Link>
-                    <span>/</span>
-                    <Link href={`/?category=${product.Category?.slug}`} className="hover:text-indigo-600">{product.Category?.name}</Link>
+                    {product.breadcrumbs && product.breadcrumbs.map((crumb: any, idx: number) => (
+                        <Fragment key={idx}>
+                            <span>/</span>
+                            <Link
+                                href={`/?category=${crumb.slug}`}
+                                className="hover:text-indigo-600"
+                            >
+                                {crumb.name}
+                            </Link>
+                        </Fragment>
+                    ))}
                     <span>/</span>
                     <span className="text-gray-900 font-medium">{product.title}</span>
                 </nav>

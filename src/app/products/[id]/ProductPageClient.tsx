@@ -21,6 +21,13 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
     const sizes = sizesProps || [];
     const colors = colorsProps || [];
 
+    // Helper: Check if category is electronics/tech (should not show sizes)
+    const isElectronicsCategory = () => {
+        if (!product?.Category?.slug) return false;
+        const slug = product.Category.slug.toLowerCase();
+        return slug.includes('electronique') || slug.includes('tech') || slug.includes('audio') || slug.includes('casque');
+    };
+
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
@@ -186,8 +193,8 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
 
                 {/* Selection Area - moved from server component */}
                 <div className="bg-gray-50 dark:bg-white p-6 rounded-2xl space-y-6 mt-6">
-                    {/* Size Selection */}
-                    {sizes.length > 1 && (
+                    {/* Size Selection - hidden for electronics/tech */}
+                    {!isElectronicsCategory() && sizes.length > 1 && (
                         <div>
                             <div className="flex justify-between items-center mb-3">
                                 <label className="text-sm font-bold text-gray-900 dark:text-gray-900">Taille</label>
