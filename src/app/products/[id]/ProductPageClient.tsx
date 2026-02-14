@@ -47,8 +47,12 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
     }, [colors, selectedColor]);
 
     const handleAddToCart = () => {
+        // Check if product is in electronics category (sizes are hidden for these)
+        const isElectronics = isElectronicsCategory();
+
         // Basic validation with detailed error messages
-        if (sizes.length > 0 && !selectedSize) {
+        // Skip size validation for electronics/tech products where sizes are intentionally hidden
+        if (!isElectronics && sizes.length > 0 && !selectedSize) {
             const sizeList = sizes.join(', ');
             showToast(
                 `⚠️ Veuillez sélectionner une taille`,
@@ -67,7 +71,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
 
         // Find variant
         const variant = product.Variant.find((v: any) =>
-            (!sizes.length || v.size === selectedSize) &&
+            (!sizes.length || v.size === selectedSize || isElectronics) &&
             (!colors.length || v.color === selectedColor)
         );
 
@@ -119,8 +123,8 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
             title: product.title,
             price: product.price,
             variantId: variant.id,
-            size: selectedSize || sizes[0] || 'N/A',
-            color: selectedColor || colors[0] || 'N/A',
+            size: selectedSize || variant.size || 'Standard', // Use variant size for electronics
+            color: selectedColor || variant.color || 'N/A',
             image: images[0],
             storeId: product.storeId,
             storeName: product.Store?.name || 'Boutique',
