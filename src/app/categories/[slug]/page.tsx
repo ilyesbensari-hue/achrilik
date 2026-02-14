@@ -18,6 +18,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const [sortBy, setSortBy] = useState('');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
     const [selectedWilaya, setSelectedWilaya] = useState<string>('');
+    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [expandedSection, setExpandedSection] = useState<string | null>('categories');
     const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
@@ -71,6 +72,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         const minPriceParam = searchParams.get('minPrice');
                         const maxPriceParam = searchParams.get('maxPrice');
                         const wilayaParam = searchParams.get('wilaya');
+                        const sizesParam = searchParams.get('sizes');
 
                         if (subcatsParam) {
                             setSelectedSubcategories(subcatsParam.split(','));
@@ -83,6 +85,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         }
                         if (wilayaParam) {
                             setSelectedWilaya(wilayaParam);
+                        }
+                        if (sizesParam) {
+                            setSelectedSizes(sizesParam.split(','));
                         }
 
                         setFiltersInitialized(true);
@@ -122,14 +127,35 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         if (selectedWilaya) {
             params.set('wilaya', selectedWilaya);
         }
+        if (selectedSizes.length > 0) {
+            params.set('sizes', selectedSizes.join(','));
+        }
 
         const queryString = params.toString();
         const newUrl = queryString ? `?${queryString}` : window.location.pathname;
         router.replace(newUrl, { scroll: false });
-    }, [selectedSubcategories, priceRange, selectedWilaya, filtersInitialized, router]);
+    }, [selectedSubcategories, priceRange, selectedWilaya, selectedSizes, filtersInitialized, router]);
 
     // Get unique wilayas from products
     const availableWilayas = Array.from(new Set(products.map((p) => p.store?.city).filter(Boolean))).sort();
+
+    // Get unique sizes from product variants
+    const availableSizes = Array.from(
+        new Set(
+            products.flatMap(p =>
+                p.Variant?.map((v: any) => v.size).filter(Boolean) || []
+            )
+        )
+    ).sort((a, b) => {
+        // Numeric sort for shoe sizes (36, 37, 38...)
+        const numA = parseInt(a);
+        const numB = parseInt(b);
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+        }
+        // Alphabetic sort for clothing sizes (S, M, L...)
+        return a.localeCompare(b);
+    });
 
     // Apply filters and sorting
     const filteredProducts = products
@@ -170,6 +196,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
             // Wilaya filter
             if (selectedWilaya && p.store?.city !== selectedWilaya) return false;
+
+            // Size filter
+            if (selectedSizes.length > 0) {
+                const productSizes = p.Variant?.map((v: any) => v.size) || [];
+                const hasSelectedSize = selectedSizes.some(size => productSizes.includes(size));
+                if (!hasSelectedSize) return false;
+            }
 
             return true;
         })
@@ -256,9 +289,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                                 </svg>
                                 <span className="font-semibold">Filtrer</span>
-                                {(selectedSubcategories.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 50000 || selectedWilaya) && (
+                                {(selectedSubcategories.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 50000 || selectedWilaya || selectedSizes.length > 0) && (
                                     <span className="ml-1 px-2 py-0.5 bg-white text-[#006233] rounded-full text-xs font-bold">
-                                        {selectedSubcategories.length + (priceRange[0] !== 0 || priceRange[1] !== 50000 ? 1 : 0) + (selectedWilaya ? 1 : 0)}
+                                        {selectedSubcategories.length + (priceRange[0] !== 0 || priceRange[1] !== 50000 ? 1 : 0) + (selectedWilaya ? 1 : 0) + selectedSizes.length}
                                     </span>
                                 )}
                             </button>
@@ -413,8 +446,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                                     key={idx}
                                                                     onClick={() => setPriceRange(option.range as [number, number])}
                                                                     className={`px-3 py-2 text-xs rounded-lg border transition-all ${priceRange[0] === option.range[0] && priceRange[1] === option.range[1]
-                                                                            ? 'bg-[#006233] text-white border-[#006233]'
-                                                                            : 'bg-white text-gray-600 border-gray-200 hover:border-[#006233]'
+                                                                        ? 'bg-[#006233] text-white border-[#006233]'
+                                                                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#006233]'
                                                                         }`}
                                                                 >
                                                                     {option.label}
@@ -477,6 +510,50 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                             )}
                                         </div>
 
+                                        {/* Size Filter Accordion */}
+                                        {availableSizes.length > 0 && (
+                                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                <button
+                                                    onClick={() => setExpandedSection(expandedSection === 'size' ? null : 'size')}
+                                                    className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                >
+                                                    <span className="font-semibold text-gray-900">Taille</span>
+                                                    <svg
+                                                        className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'size' ? 'rotate-180' : ''}`}
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+
+                                                {expandedSection === 'size' && (
+                                                    <div className="p-4">
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {availableSizes.map((size) => (
+                                                                <button
+                                                                    key={size}
+                                                                    onClick={() => {
+                                                                        if (selectedSizes.includes(size)) {
+                                                                            setSelectedSizes(selectedSizes.filter(s => s !== size));
+                                                                        } else {
+                                                                            setSelectedSizes([...selectedSizes, size]);
+                                                                        }
+                                                                    }}
+                                                                    className={`px-3 py-2 rounded-lg border-2 font-semibold transition-all text-sm ${selectedSizes.includes(size)
+                                                                            ? 'bg-[#006233] text-white border-[#006233]'
+                                                                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#006233]'
+                                                                        }`}
+                                                                >
+                                                                    {size}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                         {/* Footer Actions */}
                                         <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3 rounded-b-xl">
                                             <button
@@ -484,6 +561,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                     setSelectedSubcategories([]);
                                                     setPriceRange([0, 50000]);
                                                     setSelectedWilaya('');
+                                                    setSelectedSizes([]);
                                                 }}
                                                 className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                                             >
@@ -538,6 +616,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     <ProductGrid products={filteredProducts} />
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
