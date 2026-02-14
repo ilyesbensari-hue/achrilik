@@ -22,6 +22,9 @@ export const metadata = {
   description: 'Découvrez les meilleures offres en Algérie. Livraison 58 Wilayas, Paiement à la livraison.',
 };
 
+// Force dynamic rendering to enable searchParams filtering
+export const dynamic = 'force-dynamic';
+
 // Fetch top-level categories
 async function getTopLevelCategories() {
   try {
