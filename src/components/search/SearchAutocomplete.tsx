@@ -75,7 +75,11 @@ export default function SearchAutocomplete({ query, onSelect, onClose }: SearchA
         } else if (showSuggestions) {
             const suggestion = suggestions[index];
             addToRecent(suggestion.title);
-            router.push(`/product/${suggestion.slug}`);
+            // Safety check: use slug if available, otherwise use ID
+            const productIdentifier = suggestion.slug || suggestion.id;
+            if (productIdentifier) {
+                router.push(`/product/${productIdentifier}`);
+            }
         }
         onClose();
     };
@@ -124,8 +128,8 @@ export default function SearchAutocomplete({ query, onSelect, onClose }: SearchA
                                 key={index}
                                 onClick={() => handleRecentClick(search)}
                                 className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 ${selectedIndex === index
-                                        ? 'bg-green-50 text-[#006233]'
-                                        : 'hover:bg-gray-50'
+                                    ? 'bg-green-50 text-[#006233]'
+                                    : 'hover:bg-gray-50'
                                     }`}
                             >
                                 <span className="text-gray-400">🔍</span>
@@ -148,8 +152,8 @@ export default function SearchAutocomplete({ query, onSelect, onClose }: SearchA
                                 key={suggestion.id}
                                 onClick={() => handleSelect(index)}
                                 className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-4 ${selectedIndex === index
-                                        ? 'bg-green-50 border-2 border-[#006233] scale-[1.02]'
-                                        : 'hover:bg-gray-50 border-2 border-transparent'
+                                    ? 'bg-green-50 border-2 border-[#006233] scale-[1.02]'
+                                    : 'hover:bg-gray-50 border-2 border-transparent'
                                     }`}
                             >
                                 {/* Product image */}

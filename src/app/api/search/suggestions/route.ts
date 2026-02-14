@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
             id: product.id,
             type: 'product' as const,
             title: product.title,
+            slug: product.id, // Product model uses ID as identifier
             image: product.images?.split(',')[0] || null, // First image only
             price: product.price,
             category: product.Category?.name || null,
