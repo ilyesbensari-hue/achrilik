@@ -198,7 +198,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                 {/* Selection Area - moved from server component */}
                 <div className="bg-gray-50 dark:bg-white p-6 rounded-2xl space-y-6 mt-6">
                     {/* Size Selection - hidden for electronics/tech */}
-                    {!isElectronicsCategory() && sizes.length > 1 && (
+                    {!isElectronicsCategory() && sizes.length > 0 && (
                         <div>
                             <div className="flex justify-between items-center mb-3">
                                 <label className="text-sm font-bold text-gray-900 dark:text-gray-900">Taille</label>
