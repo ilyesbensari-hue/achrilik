@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import ToastContainer from "@/components/ToastContainer";
-import Footer from "@/components/Footer";
+import Footer from "@/components/layout/Footer";
 import CookieBanner from "@/components/CookieBanner";
 
 
