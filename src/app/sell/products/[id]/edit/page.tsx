@@ -52,6 +52,19 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         fetchCategories();
     }, [id]);
 
+    // Helper: Check if category is electronics/tech (no sizes needed)
+    const isElectronicsCategory = () => {
+        if (!categoryId || categories.length === 0) return false;
+
+        // Find the selected category
+        const selectedCategory = categories.find(c => c.id === categoryId);
+        if (!selectedCategory) return false;
+
+        // Check if category slug contains 'electronique' or 'tech'
+        const categorySlug = (selectedCategory.slug || '').toLowerCase();
+        return categorySlug.includes('electronique') || categorySlug.includes('tech');
+    };
+
     const fetchCategories = async () => {
         try {
             const res = await fetch('/api/categories');
@@ -331,33 +344,39 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
                     {/* Variants Section */}
                     <div className="bg-gray-50 p-4 rounded-xl border">
-                        <h3 className="font-bold mb-4">Variantes (Tailles & Couleurs)</h3>
+                        <h3 className="font-bold mb-4">
+                            {isElectronicsCategory() ? 'Variantes (Couleurs & Stock)' : 'Variantes (Tailles & Couleurs)'}
+                        </h3>
 
-                        <div className="flex gap-2 items-end mb-4">
-                            <div>
-                                <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
-                                <select className="input h-10 w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
-                                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                            </div>
-                            <div>
+                        {/* Responsive flex layout: stack on mobile, row on desktop */}
+                        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end mb-4">
+                            {/* Size input - hide for electronics */}
+                            {!isElectronicsCategory() && (
+                                <div className="flex-1 sm:flex-initial">
+                                    <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
+                                    <select className="input h-10 w-full sm:w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
+                                        {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                            )}
+                            <div className="flex-1 sm:flex-initial">
                                 <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
-                                <input type="color" className="h-10 w-16 p-0 border-0" value={vColor} onChange={e => setVColor(e.target.value)} />
+                                <input type="color" className="h-10 w-full sm:w-16 p-0 border-0 rounded" value={vColor} onChange={e => setVColor(e.target.value)} />
                             </div>
-                            <div>
+                            <div className="flex-1 sm:flex-initial">
                                 <label className="text-xs font-bold uppercase mb-1 block">Stock</label>
-                                <input type="number" className="input h-10 w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
+                                <input type="number" className="input h-10 w-full sm:w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
                             </div>
-                            <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4">Ajouter</button>
+                            <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4 w-full sm:w-auto">Ajouter</button>
                         </div>
 
                         <div className="space-y-2">
                             {variants.map((v, i) => (
-                                <div key={i} className="flex items-center justify-between bg-white p-2 border rounded">
-                                    <span className="text-sm font-medium">Taille: {v.size}</span>
+                                <div key={i} className="flex flex-wrap items-center justify-between gap-2 bg-white p-2 border rounded">
+                                    {!isElectronicsCategory() && <span className="text-sm font-medium">Taille: {v.size}</span>}
                                     <div className="w-4 h-4 rounded-full border" style={{ background: v.color }}></div>
                                     <span className="text-sm">Stock: {v.stock}</span>
-                                    <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm">X</button>
+                                    <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm ml-auto">X</button>
                                 </div>
                             ))}
                         </div>
