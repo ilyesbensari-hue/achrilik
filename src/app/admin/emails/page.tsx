@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface EmailTemplate {
@@ -46,6 +47,7 @@ export default function AdminEmailsPage() {
     const handleSave = async () => {
         if (!selectedTemplate) return;
 
+        const toastId = toast.loading('Sauvegarde...');
         try {
             const res = await fetch('/api/admin/emails', {
                 method: 'PUT',
@@ -59,15 +61,17 @@ export default function AdminEmailsPage() {
             });
 
             if (res.ok) {
-                alert('Template mis à jour avec succès!');
-                fetchTemplates();
-                setSelectedTemplate(null);
+                toast.success('✅ Template mis à jour avec succès', { id: toastId });
+                setTimeout(() => {
+                    fetchTemplates();
+                    setSelectedTemplate(null);
+                }, 500);
             } else {
-                alert('Erreur lors de la mise à jour');
+                toast.error('❌ Erreur lors de la mise à jour', { id: toastId });
             }
         } catch (error) {
             logger.error('Error updating template:', { error });
-            alert('Erreur lors de la mise à jour');
+            toast.error('❌ Erreur lors de la mise à jour', { id: toastId });
         }
     };
 
@@ -115,8 +119,8 @@ export default function AdminEmailsPage() {
                                             </div>
                                             <span
                                                 className={`px-2 py-1 text-xs rounded-full ${template.enabled
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-gray-100 text-gray-800'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-gray-100 text-gray-800'
                                                     }`}
                                             >
                                                 {template.enabled ? 'Actif' : 'Inactif'}

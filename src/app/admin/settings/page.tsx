@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface Setting {
@@ -47,10 +48,11 @@ export default function AdminSettingsPage() {
 
     const handleSave = async (key: string, value: string, description?: string) => {
         if (!adminId) {
-            alert('Admin ID non trouvé');
+            toast.error('❌ Admin ID non trouvé');
             return;
         }
 
+        const toastId = toast.loading('Sauvegarde...');
         try {
             const res = await fetch('/api/admin/settings', {
                 method: 'POST',
@@ -65,14 +67,14 @@ export default function AdminSettingsPage() {
             });
 
             if (res.ok) {
-                alert('Paramètre sauvegardé!');
-                fetchSettings();
+                toast.success('✅ Paramètre sauvegardé', { id: toastId });
+                setTimeout(() => fetchSettings(), 500);
             } else {
-                alert('Erreur lors de la sauvegarde');
+                toast.error('❌ Erreur lors de la sauvegarde', { id: toastId });
             }
         } catch (error) {
             logger.error('Error saving setting:', { error });
-            alert('Erreur lors de la sauvegarde');
+            toast.error('❌ Erreur lors de la sauvegarde', { id: toastId });
         }
     };
 

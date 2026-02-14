@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 
 // Helper to build hierarchy
 const buildHierarchy = (flatCategories: any[]) => {
@@ -59,7 +60,7 @@ export default function FashionEditorPage() {
             if (data.products) setProducts(data.products);
             if (data.categories) setCategories(data.categories);
         } catch (e) {
-            alert('Erreur chargement');
+            toast.error('❌ Erreur chargement');
         } finally {
             setLoading(false);
         }
@@ -89,6 +90,7 @@ export default function FashionEditorPage() {
     };
 
     const saveChanges = async () => {
+        const toastId = toast.loading('Sauvegarde...');
         setSaving(true);
         const updates = Object.entries(edits).map(([id, changes]) => ({
             id,
@@ -102,14 +104,14 @@ export default function FashionEditorPage() {
                 body: JSON.stringify({ updates })
             });
             if (res.ok) {
-                alert('Sauvegardé avec succès !');
+                toast.success('✅ Sauvegardé avec succès', { id: toastId });
                 setEdits({});
-                fetchData();
+                setTimeout(() => fetchData(), 500);
             } else {
-                alert('Erreur sauvegarde');
+                toast.error('❌ Erreur sauvegarde', { id: toastId });
             }
         } catch (e) {
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         } finally {
             setSaving(false);
         }
@@ -189,8 +191,8 @@ export default function FashionEditorPage() {
                                         <td className="p-4">
                                             <select
                                                 className={`border rounded p-2 text-sm font-bold ${(edits[p.id]?.status || p.status) === 'APPROVED'
-                                                        ? 'text-green-700 bg-green-50'
-                                                        : 'text-red-700 bg-red-50'
+                                                    ? 'text-green-700 bg-green-50'
+                                                    : 'text-red-700 bg-red-50'
                                                     }`}
                                                 value={edits[p.id]?.status || p.status || 'PENDING'}
                                                 onChange={(e) => handleStatusChange(p.id, e.target.value)}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface StoreCommission {
     storeId: string;
@@ -40,7 +41,7 @@ export default function CommissionDashboardPage() {
             }
         } catch (error) {
             console.error('Error fetching commission data:', error);
-            alert('Erreur lors du chargement');
+            toast.error('❌ Erreur lors du chargement');
         } finally {
             setLoading(false);
         }
@@ -53,6 +54,7 @@ export default function CommissionDashboardPage() {
 
         const paymentNote = prompt('Note de paiement (optionnel):');
 
+        const toastId = toast.loading('Traitement...');
         try {
             const res = await fetch('/api/admin/commissions/mark-paid', {
                 method: 'POST',
@@ -66,14 +68,14 @@ export default function CommissionDashboardPage() {
             const data = await res.json();
 
             if (data.success) {
-                alert(`${data.updatedCount} commandes marquées comme payées`);
-                fetchCommissionData(); // Reload
+                toast.success(`✅ ${data.updatedCount} commandes marquées comme payées`, { id: toastId });
+                setTimeout(() => fetchCommissionData(), 500);
             } else {
-                alert(`Erreur: ${data.error}`);
+                toast.error(`❌ ${data.error}`, { id: toastId });
             }
         } catch (error) {
             console.error('Error marking as paid:', error);
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         }
     };
 

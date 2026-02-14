@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface Vendor {
@@ -76,6 +77,7 @@ export default function VendorsPage() {
     };
 
     const handleAssignDefaultAgent = async (storeId: string, agentId: string | null) => {
+        const toastId = toast.loading('Mise à jour...');
         try {
             const res = await fetch(`/api/admin/stores/${storeId}/default-agent`, {
                 method: 'PATCH',
@@ -84,15 +86,15 @@ export default function VendorsPage() {
             });
 
             if (res.ok) {
-                alert('✅ Prestataire par défaut mis à jour');
-                fetchVendors();
+                toast.success('✅ Prestataire par défaut mis à jour', { id: toastId });
+                setTimeout(() => fetchVendors(), 500);
             } else {
                 const data = await res.json();
-                alert(`Erreur: ${data.error}`);
+                toast.error(`❌ ${data.error}`, { id: toastId });
             }
         } catch (error) {
             logger.error('Error assigning default agent', { error, storeId, agentId });
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         }
     };
 
@@ -108,6 +110,7 @@ export default function VendorsPage() {
         }
 
         logger.info('VENDOR CERTIFICATION: User confirmed, sending API request', { endpoint: `/api/admin/stores/${storeId}/verify` });
+        const toastId = toast.loading(currentStatus ? 'Retrait...' : 'Certification...');
         try {
             const res = await fetch(`/api/admin/stores/${storeId}/verify`, {
                 method: 'POST'
@@ -118,16 +121,19 @@ export default function VendorsPage() {
             if (res.ok) {
                 const data = await res.json();
                 logger.info('VENDOR CERTIFICATION: Response data', { data });
-                alert(data.verified ? '✅ Vendeur certifié ! Email envoyé.' : 'Certification retirée');
-                fetchVendors();
+                toast.success(
+                    data.verified ? '✅ Vendeur certifié ! Email envoyé.' : 'Certification retirée',
+                    { id: toastId, duration: 4000 }
+                );
+                setTimeout(() => fetchVendors(), 500);
             } else {
                 const errorText = await res.text();
                 logger.error('VENDOR CERTIFICATION: API error response', { errorText });
-                alert('Erreur lors de la certification');
+                toast.error('❌ Erreur lors de la certification', { id: toastId });
             }
         } catch (error) {
             logger.error('VENDOR CERTIFICATION: Exception caught', { error });
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         }
     };
 

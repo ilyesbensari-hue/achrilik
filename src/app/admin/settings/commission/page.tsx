@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function CommissionSettingsPage() {
     const router = useRouter();
@@ -30,7 +31,7 @@ export default function CommissionSettingsPage() {
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
-            alert('Erreur lors du chargement');
+            toast.error('❌ Erreur lors du chargement');
         } finally {
             setLoading(false);
         }
@@ -38,10 +39,11 @@ export default function CommissionSettingsPage() {
 
     const handleSave = async () => {
         if (commissionRate < 0 || commissionRate > 100) {
-            alert('Le taux doit être entre 0 et 100%');
+            toast.error('Le taux doit être entre 0 et 100%');
             return;
         }
 
+        const toastId = toast.loading('Enregistrement...');
         setSaving(true);
         try {
             const userStr = localStorage.getItem('user');
@@ -59,14 +61,14 @@ export default function CommissionSettingsPage() {
             const data = await res.json();
 
             if (data.success) {
-                alert(`Taux commission mis à jour : ${commissionRate}%`);
-                fetchSettings(); // Reload
+                toast.success(`✅ Taux commission mis à jour : ${commissionRate}%`, { id: toastId });
+                setTimeout(() => fetchSettings(), 500);
             } else {
-                alert(`Erreur: ${data.error}`);
+                toast.error(`❌ ${data.error}`, { id: toastId });
             }
         } catch (error) {
             console.error('Error saving settings:', error);
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         } finally {
             setSaving(false);
         }

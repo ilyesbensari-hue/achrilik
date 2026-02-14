@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { requireAdmin } from '@/lib/server-auth';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface Product {
@@ -54,11 +55,11 @@ export default function AdminBadgesPage() {
                     p.id === productId ? { ...p, [badge]: !currentValue } : p
                 ));
             } else {
-                alert('Erreur lors de la mise à jour');
+                toast.error('❌ Erreur lors de la mise à jour');
             }
         } catch (error) {
             logger.error('Failed to update badge', { error, productId, badge });
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique');
         } finally {
             setUpdating(null);
         }
@@ -69,6 +70,7 @@ export default function AdminBadgesPage() {
             return;
         }
 
+        const toastId = toast.loading('Recalcul en cours...');
         setRecalculating(true);
         try {
             const res = await fetch('/api/admin/badges/recalculate', {
@@ -77,14 +79,14 @@ export default function AdminBadgesPage() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(`${data.updatedCount} produits mis à jour`);
-                fetchProducts();
+                toast.success(`✅ ${data.updatedCount} produits mis à jour`, { id: toastId });
+                setTimeout(() => fetchProducts(), 500);
             } else {
-                alert('Erreur lors du recalcul');
+                toast.error('❌ Erreur lors du recalcul', { id: toastId });
             }
         } catch (error) {
             logger.error('Failed to recalculate badges', { error });
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         } finally {
             setRecalculating(false);
         }

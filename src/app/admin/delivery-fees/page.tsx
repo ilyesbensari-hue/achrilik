@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { logger } from '@/lib/logger';
 import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface DeliveryFee {
     id: string;
@@ -43,6 +44,7 @@ export default function DeliveryFeesPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const toastId = toast.loading('Création...');
         try {
             const res = await fetch('/api/admin/delivery-fees', {
                 method: 'POST',
@@ -51,16 +53,17 @@ export default function DeliveryFeesPage() {
             });
 
             if (res.ok) {
+                toast.success('✅ Configuration créée', { id: toastId });
                 await fetchFees();
                 setFormData({ fromCity: '', toWilaya: '', baseFee: 500 });
                 setShowAddForm(false);
             } else {
                 const error = await res.json();
-                alert(error.error || 'Erreur lors de la création');
+                toast.error(error.error || '❌ Erreur lors de la création', { id: toastId });
             }
         } catch (error) {
             logger.error('Error creating fee', { error });
-            alert('Erreur lors de la création');
+            toast.error('❌ Erreur lors de la création', { id: toastId });
         }
     };
 

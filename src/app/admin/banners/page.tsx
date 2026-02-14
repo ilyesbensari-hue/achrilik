@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Image as ImageIcon, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface Banner {
@@ -67,7 +68,7 @@ export default function BannersManagementPage() {
 
         // Validate file size (5MB max)
         if (file.size > 5 * 1024 * 1024) {
-            alert('Image trop grande (max 5MB)');
+            toast.error('Image trop grande (max 5MB)');
             return;
         }
 
@@ -87,13 +88,13 @@ export default function BannersManagementPage() {
 
         // Validate file size (10MB max for video - Vercel limit)
         if (file.size > 10 * 1024 * 1024) {
-            alert('Vidéo trop grande (max 10MB pour éviter timeout serveur)');
+            toast.error('Vidéo trop grande (max 10MB pour éviter timeout serveur)');
             return;
         }
 
         // Validate file type
         if (!file.type.match(/video\/(mp4|webm)/) && !file.type.match(/image\/gif/)) {
-            alert('Format non supporté. Utilisez MP4, WebM ou GIF animé.');
+            toast.error('Format non supporté. Utilisez MP4, WebM ou GIF animé.');
             return;
         }
 
@@ -112,15 +113,16 @@ export default function BannersManagementPage() {
 
         // Validation: Titre + (Image OU Vidéo)
         if (!formData.title) {
-            alert('Le titre est requis');
+            toast.error('Le titre est requis');
             return;
         }
 
         if (!formData.image && !formData.videoUrl) {
-            alert('Vous devez uploader soit une image, soit une vidéo');
+            toast.error('Vous devez uploader soit une image, soit une vidéo');
             return;
         }
 
+        const toastId = toast.loading('Sauvegarde...');
         try {
             const method = editingBanner ? 'PUT' : 'POST';
             const body = editingBanner
@@ -134,34 +136,38 @@ export default function BannersManagementPage() {
             });
 
             if (res.ok) {
+                toast.success(editingBanner ? '✅ Banner modifié avec succès' : '✅ Banner créé avec succès', { id: toastId });
                 await fetchBanners();
                 resetForm();
-                alert(editingBanner ? 'Banner modifié avec succès!' : 'Banner créé avec succès!');
             } else {
                 const errorData = await res.json();
                 logger.error('API Error:', { errorData });
-                alert(`Erreur: ${errorData.error || 'Impossible de sauvegarder le banner'}`);
+                toast.error(`❌ ${errorData.error || 'Impossible de sauvegarder le banner'}`, { id: toastId });
             }
         } catch (error) {
             logger.error('Error saving banner:', { error });
-            alert('Erreur serveur: vérifiez la taille des fichiers (Image: max 5MB, Vidéo: max 10MB)');
+            toast.error('❌ Erreur serveur: vérifiez la taille des fichiers (Image: max 5MB, Vidéo: max 10MB)', { id: toastId });
         }
     }
 
     async function handleDelete(id: string) {
         if (!confirm('Supprimer ce banner?')) return;
 
+        const toastId = toast.loading('Suppression...');
         try {
             const res = await fetch(`/api/admin/banners?id=${id}`, {
                 method: 'DELETE'
             });
 
             if (res.ok) {
+                toast.success('✅ Banner supprimé', { id: toastId });
                 await fetchBanners();
-                alert('Banner supprimé!');
+            } else {
+                toast.error('❌ Erreur lors de la suppression', { id: toastId });
             }
         } catch (error) {
             logger.error('Error deleting banner:', { error });
+            toast.error('❌ Erreur réseau', { id: toastId });
         }
     }
 

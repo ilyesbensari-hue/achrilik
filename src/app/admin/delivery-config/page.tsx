@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 import { logger } from '@/lib/logger';
 
 interface DeliveryAgent {
@@ -57,6 +58,7 @@ export default function DeliveryConfigPage() {
     };
 
     const handleAssign = async (wilaya: string, agentId: string | null) => {
+        const toastId = toast.loading('Mise à jour...');
         try {
             setSaving(true);
             const res = await fetch('/api/admin/delivery-config', {
@@ -67,15 +69,15 @@ export default function DeliveryConfigPage() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(`✅ ${data.message}`);
-                fetchData();
+                toast.success(`✅ ${data.message}`, { id: toastId });
+                setTimeout(() => fetchData(), 500);
             } else {
                 const data = await res.json();
-                alert(`❌ ${data.error}`);
+                toast.error(`❌ ${data.error}`, { id: toastId });
             }
         } catch (error) {
             logger.error('Error assigning agent:', { error });
-            alert('Erreur technique');
+            toast.error('❌ Erreur technique', { id: toastId });
         } finally {
             setSaving(false);
         }
