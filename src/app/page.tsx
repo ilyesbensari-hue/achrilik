@@ -371,8 +371,11 @@ async function getElectroniqueProducts() {
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { category?: string };
+  searchParams: Promise<{ category?: string }>;
 }) {
+  // Await searchParams as required by Next.js 15+ App Router
+  const params = await searchParams;
+
   const [
     banners,
     categories,
@@ -396,7 +399,7 @@ export default async function Home({
   ]);
 
   // Filter sections based on category query parameter (for breadcrumb navigation)
-  const categoryFilter = searchParams.category;
+  const categoryFilter = params?.category;
   const filteredClothingSections = categoryFilter
     ? clothingSections.filter(s => s.slug === categoryFilter)
     : clothingSections;
