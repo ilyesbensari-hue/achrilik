@@ -27,6 +27,7 @@ interface SubcategorySection {
     name: string;
     slug: string;
     products: Product[];
+    customHref?: string; // Optional: override auto-generated /categories/{slug} URL
 }
 
 interface ClothingProductSectionsProps {
@@ -83,7 +84,7 @@ function ProductSection({ section }: { section: SubcategorySection }) {
             <div className="px-4 md:px-8 lg:px-12 md:max-w-7xl md:mx-auto flex items-end justify-between">
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight leading-none">{section.name}</h2>
                 <Link
-                    href={`/categories/${section.slug}`}
+                    href={section.customHref || `/categories/${section.slug}`}
                     className="group flex items-center text-[13px] md:text-sm font-semibold text-[#D32F2F] hover:text-[#B71C1C] transition-colors pb-1"
                 >
                     Voir tout <ChevronRight className="h-4 w-4 ml-0.5 transition-transform duration-300 group-hover:translate-x-1" strokeWidth={2.5} />

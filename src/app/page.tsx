@@ -365,7 +365,11 @@ async function getElectroniqueProducts() {
 
 
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { category?: string };
+}) {
   const [
     banners,
     categories,
@@ -388,6 +392,18 @@ export default async function Home() {
     getElectroniqueProducts()
   ]);
 
+  // Filter sections based on category query parameter (for breadcrumb navigation)
+  const categoryFilter = searchParams.category;
+  const filteredClothingSections = categoryFilter
+    ? clothingSections.filter(s => s.slug === categoryFilter)
+    : clothingSections;
+
+  const shouldShowMaroquinerie = !categoryFilter || categoryFilter === 'maroquinerie';
+  const shouldShowAccessoires = !categoryFilter || categoryFilter === 'accessoires';
+  const shouldShowElectronique = !categoryFilter || categoryFilter === 'electronique';
+  const shouldShowPromotions = !categoryFilter || categoryFilter === 'promotions';
+  const shouldShowNouveautes = !categoryFilter || categoryFilter === 'nouveautes';
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50/30 via-white to-white">
       <JsonLd data={generateOrganizationSchema('https://achrilik.com')} />
@@ -405,59 +421,73 @@ export default async function Home() {
         <CategoryCircles />
 
         {/* 3. Promotions */}
-        <ClothingProductSections
-          sections={[{
-            id: 'promotions',
-            name: 'Promotions',
-            slug: 'promotions',
-            products: promotions
-          }]}
-        />
+        {shouldShowPromotions && (
+          <ClothingProductSections
+            sections={[{
+              id: 'promotions',
+              name: 'Promotions',
+              slug: 'promotions',
+              products: promotions,
+              customHref: '/promotions'
+            }]}
+          />
+        )}
 
         {/* Best Sellers section removed */}
 
         {/* 5. Nouveautés */}
-        <ClothingProductSections
-          sections={[{
-            id: 'nouveautes',
-            name: 'Nouveautés',
-            slug: 'nouveautes',
-            products: newArrivals
-          }]}
-        />
+        {shouldShowNouveautes && (
+          <ClothingProductSections
+            sections={[{
+              id: 'nouveautes',
+              name: 'Nouveautés',
+              slug: 'nouveautes',
+              products: newArrivals,
+              customHref: '/nouveautes' // FIX: Direct route instead of /categories/nouveautes
+            }]}
+          />
+        )}
 
         {/* 6. Vêtements Sections (Femme, Homme, Enfants) */}
-        <ClothingProductSections sections={clothingSections} />
+        {filteredClothingSections.length > 0 && (
+          <ClothingProductSections sections={filteredClothingSections} />
+        )}
 
         {/* 7. Maroquinerie */}
-        <ClothingProductSections
-          sections={[{
-            id: 'maroquinerie',
-            name: 'Maroquinerie',
-            slug: 'maroquinerie',
-            products: maroquinerieProducts
-          }]}
-        />
+        {shouldShowMaroquinerie && (
+          <ClothingProductSections
+            sections={[{
+              id: 'maroquinerie',
+              name: 'Maroquinerie',
+              slug: 'maroquinerie',
+              products: maroquinerieProducts
+            }]}
+          />
+        )}
 
         {/* 8. Accessoires */}
-        <ClothingProductSections
-          sections={[{
-            id: 'accessoires',
-            name: 'Accessoires',
-            slug: 'accessoires',
-            products: accessoiresProducts
-          }]}
-        />
+        {shouldShowAccessoires && (
+          <ClothingProductSections
+            sections={[{
+              id: 'accessoires',
+              name: 'Accessoires',
+              slug: 'accessoires',
+              products: accessoiresProducts
+            }]}
+          />
+        )}
 
         {/* 9. Électronique */}
-        <ClothingProductSections
-          sections={[{
-            id: 'electronique',
-            name: 'Électronique',
-            slug: 'electronique',
-            products: elektroniqueProducts
-          }]}
-        />
+        {shouldShowElectronique && (
+          <ClothingProductSections
+            sections={[{
+              id: 'electronique',
+              name: 'Électronique',
+              slug: 'electronique',
+              products: elektroniqueProducts
+            }]}
+          />
+        )}
 
         {/* 10. Bottom Navigation - Mobile Only */}
         <div className="md:hidden">
