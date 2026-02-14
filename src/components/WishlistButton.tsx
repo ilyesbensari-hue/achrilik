@@ -12,7 +12,7 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
     const [isLoading, setIsLoading] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
-    // Icon sizes - much larger now without background box
+    // Icon sizes - compact for product cards to avoid badge overlap
     const sizeClasses = {
         sm: '',
         md: '',
@@ -20,9 +20,9 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
     };
 
     const iconSizes = {
-        sm: 'w-9 h-9',
-        md: 'w-11 h-11',
-        lg: 'w-14 h-14'
+        sm: 'w-7 h-7',
+        md: 'w-9 h-9',
+        lg: 'w-11 h-11'
     };
 
     useEffect(() => {

@@ -85,9 +85,9 @@ export default function ProductCardBase({
                         </div>
                     )}
 
-                    {/* Wishlist Button - Always visible, top-right with high z-index */}
+                    {/* Wishlist Button - Positioned to avoid badge overlap */}
                     <div className="absolute top-2 right-2 z-20">
-                        <WishlistButton productId={product.id} size={wishlistButtonSize} />
+                        <WishlistButton productId={product.id} size="sm" />
                     </div>
 
                     {/* Product Image */}
