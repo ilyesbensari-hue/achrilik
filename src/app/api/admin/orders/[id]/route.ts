@@ -12,12 +12,30 @@ export async function DELETE(
         const { id } = await params;
 
         await prisma.$transaction(async (tx) => {
-            // Delete order items first
+            // Delete in cascade order to respect foreign key constraints:
+
+            // 1. Delete reviews linked to this order
+            await tx.review.deleteMany({
+                where: { orderId: id }
+            });
+
+            // 2. Delete delivery if exists
+            const delivery = await tx.delivery.findUnique({
+                where: { orderId: id }
+            });
+
+            if (delivery) {
+                await tx.delivery.delete({
+                    where: { orderId: id }
+                });
+            }
+
+            // 3. Delete order items
             await tx.orderItem.deleteMany({
                 where: { orderId: id }
             });
 
-            // Delete the order
+            // 4. Delete the order itself
             await tx.order.delete({
                 where: { id }
             });

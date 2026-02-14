@@ -131,6 +131,14 @@ model Order {
   statusHistory       Json?          // Historique transitions status [{from, to, at, by}]
   merchantNotes       String?        // Notes du commerçant
   deliveryNotes       String?        // Notes du livreur
+  
+  // PLATFORM COMMISSION
+  platformCommission     Float?    // Montant commission plateforme (en DA)
+  platformCommissionRate Float?    // Taux appliqué au moment de la commande (%)
+  commissionPaid         Boolean   @default(false)
+  commissionPaidAt       DateTime?
+  commissionPaymentNote  String?   // Note admin lors paiement
+  
   delivery            Delivery?
   Store               Store?         @relation(fields: [storeId], references: [id])
   User                User           @relation(fields: [userId], references: [id])
@@ -341,6 +349,16 @@ model SystemSettings {
   createdAt   DateTime @default(now())
 
   @@index([category])
+}
+
+model PlatformSettings {
+  id              String   @id @default(cuid())
+  commissionRate  Float    @default(0)  // Taux commission en % (0-100)
+  updatedAt       DateTime @updatedAt
+  updatedBy       String?  // Admin user ID qui a modifié
+  previousRate    Float?   // Ancien taux pour historique
+  
+  @@index([updatedAt])
 }
 
 model User {
