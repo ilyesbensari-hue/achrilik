@@ -11,10 +11,6 @@ const HeroVideoBanner = dynamic(() => import('@/components/home/HeroVideoBanner'
   loading: () => <div className="h-96 bg-gradient-to-r from-emerald-50 to-green-50 animate-pulse" />,
 });
 
-const Footer = dynamic(() => import('@/components/layout/Footer'), {
-  loading: () => <div className="h-64 bg-gray-50" />,
-});
-
 const ClothingProductSections = dynamic(() => import('@/components/home/ClothingProductSections'), {
   loading: () => <div className="h-96 bg-white animate-pulse" />,
 });
@@ -462,9 +458,6 @@ export default async function Home() {
             products: elektroniqueProducts
           }]}
         />
-
-        {/* 9. Footer */}
-        <Footer />
 
         {/* 10. Bottom Navigation - Mobile Only */}
         <div className="md:hidden">

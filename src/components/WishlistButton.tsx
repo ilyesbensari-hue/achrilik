@@ -14,15 +14,15 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
 
     // Size classes - increased for better visibility
     const sizeClasses = {
-        sm: 'w-11 h-11',
-        md: 'w-14 h-14',
-        lg: 'w-16 h-16'
+        sm: 'w-9 h-9',
+        md: 'w-12 h-12',
+        lg: 'w-14 h-14'
     };
 
     const iconSizes = {
-        sm: 'w-7 h-7',
-        md: 'w-9 h-9',
-        lg: 'w-11 h-11'
+        sm: 'w-5 h-5',
+        md: 'w-7 h-7',
+        lg: 'w-9 h-9'
     };
 
     useEffect(() => {

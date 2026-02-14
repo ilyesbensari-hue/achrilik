@@ -27,13 +27,28 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
+                                <Link href="/faq" className="text-sm text-gray-600 hover:text-rose-600 transition-colors">
+                                    FAQ
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/cgv" className="text-sm text-gray-600 hover:text-rose-600 transition-colors">
+                                    CGV
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/mentions-legales" className="text-sm text-gray-600 hover:text-rose-600 transition-colors">
+                                    Mentions légales
+                                </Link>
+                            </li>
+                            <li>
                                 <Link href="/contact" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
                                     <Mail className="h-4 w-4" />
                                     Contactez-nous
                                 </Link>
                             </li>
                             <li>
-                                <Link href="tel:+213123456789" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
+                                <Link href="tel:+213551223344" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
                                     <Phone className="h-4 w-4" />
                                     Service Client
                                 </Link>
