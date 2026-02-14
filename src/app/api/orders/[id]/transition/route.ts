@@ -269,6 +269,44 @@ export async function POST(
             }
         }
 
+        // =========================================
+        // AUTO-CALCULATE PLATFORM COMMISSION
+        // =========================================
+        // When order becomes DELIVERED, calculate commission if not already set
+        if (newStatus === 'DELIVERED' && !updatedOrder.platformCommission) {
+            try {
+                // Get current commission rate from settings
+                const commissionSettings = await prisma.platformSettings.findFirst({
+                    orderBy: { updatedAt: 'desc' }
+                });
+
+                if (commissionSettings && commissionSettings.commissionRate > 0) {
+                    const commissionAmount = (updatedOrder.total * commissionSettings.commissionRate) / 100;
+
+                    // Update order with commission info
+                    await prisma.order.update({
+                        where: { id: orderId },
+                        data: {
+                            platformCommission: commissionAmount,
+                            platformCommissionRate: commissionSettings.commissionRate
+                        }
+                    });
+
+                    console.log('[COMMISSION CALCULATED]', {
+                        orderId: orderId,
+                        orderTotal: updatedOrder.total,
+                        commissionRate: commissionSettings.commissionRate,
+                        commissionAmount: commissionAmount
+                    });
+                } else {
+                    console.log('[COMMISSION SKIPPED] Rate is 0% or no settings found');
+                }
+            } catch (commissionErr) {
+                console.error('[COMMISSION CALCULATION ERROR]', commissionErr);
+                // Non-blocking error - order status still updated
+            }
+        }
+
         return NextResponse.json({
             success: true,
             order: updatedOrder,

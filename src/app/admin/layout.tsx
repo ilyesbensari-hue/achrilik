@@ -204,6 +204,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </Link>
                     </div>
 
+                    {/* Platform Commission */}
+                    <div className="pt-4 mt-4 border-t border-slate-700">
+                        <p className="text-xs text-gray-400 px-4 mb-2">COMMISSION PLATEFORME</p>
+                        <Link
+                            href="/admin/commissions"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/commissions' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                                }`}
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <span>💰</span>
+                            <span>Dashboard Commissions</span>
+                        </Link>
+                        <Link
+                            href="/admin/settings/commission"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/settings/commission' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                                }`}
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <span>⚙️</span>
+                            <span>Configurer Taux</span>
+                        </Link>
+                    </div>
+
                     {/* Analytics - Feature not implemented yet
                     <Link
                         href="/admin/analytics"
