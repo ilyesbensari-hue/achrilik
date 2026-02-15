@@ -109,6 +109,7 @@ export default function ProductGrid({ products, title }: ProductGridProps) {
                                     src={product.images.split(',')[0]}
                                     alt={product.title}
                                     fill
+                                    loading="lazy"
                                     sizes="(max-width: 768px) 50vw, 25vw"
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                 />

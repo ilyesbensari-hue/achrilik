@@ -52,8 +52,8 @@ export default function ProductImageGallery({ images, productTitle }: ProductIma
                             key={idx}
                             onClick={() => setSelectedImage(idx)}
                             className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === idx
-                                    ? 'border-[#006233] ring-4 ring-green-200 scale-105'
-                                    : 'border-gray-200 hover:border-gray-400 hover:scale-105'
+                                ? 'border-[#006233] ring-4 ring-green-200 scale-105'
+                                : 'border-gray-200 hover:border-gray-400 hover:scale-105'
                                 }`}
                         >
                             <Image
@@ -61,6 +61,7 @@ export default function ProductImageGallery({ images, productTitle }: ProductIma
                                 alt={`${productTitle} ${idx + 1}`}
                                 width={200}
                                 height={200}
+                                loading="lazy"
                                 className="w-full h-full object-cover"
                             />
                         </button>

@@ -120,6 +120,7 @@ export default function WishlistPage() {
                                                     alt={product.title}
                                                     width={400}
                                                     height={500}
+                                                    loading="lazy"
                                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
 
