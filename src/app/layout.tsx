@@ -63,6 +63,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://achrilik.com",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Achrilik",
+  },
   // ✅ To enable Google Search Console:
   // 1. Go to: https://search.google.com/search-console
   // 2. Add property "achrilik.com"
@@ -76,6 +82,7 @@ export const metadata: Metadata = {
 
 import { Providers } from "@/app/providers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import PWARegistration from "@/components/PWARegistration";
 
 export default function RootLayout({
   children,
@@ -84,9 +91,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
+      <head>
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png" />
+        <meta name="theme-color" content="#006233" />
+      </head>
       <body className={inter.className}>
         <Providers>
           <ErrorBoundary>
+            <PWARegistration />
             <NavbarWrapper />
             <div className="pb-[120px] md:pb-0">
               {children}

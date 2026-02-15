@@ -77,16 +77,19 @@ export default function AdminCategoriesPage() {
                 method: 'DELETE'
             });
 
+            const data = await res.json();
+
             if (res.ok) {
-                showToastNotification('Catégorie supprimée', 'success');
+                showToastNotification('✅ Catégorie supprimée', 'success');
                 fetchCategories();
             } else {
-                const err = await res.json();
-                showToastNotification(err.error || 'Erreur', 'error');
+                const errorMsg = data.error || 'Erreur inconnue';
+                logger.error('Delete category failed', { categoryId: id, error: errorMsg });
+                showToastNotification(`❌ ${errorMsg}`, 'error');
             }
         } catch (error) {
-            logger.error("Error", { error: error });
-            showToastNotification('Erreur technique', 'error');
+            logger.error('Delete category exception', { error: error });
+            showToastNotification('❌ Erreur de connexion', 'error');
         }
     };
 
@@ -102,6 +105,7 @@ export default function AdminCategoriesPage() {
                 <Toast
                     message={toastMessage}
                     type={toastType}
+                    duration={toastType === 'error' ? 10000 : 5000}
                     onClose={() => setShowToast(false)}
                 />
             )}
