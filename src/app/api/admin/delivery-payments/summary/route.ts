@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/server-auth';
 
 export async function GET() {
     try {
-        // Auth check
-        const headersList = await headers();
-        const cookie = headersList.get('cookie') || '';
-
-        if (!cookie.includes('session')) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
+        await requireAdminApi();
 
         // Fetch all deliveries with agent info
         const deliveries = await prisma.delivery.findMany({

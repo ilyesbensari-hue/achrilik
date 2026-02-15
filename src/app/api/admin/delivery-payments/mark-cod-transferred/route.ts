@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { requireAdminApi } from '@/lib/server-auth';
 
 export async function POST(request: Request) {
     try {
-        // Auth check
-        const headersList = await headers();
-        const cookie = headersList.get('cookie') || '';
-
-        if (!cookie.includes('session')) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-        }
+        await requireAdminApi();
 
         const body = await request.json();
         const { agentId, note } = body;
