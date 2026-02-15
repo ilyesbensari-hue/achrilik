@@ -72,10 +72,11 @@ export async function GET() {
                                     select: {
                                         size: true,
                                         color: true,
-                                        images: true,
+                                        colorImage: true,
                                         Product: {
                                             select: {
                                                 title: true,
+                                                images: true,
                                                 Store: {
                                                     select: {
                                                         id: true,
@@ -145,7 +146,7 @@ export async function GET() {
                 productName: item.Variant?.Product?.title || 'Produit',
                 quantity: item.quantity,
                 price: item.price,
-                image: item.Variant?.images?.[0] || null,
+                image: (item.Variant?.Product?.images ? JSON.parse(item.Variant.Product.images)[0] : null) || item.Variant?.colorImage || null,
                 size: item.Variant?.size,
                 color: item.Variant?.color,
                 storeId: item.Variant?.Product?.Store?.id || null,
