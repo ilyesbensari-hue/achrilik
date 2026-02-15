@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
 import CategoryEditModal from '@/components/admin/CategoryEditModal';
+import CategoryTree from '@/components/admin/CategoryTree';
 import { logger } from '@/lib/logger';
 
 interface Category {
@@ -38,6 +39,7 @@ export default function AdminCategoriesPage() {
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteConfirmation | null>(null);
+    const [viewMode, setViewMode] = useState<'table' | 'tree'>('tree'); // Default to tree view
 
     useEffect(() => {
         fetchCategories();
@@ -59,6 +61,27 @@ export default function AdminCategoriesPage() {
             showToastNotification('Erreur lors du chargement', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleReorder = async (updates: { id: string; order: number }[]) => {
+        try {
+            const res = await fetch('/api/admin/categories/reorder', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ updates })
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to reorder');
+            }
+
+            showToastNotification('✅ Ordre mis à jour', 'success');
+            fetchCategories(); // Refresh
+        } catch (error) {
+            logger.error('Error reordering categories', { error });
+            showToastNotification('❌ Erreur lors de la réorganisation', 'error');
+            throw error; // Re-throw to trigger rollback in CategoryTree
         }
     };
 
@@ -182,13 +205,39 @@ export default function AdminCategoriesPage() {
             )}
 
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Gestion des Catégories</h1>
-                <Link
-                    href="/admin"
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
-                >
-                    ← Retour
-                </Link>
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Gestion des Catégories</h1>
+                    <p className="text-gray-600 mt-1">{categories.length} catégories</p>
+                </div>
+                <div className="flex gap-2">
+                    {/* View Toggle */}
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setViewMode('tree')}
+                            className={`px-4 py-2 rounded-md font-medium transition-all ${viewMode === 'tree'
+                                ? 'bg-white text-indigo-600 shadow-sm'
+                                : 'text-gray-700'
+                                }`}
+                        >
+                            🌳 Arbre
+                        </button>
+                        <button
+                            onClick={() => setViewMode('table')}
+                            className={`px-4 py-2 rounded-md font-medium transition-all ${viewMode === 'table'
+                                ? 'bg-white text-indigo-600 shadow-sm'
+                                : 'text-gray-700'
+                                }`}
+                        >
+                            📋 Table
+                        </button>
+                    </div>
+                    <Link
+                        href="/admin"
+                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                    >
+                        ← Retour
+                    </Link>
+                </div>
             </div>
 
             {/* Create Form */}
@@ -238,59 +287,74 @@ export default function AdminCategoriesPage() {
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nom</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Slug</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Parent</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Produits</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Statut</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {categories.map(cat => (
-                            <tr key={cat.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        {cat.icon && <span className="text-xl">{cat.icon}</span>}
-                                        <span className="font-medium text-gray-900">{cat.name}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-gray-600 font-mono text-sm">{cat.slug}</td>
-                                <td className="px-6 py-4 text-gray-600">
-                                    {cat.parentId ? categories.find(p => p.id === cat.parentId)?.name : '-'}
-                                </td>
-                                <td className="px-6 py-4 text-gray-900">{cat._count.products}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${cat.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                        }`}>
-                                        {cat.isActive ? 'Active' : 'Inactive'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setEditingCategory(cat)}
-                                            className="text-indigo-600 hover:text-indigo-800 font-medium"
-                                        >
-                                            Modifier
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteClick(cat)}
-                                            className="text-red-600 hover:text-red-800 font-medium"
-                                        >
-                                            Supprimer
-                                        </button>
-                                    </div>
-                                </td>
+            {viewMode === 'tree' ? (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    {loading ? (
+                        <div className="text-center py-12 text-gray-500">Chargement...</div>
+                    ) : (
+                        <CategoryTree
+                            categories={categories}
+                            onEdit={(cat) => setEditingCategory(cat)}
+                            onDelete={handleDeleteClick}
+                            onReorder={handleReorder}
+                        />
+                    )}
+                </div>
+            ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table className="w-full">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nom</th>
+                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Slug</th>
+                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Parent</th>
+                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Produits</th>
+                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Statut</th>
+                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {categories.map(cat => (
+                                <tr key={cat.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2">
+                                            {cat.icon && <span className="text-xl">{cat.icon}</span>}
+                                            <span className="font-medium text-gray-900">{cat.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-600 font-mono text-sm">{cat.slug}</td>
+                                    <td className="px-6 py-4 text-gray-600">
+                                        {cat.parentId ? categories.find(p => p.id === cat.parentId)?.name : '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-900">{cat._count.products}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${cat.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                            {cat.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setEditingCategory(cat)}
+                                                className="text-indigo-600 hover:text-indigo-800 font-medium"
+                                            >
+                                                Modifier
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteClick(cat)}
+                                                className="text-red-600 hover:text-red-800 font-medium"
+                                            >
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }
