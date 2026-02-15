@@ -104,13 +104,7 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                         Bienvenue, {initialUser.name}
                     </p>
                 </div>
-                <Link
-                    href="/livreur/history"
-                    className="btn btn-outline"
-                >
-                    📊 Historique
-                </Link>
-            </div>
+                </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
