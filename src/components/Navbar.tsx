@@ -2,18 +2,19 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useWishlist } from '@/contexts/WishlistContext';
 import Logo from '@/components/ui/Logo';
 import CategoryList from './CategoryList';
 import SearchBar from './SearchBar';
 import { useAuth } from '@/context/AuthContext';
-import { useWishlistCount } from '@/hooks/useWishlistCount';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
 
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [cartCount, setCartCount] = useState(0);
-    const wishlistCount = useWishlistCount();
+    const { wishlistCount } = useWishlist();
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

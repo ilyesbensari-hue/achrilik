@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 interface WishlistButtonProps {
     productId: string;
@@ -8,91 +9,29 @@ interface WishlistButtonProps {
 }
 
 export default function WishlistButton({ productId, size = 'md' }: WishlistButtonProps) {
-    const [isInWishlist, setIsInWishlist] = useState(false);
+    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
     const [isLoading, setIsLoading] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
 
     // Icon sizes - compact for product cards to avoid badge overlap
-    const sizeClasses = {
-        sm: '',
-        md: '',
-        lg: ''
-    };
-
     const iconSizes = {
         sm: 'w-7 h-7',
         md: 'w-9 h-9',
         lg: 'w-11 h-11'
     };
 
-    useEffect(() => {
-        // Get user from localStorage
-        const userSession = localStorage.getItem('user');
-        if (userSession) {
-            try {
-                const user = JSON.parse(userSession);
-                setUserId(user.id);
-                checkWishlistStatus(user.id);
-            } catch (e) {
-                console.error('Error parsing user session:', e);
-            }
-        }
-    }, [productId]);
-
-    const checkWishlistStatus = async (uid: string) => {
-        try {
-            const response = await fetch(`/api/wishlist?userId=${uid}`);
-            const data = await response.json();
-            if (data.success) {
-                const inWishlist = data.products.some((p: any) => p.id === productId);
-                setIsInWishlist(inWishlist);
-            }
-        } catch (error) {
-            console.error('Error checking wishlist:', error);
-        }
-    };
+    const isInList = isInWishlist(productId);
 
     const toggleWishlist = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!userId) {
-            // Redirect to login if not authenticated
-            window.location.href = '/login';
-            return;
-        }
-
         setIsLoading(true);
 
         try {
-            if (isInWishlist) {
-                // Remove from wishlist
-                const response = await fetch('/api/wishlist', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, productId })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    setIsInWishlist(false);
-                    // Trigger storage event for navbar update
-                    window.dispatchEvent(new Event('wishlistUpdate'));
-                }
+            if (isInList) {
+                await removeFromWishlist(productId);
             } else {
-                // Add to wishlist
-                const response = await fetch('/api/wishlist', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, productId })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    setIsInWishlist(true);
-                    // Trigger storage event for navbar update
-                    window.dispatchEvent(new Event('wishlistUpdate'));
-                }
+                await addToWishlist(productId);
             }
         } catch (error) {
             console.error('Error toggling wishlist:', error);
@@ -101,12 +40,14 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
         }
     };
 
+
+
     return (
         <button
             onClick={toggleWishlist}
             disabled={isLoading}
             className={`transition-all hover:scale-110 active:scale-95 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            aria-label={isInList ? 'Remove from wishlist' : 'Add to wishlist'}
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
         >
             {isLoading ? (
@@ -116,10 +57,10 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
                 </svg>
             ) : (
                 <svg
-                    className={`${iconSizes[size]} transition-all duration-200 ${isInWishlist ? 'text-red-500' : 'text-white'}`}
-                    fill={isInWishlist ? 'currentColor' : 'currentColor'}
+                    className={`${iconSizes[size]} transition-all duration-200 ${isInList ? 'text-red-500' : 'text-white'}`}
+                    fill={isInList ? 'currentColor' : 'currentColor'}
                     stroke="currentColor"
-                    strokeWidth={isInWishlist ? 0 : 2.5}
+                    strokeWidth={isInList ? 0 : 2.5}
                     viewBox="0 0 24 24"
                 >
                     <path

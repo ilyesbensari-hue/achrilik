@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthProvider } from '@/context/AuthContext';
+import { WishlistProvider } from '@/contexts/WishlistContext';
 import { PostHogProvider } from 'posthog-js/react';
 import posthog from 'posthog-js';
 
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <PHProvider>
             <AuthProvider>
-                {children}
+                <WishlistProvider>
+                    {children}
+                </WishlistProvider>
             </AuthProvider>
         </PHProvider>
     );

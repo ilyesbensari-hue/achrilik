@@ -157,8 +157,8 @@ export default function QuickViewModal({ productId, isOpen, onClose }: QuickView
                                             key={idx}
                                             onClick={() => setSelectedImage(idx)}
                                             className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition ${selectedImage === idx
-                                                    ? 'border-[#006233] ring-2 ring-green-200'
-                                                    : 'border-gray-200 hover:border-gray-400'
+                                                ? 'border-[#006233] ring-2 ring-green-200'
+                                                : 'border-gray-200 hover:border-gray-400'
                                                 }`}
                                         >
                                             <Image
@@ -221,8 +221,8 @@ export default function QuickViewModal({ productId, isOpen, onClose }: QuickView
                                                 key={size}
                                                 onClick={() => setSelectedSize(size)}
                                                 className={`px-4 py-2 rounded-lg font-semibold transition ${selectedSize === size
-                                                        ? 'bg-[#006233] text-white'
-                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    ? 'bg-[#006233] text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                     }`}
                                             >
                                                 {size}
@@ -244,8 +244,8 @@ export default function QuickViewModal({ productId, isOpen, onClose }: QuickView
                                                 key={color}
                                                 onClick={() => setSelectedColor(color)}
                                                 className={`px-4 py-2 rounded-lg font-semibold transition capitalize ${selectedColor === color
-                                                        ? 'bg-[#006233] text-white'
-                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                    ? 'bg-[#006233] text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                     }`}
                                             >
                                                 {color}
@@ -286,7 +286,7 @@ export default function QuickViewModal({ productId, isOpen, onClose }: QuickView
                                     🛒 Ajouter au panier
                                 </button>
                                 <Link
-                                    href={`/product/${product.slug}`}
+                                    href={`/products/${product.slug}`}
                                     className="px-6 py-4 rounded-xl font-bold text-lg border-2 border-[#006233] text-[#006233] hover:bg-green-50 transition text-center"
                                 >
                                     Voir détails

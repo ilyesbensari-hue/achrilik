@@ -78,7 +78,7 @@ export default function SearchAutocomplete({ query, onSelect, onClose }: SearchA
             // Safety check: use slug if available, otherwise use ID
             const productIdentifier = suggestion.slug || suggestion.id;
             if (productIdentifier) {
-                router.push(`/product/${productIdentifier}`);
+                router.push(`/products/${productIdentifier}`);
             }
         }
         onClose();
