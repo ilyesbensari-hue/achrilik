@@ -75,7 +75,7 @@ export async function GET() {
                                         images: true,
                                         Product: {
                                             select: {
-                                                name: true,
+                                                title: true,
                                                 Store: {
                                                     select: {
                                                         id: true,
@@ -142,7 +142,7 @@ export async function GET() {
             // Map order items with store info for pickup count
             items: d.order?.OrderItem?.map((item: any) => ({
                 id: item.id,
-                productName: item.Variant?.Product?.name || 'Produit',
+                productName: item.Variant?.Product?.title || 'Produit',
                 quantity: item.quantity,
                 price: item.price,
                 image: item.Variant?.images?.[0] || null,
