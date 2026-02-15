@@ -141,17 +141,32 @@ export async function GET() {
                 : 'Adresse non renseignée',
 
             // Map order items with store info for pickup count
-            items: d.order?.OrderItem?.map((item: any) => ({
-                id: item.id,
-                productName: item.Variant?.Product?.title || 'Produit',
-                quantity: item.quantity,
-                price: item.price,
-                image: (item.Variant?.Product?.images ? JSON.parse(item.Variant.Product.images)[0] : null) || item.Variant?.colorImage || null,
-                size: item.Variant?.size,
-                color: item.Variant?.color,
-                storeId: item.Variant?.Product?.Store?.id || null,
-                storeName: item.Variant?.Product?.Store?.name || null
-            })) || []
+            items: d.order?.OrderItem?.map((item: any) => {
+                // Safe ly parse product images
+                let image = null;
+                try {
+                    if (item.Variant?.Product?.images) {
+                        const parsed = JSON.parse(item.Variant.Product.images);
+                        image = Array.isArray(parsed) ? parsed[0] : parsed;
+                    }
+                } catch {
+                    // If parse fails, images might be a plain URL string
+                    image = item.Variant?.Product?.images;
+                }
+                image = image || item.Variant?.colorImage || null;
+
+                return {
+                    id: item.id,
+                    productName: item.Variant?.Product?.title || 'Produit',
+                    quantity: item.quantity,
+                    price: item.price,
+                    image,
+                    size: item.Variant?.size,
+                    color: item.Variant?.color,
+                    storeId: item.Variant?.Product?.Store?.id || null,
+                    storeName: item.Variant?.Product?.Store?.name || null
+                };
+            }) || []
         }));
 
         return NextResponse.json({
