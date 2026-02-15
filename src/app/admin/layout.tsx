@@ -212,6 +212,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <span>Suivi Livraisons</span>
                         </Link>
                         <Link
+                            href="/admin/delivery-payments"
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/delivery-payments' ? 'bg-slate-700' : 'hover:bg-slate-700'
+                                }`}
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <span>💵</span>
+                            <span>Paiements Livreurs</span>
+                        </Link>
+                        <Link
                             href="/admin/delivery-config"
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${pathname === '/admin/delivery-config' ? 'bg-slate-700' : 'hover:bg-slate-700'
                                 }`}

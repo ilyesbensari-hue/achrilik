@@ -472,6 +472,13 @@ model Delivery {
   codTransferred   Boolean        @default(false)
   codTransferredAt DateTime?
   agentNotes       String?
+  
+  // PAIEMENT DU LIVREUR
+  deliveryFee      Float?         // Frais de livraison à payer au livreur
+  agentPaid        Boolean        @default(false) // Livreur payé pour cette livraison
+  agentPaidAt      DateTime?      // Date paiement livreur
+  agentPaymentNote String?        // Note admin sur paiement
+  
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   agent            DeliveryAgent? @relation(fields: [agentId], references: [id])
