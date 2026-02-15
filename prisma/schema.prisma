@@ -94,6 +94,13 @@ model Order {
   id                  String         @id
   userId              String
   total               Float
+  subtotal            Float?         // Montant produits uniquement (sans livraison)
+  
+  // FREE DELIVERY TRACKING
+  customerDeliveryFee Float?         @default(0) // Ce que le client paie
+  actualDeliveryFee   Float?         @default(0) // Ce que le vendeur paie au livreur
+  freeDeliveryApplied Boolean        @default(false) // Flag pour analytics
+  
   paymentMethod       String
   deliveryType        String
   createdAt           DateTime       @default(now())

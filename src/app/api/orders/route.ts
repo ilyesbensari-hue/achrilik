@@ -175,17 +175,27 @@ export async function POST(request: NextRequest) {
         }
 
         const order = await prisma.$transaction(async (tx) => {
-            let total = 0;
+            let subtotal = 0;
             let storeInfo = null;
 
-            // 1. Validate Stock & Price + Extract Store Info
+            // 1. Validate Stock & Price + Extract Store Info (with free delivery settings)
             for (const item of cart) {
                 const variant = await tx.variant.findUnique({
                     where: { id: item.variantId },
                     include: {
                         Product: {
                             include: {
-                                Store: true
+                                Store: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        address: true,
+                                        city: true,
+                                        storageCity: true,
+                                        offersFreeDelivery: true,    // ← FREE DELIVERY
+                                        freeDeliveryThreshold: true   // ← FREE DELIVERY
+                                    }
+                                }
                             }
                         }
                     }
@@ -199,7 +209,7 @@ export async function POST(request: NextRequest) {
                     throw new Error(`Stock insuffisant pour: ${item.title}`);
                 }
 
-                total += variant.Product.price * item.quantity;
+                subtotal += variant.Product.price * item.quantity;
 
                 // Extract store info from first item
                 if (!storeInfo && variant.Product.Store) {
@@ -207,17 +217,43 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // Add delivery fee
-            const deliveryFee = deliveryMethod === 'DELIVERY' ? 500 : 0;
-            total += deliveryFee;
+            // 2. FREE DELIVERY LOGIC
+            let customerDeliveryFee = 0;
+            let actualDeliveryFee = 500; // Coût réel (toujours 500 DA)
+            let freeDeliveryApplied = false;
 
-            // 2. Create Order
+            if (deliveryMethod === 'DELIVERY') {
+                // Check if customer qualifies for free delivery
+                const qualifiesForFree =
+                    storeInfo?.offersFreeDelivery &&
+                    storeInfo?.freeDeliveryThreshold &&
+                    subtotal >= storeInfo.freeDeliveryThreshold;
+
+                if (qualifiesForFree) {
+                    // Client gets free delivery
+                    customerDeliveryFee = 0;
+                    freeDeliveryApplied = true;
+                    // actualDeliveryFee stays 500 (seller pays)
+                } else {
+                    // Client pays normal delivery fee
+                    customerDeliveryFee = 500;
+                    // actualDeliveryFee stays 500 (client pays, so seller doesn't)
+                }
+            }
+
+            const total = subtotal + customerDeliveryFee;
+
+            // 3. Create Order with new fields
             const newOrder = await tx.order.create({
                 data: {
                     id: randomBytes(16).toString('hex'),
                     userId,
                     status: 'PENDING',
                     total,
+                    subtotal,                     // ← NEW
+                    customerDeliveryFee,          // ← NEW
+                    actualDeliveryFee,            // ← NEW
+                    freeDeliveryApplied,          // ← NEW
                     paymentMethod,
                     deliveryType: deliveryMethod,
 
@@ -259,7 +295,7 @@ export async function POST(request: NextRequest) {
                 }
             });
 
-            // 3. Decrement Stock
+            // 4. Decrement Stock
             for (const item of cart) {
                 await tx.variant.update({
                     where: { id: item.variantId },
