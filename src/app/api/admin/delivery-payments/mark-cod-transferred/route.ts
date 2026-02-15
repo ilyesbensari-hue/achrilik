@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: Request) {
     try {
         // Auth check
-        const headersList = headers();
+        const headersList = await headers();
         const cookie = headersList.get('cookie') || '';
 
         if (!cookie.includes('session')) {
