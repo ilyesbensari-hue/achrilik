@@ -24,6 +24,60 @@ function extractUniqueStores(orderItems: any[]) {
     return Array.from(storesMap.values());
 }
 
+// Helper to calculate total for a specific store
+function calculateStoreTotal(storeId: string, orderItems: any[]): number {
+    let total = 0;
+
+    orderItems?.forEach((item: any) => {
+        const itemStoreId = item.Variant?.Product?.Store?.id;
+        if (itemStoreId === storeId) {
+            total += item.price * item.quantity;
+        }
+    });
+
+    return total;
+}
+
+// Helper to calculate payment breakdown for delivery agent
+function calculatePaymentBreakdown(order: any, uniqueStores: any[]) {
+    // Calculate total for each store
+    const storeTotals: Record<string, number> = {};
+    let totalToStores = 0;
+
+    uniqueStores.forEach(store => {
+        const storeTotal = calculateStoreTotal(store.id, order.OrderItem);
+        storeTotals[store.id] = storeTotal;
+        totalToStores += storeTotal;
+    });
+
+    // Delivery fee that agent keeps
+    // Use customerDeliveryFee if available (what client paid)
+    // Otherwise default to 500 DA
+    const deliveryFee = order.customerDeliveryFee !== undefined
+        ? order.customerDeliveryFee
+        : 500;
+
+    // Platform commission (frais service) - currently 0
+    const serviceFee = order.platformCommission || 0;
+
+    // What agent keeps
+    const totalToAgent = deliveryFee + serviceFee;
+
+    // Verification
+    const calculatedTotal = totalToStores + totalToAgent;
+    const isValid = Math.abs(calculatedTotal - order.total) < 0.01;
+
+    return {
+        storeTotals,
+        totalToStores,
+        deliveryFee,
+        serviceFee,
+        totalToAgent,
+        calculatedTotal,
+        isValid
+    };
+}
+
 export default function OrderDetailClient({ deliveryId, initialUser }: OrderDetailClientProps) {
     const router = useRouter();
     const [delivery, setDelivery] = useState<any>(null);
@@ -337,6 +391,144 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                         )}
                     </div>
                 </div>
+
+                {/* PAYMENT BREAKDOWN - Detailed */}
+                {(() => {
+                    const breakdown = calculatePaymentBreakdown(delivery.order, uniqueStores);
+
+                    return (
+                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border-3 border-emerald-400 rounded-xl p-5 shadow-xl">
+                            {/* Header */}
+                            <h2 className="font-bold text-2xl flex items-center gap-2 text-emerald-900 mb-5">
+                                <DollarSign className="w-7 h-7" />
+                                💰 Détail Paiement COD
+                            </h2>
+
+                            {/* Total COD to Collect */}
+                            <div className="bg-white rounded-xl p-4 mb-5 border-3 border-emerald-500 shadow-lg">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                                        <span className="text-2xl">💵</span>
+                                        Total COD à Collecter
+                                    </span>
+                                    <span className="text-4xl font-black text-emerald-700">
+                                        {delivery.order.total} DA
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* À PAYER AUX MAGASINS */}
+                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 mb-5 border-3 border-amber-400 shadow-lg">
+                                <h3 className="font-bold text-xl mb-4 text-amber-900 flex items-center gap-2">
+                                    <span className="text-2xl">📦</span>
+                                    À Payer aux Magasins
+                                </h3>
+
+                                <div className="space-y-3">
+                                    {uniqueStores.map((store, index) => {
+                                        const storeTotal = breakdown.storeTotals[store.id];
+
+                                        return (
+                                            <div key={store.id} className="flex justify-between items-center bg-white p-4 rounded-lg shadow border-2 border-amber-200">
+                                                <span className="font-semibold text-gray-800 flex items-center gap-2">
+                                                    <span className="bg-amber-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
+                                                        {index + 1}
+                                                    </span>
+                                                    {store.name}
+                                                </span>
+                                                <span className="text-2xl font-bold text-amber-700">
+                                                    {storeTotal.toLocaleString()} DA
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Subtotal Stores */}
+                                    <div className="border-t-3 border-amber-500 pt-3 mt-3">
+                                        <div className="flex justify-between items-center bg-amber-100 p-4 rounded-lg">
+                                            <span className="font-bold text-xl text-amber-900">
+                                                💰 Sous-total Magasins
+                                            </span>
+                                            <span className="text-3xl font-black text-amber-800">
+                                                {breakdown.totalToStores.toLocaleString()} DA
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* VOUS GARDEZ (Livreur) */}
+                            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 mb-5 border-3 border-blue-400 shadow-lg">
+                                <h3 className="font-bold text-xl mb-4 text-blue-900 flex items-center gap-2">
+                                    <span className="text-2xl">💵</span>
+                                    Vous Gardez (Livreur)
+                                </h3>
+
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow border-2 border-blue-200">
+                                        <span className="font-semibold text-gray-800 flex items-center gap-2">
+                                            <span className="text-xl">🚚</span>
+                                            Frais de livraison
+                                        </span>
+                                        <span className="text-2xl font-bold text-blue-700">
+                                            {breakdown.deliveryFee.toLocaleString()} DA
+                                        </span>
+                                    </div>
+
+                                    <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow border-2 border-blue-200">
+                                        <span className="font-semibold text-gray-800 flex items-center gap-2">
+                                            <span className="text-xl">🏢</span>
+                                            Frais service Achrilik
+                                        </span>
+                                        <span className="text-2xl font-bold text-blue-700">
+                                            {breakdown.serviceFee.toLocaleString()} DA
+                                        </span>
+                                    </div>
+
+                                    {/* Total Agent */}
+                                    <div className="border-t-3 border-blue-500 pt-3 mt-3">
+                                        <div className="flex justify-between items-center bg-blue-100 p-4 rounded-lg">
+                                            <span className="font-bold text-xl text-blue-900">
+                                                💰 Total à Garder
+                                            </span>
+                                            <span className="text-3xl font-black text-blue-800">
+                                                {breakdown.totalToAgent.toLocaleString()} DA
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* VÉRIFICATION */}
+                            <div className={`rounded-xl p-4 border-3 shadow-lg ${breakdown.isValid ? 'bg-emerald-100 border-emerald-600' : 'bg-red-100 border-red-600'}`}>
+                                <div className="flex justify-between items-center">
+                                    <span className="font-bold text-lg flex items-center gap-2">
+                                        {breakdown.isValid ? '✅' : '⚠️'}
+                                        <span className={breakdown.isValid ? 'text-emerald-900' : 'text-red-900'}>
+                                            Vérification
+                                        </span>
+                                    </span>
+                                    <span className={`text-sm font-mono ${breakdown.isValid ? 'text-emerald-800' : 'text-red-800'}`}>
+                                        {breakdown.totalToStores.toLocaleString()} + {breakdown.totalToAgent.toLocaleString()} = {breakdown.calculatedTotal.toLocaleString()} DA
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Process Info */}
+                            <div className="mt-5 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg shadow">
+                                <p className="text-sm text-yellow-900 leading-relaxed">
+                                    <strong className="flex items-center gap-2 mb-2">
+                                        <span className="text-xl">ℹ️</span>
+                                        Process de Dispatch:
+                                    </strong>
+                                    Vous collectez le COD total (<strong>{delivery.order.total.toLocaleString()} DA</strong>) du client.
+                                    Ensuite, vous payez chaque magasin sa part, et vous gardez <strong>{breakdown.totalToAgent.toLocaleString()} DA</strong> pour votre livraison.
+                                    {breakdown.serviceFee > 0 && ' Les frais service seront facturés plus tard par Achrilik.'}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Agent Notes */}
                 <div className="bg-white rounded-lg p-4 shadow">
