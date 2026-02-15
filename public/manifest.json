@@ -105,16 +105,46 @@
     ],
     "screenshots": [
         {
-            "src": "/screenshot-mobile.png",
+            "src": "/screenshot-mobile-1.png",
             "type": "image/png",
-            "sizes": "540x720",
-            "form_factor": "narrow"
+            "sizes": "430x932",
+            "form_factor": "narrow",
+            "label": "Homepage - Achrilik Marketplace"
         },
         {
-            "src": "/screenshot-desktop.png",
+            "src": "/screenshot-mobile-2.png",
             "type": "image/png",
-            "sizes": "1920x1080",
-            "form_factor": "wide"
+            "sizes": "430x932",
+            "form_factor": "narrow",
+            "label": "Product Page - Details & Options"
+        },
+        {
+            "src": "/screenshot-mobile-3.png",
+            "type": "image/png",
+            "sizes": "430x932",
+            "form_factor": "narrow",
+            "label": "Shopping Cart"
+        },
+        {
+            "src": "/screenshot-mobile-4.png",
+            "type": "image/png",
+            "sizes": "430x932",
+            "form_factor": "narrow",
+            "label": "Search Results"
+        },
+        {
+            "src": "/screenshot-mobile-5.png",
+            "type": "image/png",
+            "sizes": "430x932",
+            "form_factor": "narrow",
+            "label": "Categories"
+        },
+        {
+            "src": "/screenshot-mobile-6.png",
+            "type": "image/png",
+            "sizes": "430x932",
+            "form_factor": "narrow",
+            "label": "User Profile & Orders"
         }
     ]
 }
