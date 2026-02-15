@@ -44,6 +44,9 @@ export default function CategoryEditModal({ category, allCategories, onClose, on
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState(formData.image);
 
     // Auto-generate slug from name
     const updateSlug = (name: string) => {
@@ -55,6 +58,63 @@ export default function CategoryEditModal({ category, allCategories, onClose, on
             .replace(/^-+|-+$/g, '');
 
         setFormData(prev => ({ ...prev, name, slug }));
+    };
+
+    const handleImageUpload = async (file: File) => {
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Upload failed');
+            }
+
+            // Set preview and URL
+            setImagePreview(data.url);
+            setFormData(prev => ({ ...prev, image: data.url }));
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            handleImageUpload(file);
+        }
+    };
+
+    const removeImage = () => {
+        setImageFile(null);
+        setImagePreview('');
+        setFormData(prev => ({ ...prev, image: '' }));
+    };
+
+    const addKeyword = (keyword: string) => {
+        if (keyword && !formData.keywords.includes(keyword)) {
+            setFormData(prev => ({
+                ...prev,
+                keywords: [...prev.keywords, keyword]
+            }));
+        }
+    };
+
+    const removeKeyword = (keyword: string) => {
+        setFormData(prev => ({
+            ...prev,
+            keywords: prev.keywords.filter(k => k !== keyword)
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -238,6 +298,129 @@ export default function CategoryEditModal({ category, allCategories, onClose, on
                                 />
                                 <span className="text-sm font-medium text-gray-700">En vedette</span>
                             </label>
+                        </div>
+                    </div>
+
+                    {/* Image Upload */}
+                    <div className="space-y-4 border-t pt-5">
+                        <h3 className="font-semibold text-gray-900">Image de catégorie</h3>
+
+                        {imagePreview ? (
+                            <div className="relative">
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={removeImage}
+                                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                                <label className="flex flex-col items-center cursor-pointer">
+                                    <svg className="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <span className="text-sm text-gray-600 mb-1">Cliquez pour uploader une image</span>
+                                    <span className="text-xs text-gray-500">PNG, JPG, WEBP - Max 5MB</span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                        disabled={uploading}
+                                    />
+                                </label>
+                                {uploading && (
+                                    <div className="mt-2 text-center text-sm text-indigo-600">
+                                        Upload en cours...
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* SEO Section */}
+                    <div className="space-y-4 border-t pt-5">
+                        <h3 className="font-semibold text-gray-900">SEO & Référencement</h3>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Titre Meta (SEO)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.metaTitle}
+                                onChange={e => setFormData({ ...formData, metaTitle: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                placeholder="Titre pour les moteurs de recherche"
+                                maxLength={60}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                {formData.metaTitle.length}/60 caractères
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Description Meta (SEO)
+                            </label>
+                            <textarea
+                                value={formData.metaDescription}
+                                onChange={e => setFormData({ ...formData, metaDescription: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                rows={3}
+                                placeholder="Description pour les moteurs de recherche"
+                                maxLength={160}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                {formData.metaDescription.length}/160 caractères
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Mots-clés
+                            </label>
+                            <div className="flex gap-2 mb-2 flex-wrap">
+                                {formData.keywords.map(keyword => (
+                                    <span
+                                        key={keyword}
+                                        className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm flex items-center gap-1"
+                                    >
+                                        {keyword}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeKeyword(keyword)}
+                                            className="hover:text-indigo-900"
+                                        >
+                                            ×
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Ajoutez un mot-clé et appuyez sur Entrée"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        addKeyword(e.currentTarget.value.trim());
+                                        e.currentTarget.value = '';
+                                    }
+                                }}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Appuyez sur Entrée pour ajouter un mot-clé
+                            </p>
                         </div>
                     </div>
 

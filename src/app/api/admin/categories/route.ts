@@ -11,7 +11,13 @@ export async function GET(request: NextRequest) {
                 _count: {
                     select: { products: true }
                 },
-                children: true // Subcategories
+                children: {
+                    include: {
+                        _count: {
+                            select: { products: true }
+                        }
+                    }
+                }
             },
             orderBy: { order: 'asc' }
         });
