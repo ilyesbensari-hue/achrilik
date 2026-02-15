@@ -74,7 +74,7 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
     const getUniqueStores = (items: any[]) => {
         const storesMap = new Map();
         items?.forEach(item => {
-            const storeId = item.productName?.split(' - ')[0]; // Assuming store prefix
+            const storeId = item.storeId; // Use actual store ID from item
             if (storeId && !storesMap.has(storeId)) {
                 storesMap.set(storeId, true);
             }
@@ -190,8 +190,8 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                                 #{delivery.orderId.slice(-6).toUpperCase()}
                                             </div>
                                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${delivery.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                                    delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-green-100 text-green-700'
+                                                delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-green-100 text-green-700'
                                                 }`}>
                                                 {delivery.status === 'PENDING' ? 'En attente' :
                                                     delivery.status === 'IN_TRANSIT' ? 'En cours' : 'Livrée'}

@@ -62,6 +62,37 @@ export async function GET() {
                                     }
                                 }
                             }
+                        },
+                        OrderItem: {
+                            select: {
+                                id: true,
+                                quantity: true,
+                                price: true,
+                                Variant: {
+                                    select: {
+                                        size: true,
+                                        color: true,
+                                        images: true,
+                                        Product: {
+                                            select: {
+                                                name: true,
+                                                Store: {
+                                                    select: {
+                                                        id: true,
+                                                        name: true,
+                                                        address: true,
+                                                        city: true,
+                                                        storageCity: true,
+                                                        phone: true,
+                                                        latitude: true,
+                                                        longitude: true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -84,8 +115,8 @@ export async function GET() {
                 .reduce((sum, d) => sum + (d.codAmount || 0), 0)
         };
 
-        // Map deliveries with pickup/delivery info (without items for now)
-        const deliveriesWithDetails = deliveries.map(d => ({
+        // Map deliveries with pickup/delivery info and order items
+        const deliveriesWithDetails = (deliveries as any[]).map((d: any) => ({
             ...d,
             // Delivery info (Point B - client)
             totalAmount: d.order?.total || 0,
@@ -108,8 +139,18 @@ export async function GET() {
                 ? `${d.order.Store.address}, ${d.order.Store.city || d.order.Store.storageCity || ''}`.trim()
                 : 'Adresse non renseignée',
 
-            // Items will be added back after fixing
-            items: []
+            // Map order items with store info for pickup count
+            items: d.order?.OrderItem?.map((item: any) => ({
+                id: item.id,
+                productName: item.Variant?.Product?.name || 'Produit',
+                quantity: item.quantity,
+                price: item.price,
+                image: item.Variant?.images?.[0] || null,
+                size: item.Variant?.size,
+                color: item.Variant?.color,
+                storeId: item.Variant?.Product?.Store?.id || null,
+                storeName: item.Variant?.Product?.Store?.name || null
+            })) || []
         }));
 
         return NextResponse.json({
