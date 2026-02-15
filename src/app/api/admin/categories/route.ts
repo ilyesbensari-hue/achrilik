@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
                 },
                 children: true // Subcategories
             },
-            orderBy: { name: 'asc' }
+            orderBy: { order: 'asc' }
         });
 
         return NextResponse.json(categories);

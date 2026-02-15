@@ -16,9 +16,13 @@ export async function GET() {
                         name: true,
                         slug: true,
                         parentId: true,
+                        order: true,
+                    },
+                    where: {
+                        isActive: true, // Only show active categories
                     },
                     orderBy: {
-                        name: 'asc',
+                        order: 'asc', // Sort by order field
                     },
                 });
 
