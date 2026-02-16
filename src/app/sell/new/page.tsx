@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ImageUpload from '@/components/ImageUpload';
 import HierarchicalCategorySelector from '@/components/HierarchicalCategorySelector';
 import { ALGERIA_WILAYAS } from '@/constants/wilayas';
+import { getSizeConfig } from '@/lib/variantHelpers';
 
 
 export default function AddProductPage() {
@@ -21,12 +22,22 @@ export default function AddProductPage() {
     const [categories, setCategories] = useState<any[]>([]);
 
     // Variants
-    const [variants, setVariants] = useState<{ size: string, color: string, stock: number }[]>([]);
+    const [variants, setVariants] = useState<{
+        size?: string;
+        color: string;
+        stock: number;
+        length?: number;
+        width?: number;
+        height?: number;
+    }[]>([]);
 
     // Variant Input
-    const [vSize, setVSize] = useState('M');
+    const [vSize, setVSize] = useState('');
     const [vColor, setVColor] = useState('#000000');
     const [vStock, setVStock] = useState(10);
+    const [vLength, setVLength] = useState<number | ''>('');
+    const [vWidth, setVWidth] = useState<number | ''>('');
+    const [vHeight, setVHeight] = useState<number | ''>('');
 
     // Promotion
     const [promotionLabel, setPromotionLabel] = useState('');
@@ -131,21 +142,55 @@ export default function AddProductPage() {
         }
     }, [router]);
 
-    // Helper: Check if category is electronics/tech (no sizes needed)
-    const isElectronicsCategory = () => {
-        if (!categoryId || categories.length === 0) return false;
+    // Get dynamic size configuration based on selected category
+    const getSizeConfigForCategory = () => {
+        if (!categoryId || categories.length === 0) {
+            return getSizeConfig();
+        }
 
-        // Find the selected category
         const selectedCategory = categories.find(c => c.id === categoryId);
-        if (!selectedCategory) return false;
+        if (!selectedCategory) {
+            return getSizeConfig();
+        }
 
-        // Check if category slug contains 'electronique' or 'tech'
-        const categorySlug = (selectedCategory.slug || '').toLowerCase();
-        return categorySlug.includes('electronique') || categorySlug.includes('tech');
+        return getSizeConfig(selectedCategory.slug, selectedCategory.name);
     };
 
+    const sizeConfig = getSizeConfigForCategory();
+
+    // Set default size when category changes
+    useEffect(() => {
+        if (sizeConfig.options.length > 0 && !vSize) {
+            setVSize(sizeConfig.options[0].value);
+        }
+    }, [categoryId, sizeConfig]);
+
     const addVariant = () => {
-        setVariants([...variants, { size: vSize, color: vColor, stock: vStock }]);
+        const newVariant: any = {
+            color: vColor,
+            stock: vStock,
+        };
+
+        // Add size if required and provided
+        if (sizeConfig.required || vSize) {
+            newVariant.size = vSize;
+        }
+
+        // Add dimensions if provided (for bags)
+        if (sizeConfig.showDimensions) {
+            if (vLength) newVariant.length = Number(vLength);
+            if (vWidth) newVariant.width = Number(vWidth);
+            if (vHeight) newVariant.height = Number(vHeight);
+        }
+
+        setVariants([...variants, newVariant]);
+
+        // Reset dimension inputs
+        if (sizeConfig.showDimensions) {
+            setVLength('');
+            setVWidth('');
+            setVHeight('');
+        }
     };
 
     const removeVariant = (index: number) => {
@@ -407,20 +452,57 @@ export default function AddProductPage() {
                     {/* Variants Section */}
                     <div className="bg-gray-50 p-4 rounded-xl border">
                         <h3 className="font-bold mb-4">
-                            {isElectronicsCategory() ? 'Variantes (Couleurs & Stock)' : 'Variantes (Tailles & Couleurs)'}
+                            {sizeConfig.options.length === 0 ? 'Variantes (Couleurs & Stock)' : `Variantes (${sizeConfig.sizeLabel || 'Tailles'} & Couleurs)`}
                         </h3>
 
                         {/* Responsive flex layout: stack on mobile, row on desktop */}
                         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end mb-4">
-                            {/* Size input - hide for electronics */}
-                            {!isElectronicsCategory() && (
+                            {/* Size input - dynamic based on category */}
+                            {sizeConfig.options.length > 0 && (
                                 <div className="flex-1 sm:flex-initial">
-                                    <label className="text-xs font-bold uppercase mb-1 block">Taille</label>
-                                    <select className="input h-10 w-full sm:w-24" value={vSize} onChange={e => setVSize(e.target.value)}>
-                                        {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => <option key={s} value={s}>{s}</option>)}
+                                    <label className="text-xs font-bold uppercase mb-1 block">{sizeConfig.sizeLabel}</label>
+                                    <select className="input h-10 w-full sm:w-32" value={vSize} onChange={e => setVSize(e.target.value)}>
+                                        {sizeConfig.options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                     </select>
                                 </div>
                             )}
+
+                            {/* Dimensions for bags */}
+                            {sizeConfig.showDimensions && (
+                                <>
+                                    <div className="flex-1 sm:flex-initial">
+                                        <label className="text-xs font-bold uppercase mb-1 block">L (cm)</label>
+                                        <input
+                                            type="number"
+                                            className="input h-10 w-full sm:w-20"
+                                            placeholder="30"
+                                            value={vLength}
+                                            onChange={e => setVLength(e.target.value ? Number(e.target.value) : '')}
+                                        />
+                                    </div>
+                                    <div className="flex-1 sm:flex-initial">
+                                        <label className="text-xs font-bold uppercase mb-1 block">l (cm)</label>
+                                        <input
+                                            type="number"
+                                            className="input h-10 w-full sm:w-20"
+                                            placeholder="20"
+                                            value={vWidth}
+                                            onChange={e => setVWidth(e.target.value ? Number(e.target.value) : '')}
+                                        />
+                                    </div>
+                                    <div className="flex-1 sm:flex-initial">
+                                        <label className="text-xs font-bold uppercase mb-1 block">H (cm)</label>
+                                        <input
+                                            type="number"
+                                            className="input h-10 w-full sm:w-20"
+                                            placeholder="10"
+                                            value={vHeight}
+                                            onChange={e => setVHeight(e.target.value ? Number(e.target.value) : '')}
+                                        />
+                                    </div>
+                                </>
+                            )}
+
                             <div className="flex-1 sm:flex-initial">
                                 <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
                                 <input type="color" className="h-10 w-full sm:w-16 p-0 border-0 rounded" value={vColor} onChange={e => setVColor(e.target.value)} />
@@ -435,7 +517,12 @@ export default function AddProductPage() {
                         <div className="space-y-2">
                             {variants.map((v, i) => (
                                 <div key={i} className="flex flex-wrap items-center justify-between gap-2 bg-white p-2 border rounded">
-                                    {!isElectronicsCategory() && <span className="text-sm font-medium">Taille: {v.size}</span>}
+                                    {v.size && <span className="text-sm font-medium">{sizeConfig.sizeLabel}: {v.size}</span>}
+                                    {(v.length || v.width || v.height) && (
+                                        <span className="text-sm font-medium">
+                                            📏 {[v.length, v.width, v.height].filter(d => d).join('×')} cm
+                                        </span>
+                                    )}
                                     <div className="w-4 h-4 rounded-full border" style={{ background: v.color }}></div>
                                     <span className="text-sm">Stock: {v.stock}</span>
                                     <button type="button" onClick={() => removeVariant(i)} className="text-red-500 text-sm ml-auto">X</button>

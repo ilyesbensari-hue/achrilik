@@ -399,10 +399,15 @@ model Variant {
   sku             String?     @unique // Ex: "ACH-HOM-TSH-001-M-NOIR"
   
   // Attributs du variant
-  size            String      // Ex: "M", "42", "L"
+  size            String?     // Ex: "M", "42", "L" - Now optional for bags
   color           String      // Ex: "Noir"
   colorHex        String?     // Ex: "#000000"
   colorImage      String?     // URL image de ce variant
+  
+  // Dimensions (pour sacs, valises, accessoires)
+  length          Float?      // Longueur (cm)
+  width           Float?      // Largeur (cm)
+  height          Float?      // Hauteur (cm)
   
   // Stock & Prix
   stock           Int
