@@ -21,6 +21,7 @@
     "@upstash/redis": "^1.36.2",
     "axios": "^1.13.4",
     "bcryptjs": "^3.0.3",
+    "browser-image-compression": "^2.0.2",
     "cloudinary": "^2.9.0",
     "fuse.js": "^7.1.0",
     "jose": "^6.1.3",

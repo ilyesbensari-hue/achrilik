@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
+import { compressMultipleImages, getAdaptiveCompressionOptions } from '@/lib/imageCompressor';
 
 interface ImageUploadProps {
     onImagesChange: (urls: string[]) => void;
@@ -51,16 +52,30 @@ export default function ImageUpload({ onImagesChange, maxImages = 5, initialImag
         const filesToUpload = Array.from(files).slice(0, remainingSlots);
         setUploading(true);
 
-        const uploadedUrls: string[] = [];
-        for (const file of filesToUpload) {
-            const url = await uploadFile(file);
-            if (url) uploadedUrls.push(url);
-        }
+        try {
+            // ✅ COMPRESS IMAGES FIRST
+            console.log('🗜️ Compressing images...');
+            const compressionOptions = getAdaptiveCompressionOptions();
+            const compressedFiles = await compressMultipleImages(filesToUpload, compressionOptions);
 
-        const newImages = [...images, ...uploadedUrls];
-        setImages(newImages);
-        onImagesChange(newImages);
-        setUploading(false);
+            console.log(`✅ Compression done! Uploading ${compressedFiles.length} files...`);
+
+            // Now upload compressed files
+            const uploadedUrls: string[] = [];
+            for (const file of compressedFiles) {
+                const url = await uploadFile(file);
+                if (url) uploadedUrls.push(url);
+            }
+
+            const newImages = [...images, ...uploadedUrls];
+            setImages(newImages);
+            onImagesChange(newImages);
+        } catch (error) {
+            console.error('Error processing images:', error);
+            alert('Erreur lors du traitement des images');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleDrag = (e: React.DragEvent) => {
@@ -130,7 +145,7 @@ export default function ImageUpload({ onImagesChange, maxImages = 5, initialImag
                         {uploading ? 'Upload...' : 'Choisir des images'}
                     </button>
                     <p className="text-xs text-gray-400 mt-2">
-                        JPEG, PNG, WebP ou GIF • Max 5MB par image
+                        JPEG, PNG, WebP ou GIF • Compression automatique ⚡
                     </p>
                 </div>
             </div>
