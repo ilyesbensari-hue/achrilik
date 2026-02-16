@@ -16,7 +16,7 @@ export default function Footer() {
             <div className="container mx-auto px-4">
 
                 {/* Links Section */}
-                <div className="grid grid-cols-2 gap-8 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div>
                         <h4 className="font-bold text-gray-900 mb-4">Aide & Info</h4>
                         <ul className="space-y-3">
@@ -32,6 +32,29 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
+                                <Link href="/about" className="text-sm text-gray-600 hover:text-rose-600 transition-colors">
+                                    À propos
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/contact" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
+                                    <Mail className="h-4 w-4" />
+                                    Contactez-nous
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/tel:+213551223344" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
+                                    <Phone className="h-4 w-4" />
+                                    Service Client
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="font-bold text-gray-900 mb-4">Légal</h4>
+                        <ul className="space-y-3">
+                            <li>
                                 <Link href="/cgv" className="text-sm text-gray-600 hover:text-rose-600 transition-colors">
                                     CGV
                                 </Link>
@@ -42,15 +65,8 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/contact" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
-                                    <Mail className="h-4 w-4" />
-                                    Contactez-nous
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="tel:+213551223344" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
-                                    <Phone className="h-4 w-4" />
-                                    Service Client
+                                <Link href="/politique-confidentialite" className="text-sm text-gray-600 hover:text-rose-600 transition-colors">
+                                    Confidentialité
                                 </Link>
                             </li>
                         </ul>
