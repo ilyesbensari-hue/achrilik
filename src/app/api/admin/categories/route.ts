@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminApi } from '@/lib/server-auth';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/admin/categories
 export async function GET(request: NextRequest) {
@@ -54,6 +55,11 @@ export async function POST(request: NextRequest) {
                 parentId: parentId || null
             }
         });
+
+        // ✅ Revalidate caches so homepage updates immediately
+        revalidatePath('/');
+        revalidatePath('/categories/[slug]', 'page');
+        revalidatePath('/api/categories');
 
         return NextResponse.json(category);
     } catch (error) {
