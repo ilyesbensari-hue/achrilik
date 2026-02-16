@@ -36,7 +36,8 @@ export function getSizeConfig(categorySlug?: string, categoryName?: string): Siz
         };
     }
 
-    const slug = categorySlug?.toLowerCase() || '';
+    // Normalize slugs: remove trailing hyphens and lowercase
+    const slug = (categorySlug?.toLowerCase() || '').replace(/-+$/g, '');
     const name = categoryName?.toLowerCase() || '';
     const combined = `${slug} ${name}`;
 
