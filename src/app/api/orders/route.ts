@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto';
 import { apiRateLimit, getClientIp } from '@/lib/ratelimit';
 import { logger } from '@/lib/logger';
 import { generateTrackingNumber } from '@/lib/delivery-helpers';
+import { getDeliveryFeeForStoreAndWilaya } from '@/lib/deliveryFeeCalculator';
 
 // GET - Fetch orders for a user or store
 export async function GET(request: NextRequest) {
@@ -327,6 +328,12 @@ export async function POST(request: NextRequest) {
                 });
 
                 if (defaultAgent) {
+                    // ✅ Calculate delivery fee from config
+                    const deliveryFee = await getDeliveryFeeForStoreAndWilaya(
+                        order.storeId,
+                        wilaya
+                    );
+
                     await prisma.delivery.create({
                         data: {
                             id: randomBytes(12).toString('hex'),
@@ -336,13 +343,15 @@ export async function POST(request: NextRequest) {
                             status: 'PENDING',
                             assignedAt: new Date(),
                             codAmount: paymentMethod === 'COD' ? order.total : 0,
-                            codCollected: false
+                            codCollected: false,
+                            deliveryFee: deliveryFee  // ✅ Auto-calculated
                         }
                     });
 
                     logger.info('[ORDER] Delivery auto-assigned', {
                         orderId: order.id,
-                        agentId: defaultAgent.id
+                        agentId: defaultAgent.id,
+                        deliveryFee: deliveryFee
                     });
                 }
             } catch (deliveryErr) {

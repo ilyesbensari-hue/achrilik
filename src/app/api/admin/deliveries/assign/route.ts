@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
 import { generateTrackingNumber, calculateEstimatedDelivery, findBestDeliveryAgent } from '@/lib/delivery-helpers';
+import { getDeliveryFeeForStoreAndWilaya } from '@/lib/deliveryFeeCalculator';
 
 /**
  * POST /api/admin/deliveries/assign
@@ -90,6 +91,12 @@ export async function POST(request: Request) {
         // Calculate COD amount
         const codAmount = order.paymentMethod === 'COD' ? order.total : 0;
 
+        // ✅ Calculate delivery fee from config
+        const deliveryFee = await getDeliveryFeeForStoreAndWilaya(
+            order.storeId,
+            order.shippingWilaya
+        );
+
         // Create delivery
         const delivery = await prisma.delivery.create({
             data: {
@@ -100,7 +107,8 @@ export async function POST(request: Request) {
                 status: 'PENDING',
                 assignedAt: new Date(),
                 codAmount,
-                codCollected: false
+                codCollected: false,
+                deliveryFee: deliveryFee  // ✅ Auto-calculated
             },
             include: {
                 agent: {

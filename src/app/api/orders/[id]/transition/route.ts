@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { verifyToken } from '@/lib/auth-token';
 import { prisma } from '@/lib/prisma';
+import { getDeliveryFeeForStoreAndWilaya } from '@/lib/deliveryFeeCalculator';
 
 // Define OrderStatus type inline to avoid Prisma import issues
 type OrderStatus =
@@ -205,6 +206,12 @@ export async function POST(
                         const random = Math.random().toString(36).substr(2, 6).toUpperCase();
                         const trackingNumber = `ACH-${timestamp}-${random}`;
 
+                        // ✅ Calculate delivery fee from config
+                        const deliveryFee = await getDeliveryFeeForStoreAndWilaya(
+                            updatedOrder.storeId,
+                            updatedOrder.shippingWilaya
+                        );
+
                         // Create delivery
                         await prisma.delivery.create({
                             data: {
@@ -215,7 +222,8 @@ export async function POST(
                                 status: 'PENDING',
                                 assignedAt: new Date(),
                                 codAmount: updatedOrder.paymentMethod === 'COD' ? updatedOrder.total : 0,
-                                codCollected: false
+                                codCollected: false,
+                                deliveryFee: deliveryFee  // ✅ Auto-calculated
                             }
                         });
 

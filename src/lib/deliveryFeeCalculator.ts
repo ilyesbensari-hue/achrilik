@@ -196,3 +196,37 @@ export async function getDeliveryFeeForRoute(
         return DEFAULT_FEE;
     }
 }
+
+/**
+ * Calculer les frais de livraison pour une boutique et wilaya (utilisé lors création delivery)
+ */
+export async function getDeliveryFeeForStoreAndWilaya(
+    storeId: string | null,
+    destinationWilaya: string | null
+): Promise<number> {
+    const DEFAULT_FEE = 500;
+
+    if (!storeId || !destinationWilaya) {
+        return DEFAULT_FEE;
+    }
+
+    try {
+        // Récupérer la ville de stockage du magasin
+        const store = await prisma.store.findUnique({
+            where: { id: storeId },
+            select: { storageCity: true }
+        });
+
+        if (!store) {
+            return DEFAULT_FEE;
+        }
+
+        const fromCity = store.storageCity || 'Oran';
+
+        // Utiliser la fonction existante
+        return await getDeliveryFeeForRoute(fromCity, destinationWilaya);
+    } catch (error) {
+        console.error('Error calculating delivery fee for store:', error);
+        return DEFAULT_FEE;
+    }
+}
