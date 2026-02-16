@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
 import Image from 'next/image';
+import { getSizeConfig } from '@/lib/variantHelpers';
 
 interface ProductPageClientProps {
     product: any;
@@ -21,12 +22,8 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
     const sizes = sizesProps || [];
     const colors = colorsProps || [];
 
-    // Helper: Check if category is electronics/tech (should not show sizes)
-    const isElectronicsCategory = () => {
-        if (!product?.Category?.slug) return false;
-        const slug = product.Category.slug.toLowerCase();
-        return slug.includes('electronique') || slug.includes('tech') || slug.includes('audio') || slug.includes('casque');
-    };
+    // Get dynamic size configuration based on product category
+    const sizeConfig = getSizeConfig(product?.Category?.slug, product?.Category?.name);
 
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
@@ -47,15 +44,11 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
     }, [colors, selectedColor]);
 
     const handleAddToCart = () => {
-        // Check if product is in electronics category (sizes are hidden for these)
-        const isElectronics = isElectronicsCategory();
-
         // Basic validation with detailed error messages
-        // Skip size validation for electronics/tech products where sizes are intentionally hidden
-        if (!isElectronics && sizes.length > 0 && !selectedSize) {
-            const sizeList = sizes.join(', ');
+        // Skip size validation for categories without size requirement
+        if (sizeConfig.required && sizes.length > 0 && !selectedSize) {
             showToast(
-                `⚠️ Veuillez sélectionner une taille`,
+                `⚠️ Veuillez sélectionner une ${sizeConfig.sizeLabel}`,
                 'error'
             );
             return;
@@ -71,7 +64,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
 
         // Find variant
         const variant = product.Variant.find((v: any) =>
-            (!sizes.length || v.size === selectedSize || isElectronics) &&
+            (!sizes.length || v.size === selectedSize || !sizeConfig.required) &&
             (!colors.length || v.color === selectedColor)
         );
 
@@ -197,11 +190,13 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
 
                 {/* Selection Area - moved from server component */}
                 <div className="bg-gray-50 dark:bg-white p-6 rounded-2xl space-y-6 mt-6">
-                    {/* Size Selection - hidden for electronics/tech */}
-                    {!isElectronicsCategory() && sizes.length > 0 && (
+                    {/* Size Selection - shown based on configuration */}
+                    {sizeConfig.options.length > 0 && sizes.length > 0 && (
                         <div>
                             <div className="flex justify-between items-center mb-3">
-                                <label className="text-sm font-bold text-gray-900 dark:text-gray-900">Taille</label>
+                                <label className="text-sm font-bold text-gray-900 dark:text-gray-900">
+                                    {sizeConfig.sizeLabel || 'Taille'}
+                                </label>
                                 {selectedSize && <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Sélectionné: {selectedSize}</span>}
                             </div>
                             <div className="flex gap-3 flex-wrap">
