@@ -831,3 +831,119 @@ export async function sendTrackingUrlNotification(clientEmail: string, order: an
         console.error('[EMAIL ERROR] Tracking URL notification failed:', error);
     }
 }
+
+/**
+ * Send notification to customer when delivery is completed
+ */
+export async function sendDeliveryCompletedEmail(to: string, order: any, customerName: string) {
+    if (!process.env.SMTP_USER) return;
+
+    try {
+        await transporter.sendMail({
+            from: SENDER_EMAIL,
+            to: to,
+            subject: `✅ Votre commande a été livrée ! #${order.id.slice(0, 8)}`,
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+                                            <div style="font-size: 60px; margin-bottom: 15px;">✅</div>
+                                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Livraison Réussie !</h1>
+                                            <p style="color: #d1fae5; margin: 10px 0 0 0; font-size: 16px;">Votre commande est arrivée</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td style="padding: 40px 30px;">
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Bonjour ${customerName},</p>
+                                            
+                                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                                                🎉 <strong>Excellente nouvelle !</strong> Votre commande a été livrée avec succès.
+                                            </p>
+                                            
+                                            <!-- Order Summary -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                                                <tr>
+                                                    <td>
+                                                        <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">📦 Détails de la Commande</h2>
+                                                        <p style="margin: 8px 0; color: #064e3b; font-size: 14px;">
+                                                            <strong>Numéro:</strong> #${order.id.slice(0, 8).toUpperCase()}
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #064e3b; font-size: 14px;">
+                                                            <strong>Montant total:</strong> <span style="font-size: 18px; font-weight: bold; color: #065f46;">${order.total?.toLocaleString() || 0} DA</span>
+                                                        </p>
+                                                        <p style="margin: 8px 0; color: #064e3b; font-size: 14px;">
+                                                            <strong>Statut:</strong> ✅ Livrée
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Review Request -->
+                                            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 30px 0;">
+                                                <p style="color: #92400e; margin: 0; font-size: 14px; font-weight: 600;">⭐ Votre avis compte !</p>
+                                                <p style="color: #78350f; margin: 10px 0 0 0; font-size: 14px; line-height: 1.5;">
+                                                    Nous espérons que votre commande vous satisfait. N'hésitez pas à laisser un avis pour aider d'autres clients !
+                                                </p>
+                                            </div>
+                                            
+                                            <!-- CTA Buttons -->
+                                            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 30px 0;">
+                                                <tr>
+                                                    <td align="center">
+                                                        <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}/profile" 
+                                                           style="display: inline-block; background: #10b981; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 0 10px 10px 0;">
+                                                            ⭐ Laisser un Avis
+                                                        </a>
+                                                        <a href="${process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'}" 
+                                                           style="display: inline-block; background: #6b7280; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 0 0 10px 0;">
+                                                            🛍️ Continuer Mes Achats
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0;">
+                                                Merci de faire vos achats sur Achrilik !<br>
+                                                <strong style="color: #006233;">L'équipe Achrilik</strong>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                                            <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;">Un problème avec votre commande ?</p>
+                                            <p style="color: #999; font-size: 12px; margin: 0;">
+                                                Contactez-nous à <a href="mailto:contact@achrilik.com" style="color: #006233; text-decoration: none;">contact@achrilik.com</a>
+                                            </p>
+                                            <p style="color: #ccc; font-size: 11px; margin: 15px 0 0 0;">
+                                                © ${new Date().getFullYear()} Achrilik - Marketplace Mode Algérie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+            `,
+        });
+    } catch (error) {
+        console.error('[EMAIL ERROR] Delivery completed notification failed:', error);
+    }
+}
