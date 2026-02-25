@@ -11,7 +11,7 @@ interface Delivery {
     id: string;
     orderId: string;
     status: string;
-    // Pickup (Point A)
+    // Pickup (Point de collecte)
     pickupAddress: string;
     storeName: string;
     storeAddress: string;
@@ -20,7 +20,7 @@ interface Delivery {
     storeContact: string;
     storeLatitude: number | null;
     storeLongitude: number | null;
-    // Delivery (Point B)
+    // Delivery (Point de livraison)
     deliveryAddress: string;
     deliveryWilaya: string;
     customerName: string;
@@ -94,45 +94,45 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
     };
 
     return (
-        <div className="container py-10 max-w-6xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className="container py-6 max-w-2xl mx-auto px-4">
+            <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900">
-                        🚚 Tableau de Bord Livreur
+                    <h1 className="text-2xl font-black text-gray-900">
+                        🚚 Tableau de Bord
                     </h1>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600 mt-0.5 text-sm">
                         Bienvenue, {initialUser.name}
                     </p>
                 </div>
-                </div>
+            </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="text-2xl font-black text-gray-900">{stats.total}</div>
-                    <div className="text-sm text-gray-600">Total</div>
+            <div className="grid grid-cols-4 gap-2 mb-6">
+                <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm text-center">
+                    <div className="text-xl font-black text-gray-900">{stats.total}</div>
+                    <div className="text-[10px] text-gray-600">Total</div>
                 </div>
-                <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
-                    <div className="text-2xl font-black text-yellow-700">{stats.pending}</div>
-                    <div className="text-sm text-yellow-600">En attente</div>
+                <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-200 text-center">
+                    <div className="text-xl font-black text-yellow-700">{stats.pending}</div>
+                    <div className="text-[10px] text-yellow-600">En attente</div>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                    <div className="text-2xl font-black text-blue-700">{stats.inTransit}</div>
-                    <div className="text-sm text-blue-600">En cours</div>
+                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200 text-center">
+                    <div className="text-xl font-black text-blue-700">{stats.inTransit}</div>
+                    <div className="text-[10px] text-blue-600">En cours</div>
                 </div>
-                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-                    <div className="text-2xl font-black text-green-700">{stats.delivered}</div>
-                    <div className="text-sm text-green-600">Livrées</div>
+                <div className="bg-green-50 p-3 rounded-xl border border-green-200 text-center">
+                    <div className="text-xl font-black text-green-700">{stats.delivered}</div>
+                    <div className="text-[10px] text-green-600">Livrées</div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
                 {(['ALL', 'PENDING', 'IN_TRANSIT', 'DELIVERED'] as const).map(status => (
                     <button
                         key={status}
                         onClick={() => setFilter(status)}
-                        className={`px-4 py-2 rounded-lg font-bold whitespace-nowrap ${filter === status
+                        className={`px-3 py-1.5 rounded-lg font-bold whitespace-nowrap text-sm ${filter === status
                             ? 'bg-[#006233] text-white'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
@@ -176,7 +176,7 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                 href={`/livreur/orders/${delivery.id}`}
                                 className="block bg-white border-2 border-gray-100 rounded-2xl p-4 hover:shadow-xl hover:border-gray-200 transition-all active:scale-[0.98]"
                             >
-                                {/* Compact Header */}
+                                {/* Header */}
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
@@ -202,18 +202,20 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                     </div>
                                     {/* Pickup Count Badge */}
                                     <div className={`${pickupBadgeColor} text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md`}>
-                                        <span className="text-base">📍</span>
-                                        <span className="text-xs font-bold">{pickupCount} Stop{pickupCount > 1 ? 's' : ''}</span>
+                                        <span className="text-sm">📍</span>
+                                        <span className="text-xs font-bold">{pickupCount} collecte{pickupCount > 1 ? 's' : ''}</span>
                                     </div>
                                 </div>
 
-                                {/* Compact Points A & B */}
+                                {/* Points de collecte & livraison */}
                                 <div className="grid grid-cols-2 gap-2 mb-3">
-                                    {/* Point A - Pickup */}
+                                    {/* Point de collecte */}
                                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
                                         <div className="flex items-center gap-1.5 mb-2">
-                                            <span className="text-lg">📦</span>
-                                            <span className="text-[10px] font-bold text-green-700 uppercase">Point A</span>
+                                            <span className="text-base">📦</span>
+                                            <span className="text-[10px] font-bold text-green-700 uppercase">
+                                                Pt. Collecte{pickupCount > 1 ? ` 1/${pickupCount}` : ''}
+                                            </span>
                                         </div>
                                         <div className="space-y-1.5">
                                             <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.storeName}</div>
@@ -241,11 +243,11 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                         </div>
                                     </div>
 
-                                    {/* Point B - Delivery */}
+                                    {/* Point de livraison */}
                                     <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-3">
                                         <div className="flex items-center gap-1.5 mb-2">
-                                            <span className="text-lg">🚚</span>
-                                            <span className="text-[10px] font-bold text-blue-700 uppercase">Point B</span>
+                                            <span className="text-base">🏠</span>
+                                            <span className="text-[10px] font-bold text-blue-700 uppercase">Pt. Livraison</span>
                                         </div>
                                         <div className="space-y-1.5">
                                             <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.customerName}</div>
@@ -272,30 +274,38 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                     </div>
                                 </div>
 
-                                {/* Products Summary */}
+                                {/* Products Preview with images */}
                                 {delivery.items && delivery.items.length > 0 && (
                                     <div className="mb-3 bg-gray-50 rounded-lg p-2.5">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-gray-700">📋 Produits</span>
+                                            <span className="text-xs font-bold text-gray-700">📋 Produits à collecter</span>
                                             <span className="text-[10px] font-bold text-gray-500 bg-white px-2 py-0.5 rounded-full">
-                                                {delivery.items.length} articles
+                                                {delivery.items.length} article{delivery.items.length > 1 ? 's' : ''}
                                             </span>
                                         </div>
                                         <div className="flex gap-2 overflow-x-auto pb-1">
-                                            {delivery.items.slice(0, 3).map((item, idx) => (
-                                                <div key={idx} className="flex-shrink-0 w-14">
-                                                    {item.image && (
+                                            {delivery.items.slice(0, 4).map((item, idx) => (
+                                                <div key={idx} className="flex-shrink-0 text-center">
+                                                    {item.image ? (
                                                         <img
                                                             src={item.image}
                                                             alt={item.productName}
-                                                            className="w-14 h-14 object-cover rounded-md border border-gray-200"
+                                                            className="w-14 h-14 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
                                                         />
+                                                    ) : (
+                                                        <div className="w-14 h-14 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-200">
+                                                            <span className="text-xl">📦</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="text-[9px] text-gray-600 mt-1 w-14 leading-tight line-clamp-2">{item.productName}</div>
+                                                    {item.quantity > 1 && (
+                                                        <div className="text-[9px] font-bold text-[#006233]">x{item.quantity}</div>
                                                     )}
                                                 </div>
                                             ))}
-                                            {delivery.items.length > 3 && (
-                                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-md flex items-center justify-center border border-gray-300">
-                                                    <span className="text-xs font-bold text-gray-600">+{delivery.items.length - 3}</span>
+                                            {delivery.items.length > 4 && (
+                                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300">
+                                                    <span className="text-xs font-bold text-gray-600">+{delivery.items.length - 4}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -311,7 +321,7 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                         <span className="text-sm font-bold text-gray-500">DA</span>
                                     </div>
                                     <div className="bg-[#006233] text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
-                                        Détails →
+                                        Voir détails →
                                     </div>
                                 </div>
                             </Link>

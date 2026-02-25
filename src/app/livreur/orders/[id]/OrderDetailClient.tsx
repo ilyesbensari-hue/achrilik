@@ -40,7 +40,6 @@ function calculateStoreTotal(storeId: string, orderItems: any[]): number {
 
 // Helper to calculate payment breakdown for delivery agent
 function calculatePaymentBreakdown(order: any, uniqueStores: any[]) {
-    // Calculate total for each store
     const storeTotals: Record<string, number> = {};
     let totalToStores = 0;
 
@@ -50,32 +49,21 @@ function calculatePaymentBreakdown(order: any, uniqueStores: any[]) {
         totalToStores += storeTotal;
     });
 
-    // Delivery fee that agent keeps
-    // Use customerDeliveryFee if available (what client paid)
-    // Otherwise default to 500 DA
     const deliveryFee = order.customerDeliveryFee !== undefined
         ? order.customerDeliveryFee
         : 500;
 
-    // Platform commission (frais service) - currently 0
     const serviceFee = order.platformCommission || 0;
-
-    // What agent keeps
     const totalToAgent = deliveryFee + serviceFee;
-
-    // Verification
     const calculatedTotal = totalToStores + totalToAgent;
     const isValid = Math.abs(calculatedTotal - order.total) < 0.01;
 
-    return {
-        storeTotals,
-        totalToStores,
-        deliveryFee,
-        serviceFee,
-        totalToAgent,
-        calculatedTotal,
-        isValid
-    };
+    return { storeTotals, totalToStores, deliveryFee, serviceFee, totalToAgent, calculatedTotal, isValid };
+}
+
+// localStorage key for pickup confirmation
+function getPickupKey(deliveryId: string, storeId: string) {
+    return `pickup_confirmed_${deliveryId}_${storeId}`;
 }
 
 export default function OrderDetailClient({ deliveryId, initialUser }: OrderDetailClientProps) {
@@ -85,10 +73,34 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
     const [updating, setUpdating] = useState(false);
     const [notes, setNotes] = useState('');
     const [uniqueStores, setUniqueStores] = useState<any[]>([]);
+    // Track per-store pickup confirmation
+    const [pickupConfirmed, setPickupConfirmed] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         fetchDeliveryDetails();
     }, [deliveryId]);
+
+    // Load pickup confirmations from localStorage once delivery loaded
+    useEffect(() => {
+        if (!delivery || uniqueStores.length === 0) return;
+        const confirmed: Record<string, boolean> = {};
+        uniqueStores.forEach(store => {
+            const key = getPickupKey(delivery.id, store.id);
+            confirmed[store.id] = localStorage.getItem(key) === 'true';
+        });
+        setPickupConfirmed(confirmed);
+    }, [delivery, uniqueStores]);
+
+    const togglePickupConfirmed = (storeId: string) => {
+        const newValue = !pickupConfirmed[storeId];
+        const key = getPickupKey(delivery.id, storeId);
+        if (newValue) {
+            localStorage.setItem(key, 'true');
+        } else {
+            localStorage.removeItem(key);
+        }
+        setPickupConfirmed(prev => ({ ...prev, [storeId]: newValue }));
+    };
 
     const fetchDeliveryDetails = async () => {
         try {
@@ -97,7 +109,6 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
             setDelivery(data);
             setNotes(data.agentNotes || '');
 
-            // Extract unique stores from order items
             const stores = extractUniqueStores(data.order?.OrderItem || []);
             setUniqueStores(stores);
         } catch (error) {
@@ -144,16 +155,9 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
         await updateStatus('IN_TRANSIT');
     };
 
-    const openInGoogleMaps = () => {
-        if (delivery?.order?.deliveryLatitude && delivery?.order?.deliveryLongitude) {
-            const url = `https://www.google.com/maps/dir/?api=1&destination=${delivery.order.deliveryLatitude},${delivery.order.deliveryLongitude}`;
-            window.open(url, '_blank');
-        }
-    };
-
     if (loading) {
         return (
-            <div className="min-h-screen bg-base-200 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="loading loading-spinner loading-lg"></div>
             </div>
         );
@@ -161,9 +165,9 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
 
     if (!delivery) {
         return (
-            <div className="min-h-screen bg-base-200 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <AlertCircle className="w-16 h-16 mx-auto text-error mb-4" />
+                    <AlertCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
                     <h2 className="text-2xl font-bold mb-2">Livraison non trouvée</h2>
                     <Link href="/livreur" className="btn btn-primary mt-4">
                         Retour au dashboard
@@ -174,16 +178,16 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
     }
 
     const statusColors: Record<string, string> = {
-        PENDING: 'badge-warning',
-        IN_TRANSIT: 'badge-info',
-        DELIVERED: 'badge-success',
-        CANCELLED: 'badge-error'
+        PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+        IN_TRANSIT: 'bg-blue-100 text-blue-800 border-blue-300',
+        DELIVERED: 'bg-green-100 text-green-800 border-green-300',
+        CANCELLED: 'bg-red-100 text-red-800 border-red-300'
     };
 
     const statusLabels: Record<string, string> = {
         PENDING: 'En attente',
-        IN_TRANSIT: 'En cours',
-        DELIVERED: 'Livrée',
+        IN_TRANSIT: 'En cours de livraison',
+        DELIVERED: 'Livrée ✅',
         CANCELLED: 'Annulée'
     };
 
@@ -197,132 +201,232 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
         itemsByStore[storeId].push(item);
     });
 
+    const allPickupsConfirmed = uniqueStores.length > 0 && uniqueStores.every(s => pickupConfirmed[s.id]);
+
     return (
-        <div className="min-h-screen bg-base-200 pb-20">
+        <div className="min-h-screen bg-gray-50 pb-24">
             {/* Header */}
-            <div className="bg-primary text-primary-content p-4">
-                <div className="container mx-auto">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center gap-2 mb-4 hover:opacity-80"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                        Retour
-                    </button>
-                    <h1 className="text-2xl font-bold">Détails de la Livraison</h1>
-                    <div className="flex gap-3 items-center mt-2">
-                        <p className="text-sm opacity-90 font-mono">
-                            📦 Commande #{delivery.orderId.slice(-8).toUpperCase()}
-                        </p>
-                        <span className="text-xs opacity-70">
-                            • Livraison {delivery.id.slice(0, 6)}
-                        </span>
-                    </div>
+            <div className="bg-[#006233] text-white px-4 pt-4 pb-5 sticky top-0 z-10 shadow-lg">
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 mb-3 opacity-90 active:opacity-70"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Retour</span>
+                </button>
+                <h1 className="text-xl font-black">Détails de la Livraison</h1>
+                <div className="flex gap-2 items-center mt-1">
+                    <p className="text-sm opacity-90 font-mono">
+                        📦 #{delivery.orderId.slice(-8).toUpperCase()}
+                    </p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border font-bold ${statusColors[delivery.status]}`}>
+                        {statusLabels[delivery.status]}
+                    </span>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-6 space-y-4">
-                {/* Status Badge */}
-                <div className="bg-white rounded-lg p-4 shadow">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Statut actuel</span>
-                        <span className={`badge ${statusColors[delivery.status]} badge-lg`}>
-                            {statusLabels[delivery.status]}
-                        </span>
-                    </div>
-                </div>
-
-                {/* MULTI-VENDOR INDICATOR */}
+            <div className="px-4 py-4 space-y-4 max-w-2xl mx-auto">
+                {/* MULTI-VENDOR NOTICE */}
                 {uniqueStores.length > 1 && (
-                    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 shadow-md">
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4">
                         <div className="flex items-center gap-2">
                             <span className="text-2xl">⚠️</span>
                             <div>
-                                <p className="font-bold text-amber-900">
-                                    Commande Multi-Vendeur - {uniqueStores.length} points de collecte
+                                <p className="font-bold text-amber-900 text-sm">
+                                    Commande multi-vendeur — {uniqueStores.length} points de collecte
                                 </p>
-                                <p className="text-sm text-amber-800">
-                                    Vous devez récupérer les colis chez {uniqueStores.length} magasins différents
+                                <p className="text-xs text-amber-700 mt-0.5">
+                                    Récupérez les colis chez {uniqueStores.length} magasins avant la livraison
                                 </p>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* POINTS A - PICKUP (All Stores) */}
+                {/* ===== POINTS DE COLLECTE ===== */}
                 {uniqueStores.map((store, index) => {
                     const storeItems = itemsByStore[store.id] || [];
+                    const isConfirmed = pickupConfirmed[store.id] || false;
+                    const totalStores = uniqueStores.length;
 
                     return (
-                        <div key={store.id} className="bg-green-50 border-2 border-green-200 rounded-lg p-4 shadow space-y-3">
-                            <h2 className="font-bold text-lg flex items-center gap-2 text-green-800">
-                                <Package className="w-5 h-5" />
-                                📦 Point A{uniqueStores.length > 1 ? ` ${index + 1}/${uniqueStores.length}` : ''} - RÉCUPÉRATION
-                            </h2>
-
-                            <div className="bg-white p-3 rounded-lg space-y-2">
-                                <p className="text-lg"><strong>🏪 {store.name}</strong></p>
-                                <p><strong>Adresse:</strong> {store.address || 'Non renseignée'}</p>
-                                <p><strong>Ville:</strong> {store.city || store.storageCity || 'Non renseignée'}</p>
-                                {store.phone && (
-                                    <p><strong>Téléphone:</strong> <a href={`tel:${store.phone}`} className="link link-primary">{store.phone}</a></p>
-                                )}
-                                {store.User?.name && (
-                                    <p><strong>Contact:</strong> {store.User.name}</p>
-                                )}
-
-                                {/* Items from this store */}
-                                <div className="mt-3 pt-3 border-t border-green-200">
-                                    <p className="text-sm font-semibold mb-2">
-                                        Articles à récupérer ({storeItems.length}):
-                                    </p>
-                                    <div className="space-y-1">
-                                        {storeItems.map((item: any, idx: number) => (
-                                            <div key={idx} className="text-sm bg-green-50 p-2 rounded">
-                                                • {item.Variant?.Product?.title} (x{item.quantity})
-                                            </div>
-                                        ))}
+                        <div
+                            key={store.id}
+                            className={`rounded-xl border-2 overflow-hidden shadow-md transition-all ${isConfirmed
+                                ? 'border-green-400 bg-green-50'
+                                : 'border-green-200 bg-white'
+                                }`}
+                        >
+                            {/* Section header */}
+                            <div className={`px-4 py-3 flex items-center justify-between ${isConfirmed ? 'bg-green-400' : 'bg-green-600'}`}>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-white text-lg">📦</span>
+                                    <div>
+                                        <p className="text-white font-black text-sm">
+                                            Point de collecte {totalStores > 1 ? `${index + 1}/${totalStores}` : ''}
+                                        </p>
+                                        <p className="text-green-100 text-xs">Récupérer le colis ici</p>
                                     </div>
                                 </div>
+                                {isConfirmed && (
+                                    <span className="text-white font-bold text-xs bg-green-600 px-2 py-1 rounded-full">
+                                        ✅ Collecté
+                                    </span>
+                                )}
+                            </div>
 
+                            <div className="p-4 space-y-3">
+                                {/* Store info */}
+                                <div className="space-y-1.5">
+                                    <p className="font-black text-gray-900 text-base">🏪 {store.name}</p>
+                                    {store.address && (
+                                        <p className="text-sm text-gray-600">📍 {store.address}</p>
+                                    )}
+                                    {(store.city || store.storageCity) && (
+                                        <p className="text-sm text-gray-600">🏙️ {store.city || store.storageCity}</p>
+                                    )}
+                                    {store.phone && (
+                                        <a
+                                            href={`tel:${store.phone}`}
+                                            className="flex items-center gap-2 text-green-700 font-semibold text-sm"
+                                        >
+                                            📞 {store.phone}
+                                        </a>
+                                    )}
+                                    {store.User?.name && (
+                                        <p className="text-sm text-gray-600">👤 {store.User.name}</p>
+                                    )}
+                                </div>
+
+                                {/* GPS Button */}
                                 {store.latitude && store.longitude && (
                                     <button
                                         onClick={() => {
                                             const url = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
                                             window.open(url, '_blank');
                                         }}
-                                        className="btn btn-sm btn-success gap-2 mt-2"
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-600 text-white rounded-lg font-bold text-sm active:bg-green-700"
                                     >
                                         <Navigation className="w-4 h-4" />
                                         🗺️ Itinéraire vers {store.name}
                                     </button>
                                 )}
+
+                                {/* ===== PRODUITS À VÉRIFIER ===== */}
+                                <div className="border-t border-green-200 pt-3">
+                                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">
+                                        🔍 Vérifier les produits ({storeItems.length} article{storeItems.length > 1 ? 's' : ''})
+                                    </p>
+                                    <div className="space-y-3">
+                                        {storeItems.map((item: any, idx: number) => {
+                                            const product = item.Variant?.Product;
+                                            const images = product?.images || [];
+                                            const firstImage = images[0] || null;
+                                            const variantSize = item.Variant?.size;
+                                            const variantColor = item.Variant?.color;
+
+                                            return (
+                                                <div key={idx} className="flex gap-3 bg-white rounded-xl p-3 border border-green-100 shadow-sm">
+                                                    {/* Product Image */}
+                                                    <div className="flex-shrink-0">
+                                                        {firstImage ? (
+                                                            <img
+                                                                src={firstImage}
+                                                                alt={product?.title || 'Produit'}
+                                                                className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 shadow"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-20 h-20 bg-gray-100 rounded-lg border-2 border-gray-200 flex items-center justify-center">
+                                                                <Package className="w-8 h-8 text-gray-400" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Product Info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-bold text-gray-900 text-sm leading-tight mb-1">
+                                                            {product?.title || 'Produit inconnu'}
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-1.5 mb-1.5">
+                                                            {variantSize && (
+                                                                <span className="text-[10px] font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                                                                    Taille: {variantSize}
+                                                                </span>
+                                                            )}
+                                                            {variantColor && (
+                                                                <span className="text-[10px] font-bold bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
+                                                                    Couleur: {variantColor}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs font-bold text-[#006233]">
+                                                                Qté: {item.quantity}
+                                                            </span>
+                                                            <span className="text-xs font-bold text-gray-700">
+                                                                {(item.price * item.quantity).toLocaleString()} DA
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* ===== CHECKBOX COLLECTE ===== */}
+                                <button
+                                    onClick={() => togglePickupConfirmed(store.id)}
+                                    className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl border-2 font-black text-base transition-all active:scale-[0.98] ${isConfirmed
+                                        ? 'bg-green-500 border-green-600 text-white shadow-lg'
+                                        : 'bg-white border-dashed border-green-400 text-green-700'
+                                        }`}
+                                >
+                                    <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isConfirmed
+                                        ? 'bg-white border-white'
+                                        : 'border-green-400'
+                                        }`}>
+                                        {isConfirmed && <CheckCircle className="w-5 h-5 text-green-600" />}
+                                    </div>
+                                    {isConfirmed
+                                        ? `✅ Colis récupéré chez ${store.name}`
+                                        : `Appuyer pour confirmer la collecte`
+                                    }
+                                </button>
                             </div>
                         </div>
                     );
                 })}
 
-                {/* Point B - DELIVERY to Customer */}
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 shadow space-y-3">
-                    <h2 className="font-bold text-lg flex items-center gap-2 text-blue-800">
-                        <MapPin className="w-5 h-5" />
-                        🚚 Point B - LIVRAISON (Client)
-                    </h2>
-                    <div className="space-y-2">
-                        <p><strong>Nom:</strong> {delivery.order.shippingName}</p>
-                        <p><strong>Téléphone:</strong> <a href={`tel:${delivery.order.shippingPhone}`} className="link link-primary">{delivery.order.shippingPhone}</a></p>
-                        <p><strong>Adresse:</strong> {delivery.order.shippingAddress}</p>
+                {/* ===== POINT DE LIVRAISON ===== */}
+                <div className="bg-white border-2 border-blue-200 rounded-xl overflow-hidden shadow-md">
+                    <div className="bg-blue-600 px-4 py-3 flex items-center gap-2">
+                        <span className="text-white text-lg">🏠</span>
+                        <div>
+                            <p className="text-white font-black text-sm">Point de livraison</p>
+                            <p className="text-blue-100 text-xs">Livrer au client</p>
+                        </div>
+                    </div>
+                    <div className="p-4 space-y-2">
+                        <p className="font-black text-gray-900 text-base">👤 {delivery.order.shippingName}</p>
+                        <a
+                            href={`tel:${delivery.order.shippingPhone}`}
+                            className="flex items-center gap-2 text-blue-700 font-semibold text-sm"
+                        >
+                            📞 {delivery.order.shippingPhone}
+                        </a>
+                        <p className="text-sm text-gray-600">📍 {delivery.order.shippingAddress}</p>
                         {delivery.order.shippingCity && (
-                            <p><strong>Ville:</strong> {delivery.order.shippingCity}</p>
+                            <p className="text-sm text-gray-600">🏙️ {delivery.order.shippingCity}</p>
                         )}
-                        <p><strong>Wilaya:</strong> {delivery.order.shippingWilaya}</p>
+                        <p className="text-sm text-gray-600">🗺️ {delivery.order.shippingWilaya}</p>
                         {delivery.order.deliveryLatitude && delivery.order.deliveryLongitude && (
                             <button
                                 onClick={() => {
                                     const url = `https://www.google.com/maps/dir/?api=1&destination=${delivery.order.deliveryLatitude},${delivery.order.deliveryLongitude}`;
                                     window.open(url, '_blank');
                                 }}
-                                className="btn btn-sm btn-info gap-2 mt-2"
+                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-sm active:bg-blue-700 mt-2"
                             >
                                 <Navigation className="w-4 h-4" />
                                 🗺️ Itinéraire vers le client
@@ -331,15 +435,15 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                     </div>
                 </div>
 
-                {/* Tracking Information */}
-                <div className="bg-white rounded-lg p-4 shadow">
-                    <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
+                {/* Tracking */}
+                <div className="bg-white rounded-xl p-4 shadow border border-gray-200">
+                    <h2 className="font-bold text-base mb-3 flex items-center gap-2 text-gray-800">
                         <Package className="w-5 h-5" />
                         Suivi Livraison
                     </h2>
                     <div className="space-y-3">
                         <div>
-                            <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                            <label className="text-xs font-bold text-gray-600 mb-1 block uppercase tracking-wide">
                                 Numéro de dossier (Yalidine, etc.)
                             </label>
                             <input
@@ -347,11 +451,11 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                                 value={delivery.trackingNumber || ''}
                                 onChange={(e) => setDelivery({ ...delivery, trackingNumber: e.target.value })}
                                 placeholder="Ex: YAL123456"
-                                className="input input-bordered w-full"
+                                className="input input-bordered w-full text-sm"
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                            <label className="text-xs font-bold text-gray-600 mb-1 block uppercase tracking-wide">
                                 Lien de suivi
                             </label>
                             <input
@@ -359,14 +463,14 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                                 value={delivery.trackingUrl || ''}
                                 onChange={(e) => setDelivery({ ...delivery, trackingUrl: e.target.value })}
                                 placeholder="https://yalidine.com/track/123456"
-                                className="input input-bordered w-full"
+                                className="input input-bordered w-full text-sm"
                             />
                             {delivery.trackingUrl && (
                                 <a
                                     href={delivery.trackingUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-xs text-primary hover:underline mt-1 inline-block"
+                                    className="text-xs text-blue-600 hover:underline mt-1 inline-block"
                                 >
                                     🔗 Ouvrir le lien de suivi
                                 </a>
@@ -375,248 +479,178 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                     </div>
                 </div>
 
-                {/* Payment Info */}
-                <div className="bg-white rounded-lg p-4 shadow">
-                    <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
-                        <DollarSign className="w-5 h-5" />
-                        Paiement
-                    </h2>
-                    <div className="space-y-2">
-                        <p><strong>Total:</strong> {delivery.order.total} DA</p>
-                        {delivery.codAmount && (
-                            <>
-                                <p><strong>COD à collecter:</strong> {delivery.codAmount} DA</p>
-                                <p><strong>COD collecté:</strong> {delivery.codCollected ? '✅ Oui' : '❌ Non'}</p>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* PAYMENT BREAKDOWN - Detailed */}
+                {/* Payment Breakdown */}
                 {(() => {
                     const breakdown = calculatePaymentBreakdown(delivery.order, uniqueStores);
 
                     return (
-                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border-3 border-emerald-400 rounded-xl p-5 shadow-xl">
-                            {/* Header */}
-                            <h2 className="font-bold text-2xl flex items-center gap-2 text-emerald-900 mb-5">
-                                <DollarSign className="w-7 h-7" />
+                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-400 rounded-xl p-4 shadow">
+                            <h2 className="font-bold text-lg flex items-center gap-2 text-emerald-900 mb-4">
+                                <DollarSign className="w-6 h-6" />
                                 💰 Détail Paiement COD
                             </h2>
 
-                            {/* Total COD to Collect */}
-                            <div className="bg-white rounded-xl p-4 mb-5 border-3 border-emerald-500 shadow-lg">
+                            {/* Total à collecter */}
+                            <div className="bg-white rounded-xl p-4 mb-4 border-2 border-emerald-500 shadow">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-lg font-semibold text-gray-700 flex items-center gap-2">
-                                        <span className="text-2xl">💵</span>
-                                        Total COD à Collecter
+                                    <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                        <span className="text-xl">💵</span>
+                                        Total à collecter
                                     </span>
-                                    <span className="text-4xl font-black text-emerald-700">
+                                    <span className="text-3xl font-black text-emerald-700">
                                         {delivery.order.total} DA
                                     </span>
                                 </div>
                             </div>
 
-                            {/* À PAYER AUX MAGASINS */}
-                            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 mb-5 border-3 border-amber-400 shadow-lg">
-                                <h3 className="font-bold text-xl mb-4 text-amber-900 flex items-center gap-2">
-                                    <span className="text-2xl">📦</span>
-                                    À Payer aux Magasins
+                            {/* À payer aux magasins */}
+                            <div className="bg-amber-50 rounded-xl p-4 mb-4 border-2 border-amber-300 shadow">
+                                <h3 className="font-bold text-base mb-3 text-amber-900 flex items-center gap-2">
+                                    📦 À payer aux magasins
                                 </h3>
-
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {uniqueStores.map((store, index) => {
                                         const storeTotal = breakdown.storeTotals[store.id];
-
                                         return (
-                                            <div key={store.id} className="flex justify-between items-center bg-white p-4 rounded-lg shadow border-2 border-amber-200">
-                                                <span className="font-semibold text-gray-800 flex items-center gap-2">
-                                                    <span className="bg-amber-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
+                                            <div key={store.id} className="flex justify-between items-center bg-white p-3 rounded-lg border border-amber-200">
+                                                <span className="font-semibold text-gray-800 flex items-center gap-2 text-sm">
+                                                    <span className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                                                         {index + 1}
                                                     </span>
                                                     {store.name}
                                                 </span>
-                                                <span className="text-2xl font-bold text-amber-700">
+                                                <span className="text-lg font-bold text-amber-700">
                                                     {storeTotal.toLocaleString()} DA
                                                 </span>
                                             </div>
                                         );
                                     })}
-
-                                    {/* Subtotal Stores */}
-                                    <div className="border-t-3 border-amber-500 pt-3 mt-3">
-                                        <div className="flex justify-between items-center bg-amber-100 p-4 rounded-lg">
-                                            <span className="font-bold text-xl text-amber-900">
-                                                💰 Sous-total Magasins
-                                            </span>
-                                            <span className="text-3xl font-black text-amber-800">
-                                                {breakdown.totalToStores.toLocaleString()} DA
-                                            </span>
-                                        </div>
+                                    <div className="flex justify-between items-center bg-amber-100 p-3 rounded-lg mt-2">
+                                        <span className="font-bold text-amber-900 text-sm">💰 Sous-total magasins</span>
+                                        <span className="text-xl font-black text-amber-800">{breakdown.totalToStores.toLocaleString()} DA</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* VOUS GARDEZ (Livreur) */}
-                            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 mb-5 border-3 border-blue-400 shadow-lg">
-                                <h3 className="font-bold text-xl mb-4 text-blue-900 flex items-center gap-2">
-                                    <span className="text-2xl">💵</span>
-                                    Vous Gardez (Livreur)
+                            {/* Vous gardez */}
+                            <div className="bg-blue-50 rounded-xl p-4 mb-4 border-2 border-blue-300 shadow">
+                                <h3 className="font-bold text-base mb-3 text-blue-900 flex items-center gap-2">
+                                    💵 Vous gardez
                                 </h3>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow border-2 border-blue-200">
-                                        <span className="font-semibold text-gray-800 flex items-center gap-2">
-                                            <span className="text-xl">🚚</span>
-                                            Frais de livraison
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-blue-200">
+                                        <span className="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                                            🚚 Frais de livraison
                                         </span>
-                                        <span className="text-2xl font-bold text-blue-700">
-                                            {breakdown.deliveryFee.toLocaleString()} DA
-                                        </span>
+                                        <span className="text-lg font-bold text-blue-700">{breakdown.deliveryFee.toLocaleString()} DA</span>
                                     </div>
-
-                                    <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow border-2 border-blue-200">
-                                        <span className="font-semibold text-gray-800 flex items-center gap-2">
-                                            <span className="text-xl">🏢</span>
-                                            Frais service Achrilik
-                                        </span>
-                                        <span className="text-2xl font-bold text-blue-700">
-                                            {breakdown.serviceFee.toLocaleString()} DA
-                                        </span>
-                                    </div>
-
-                                    {/* Total Agent */}
-                                    <div className="border-t-3 border-blue-500 pt-3 mt-3">
-                                        <div className="flex justify-between items-center bg-blue-100 p-4 rounded-lg">
-                                            <span className="font-bold text-xl text-blue-900">
-                                                💰 Total à Garder
-                                            </span>
-                                            <span className="text-3xl font-black text-blue-800">
-                                                {breakdown.totalToAgent.toLocaleString()} DA
-                                            </span>
-                                        </div>
+                                    <div className="flex justify-between items-center bg-blue-100 p-3 rounded-lg">
+                                        <span className="font-bold text-blue-900 text-sm">Total à garder</span>
+                                        <span className="text-xl font-black text-blue-800">{breakdown.totalToAgent.toLocaleString()} DA</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* VÉRIFICATION */}
-                            <div className={`rounded-xl p-4 border-3 shadow-lg ${breakdown.isValid ? 'bg-emerald-100 border-emerald-600' : 'bg-red-100 border-red-600'}`}>
-                                <div className="flex justify-between items-center">
-                                    <span className="font-bold text-lg flex items-center gap-2">
-                                        {breakdown.isValid ? '✅' : '⚠️'}
-                                        <span className={breakdown.isValid ? 'text-emerald-900' : 'text-red-900'}>
-                                            Vérification
-                                        </span>
-                                    </span>
-                                    <span className={`text-sm font-mono ${breakdown.isValid ? 'text-emerald-800' : 'text-red-800'}`}>
-                                        {breakdown.totalToStores.toLocaleString()} + {breakdown.totalToAgent.toLocaleString()} = {breakdown.calculatedTotal.toLocaleString()} DA
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Process Info */}
-                            <div className="mt-5 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg shadow">
-                                <p className="text-sm text-yellow-900 leading-relaxed">
-                                    <strong className="flex items-center gap-2 mb-2">
-                                        <span className="text-xl">ℹ️</span>
-                                        Process de Dispatch:
-                                    </strong>
-                                    Vous collectez le COD total (<strong>{delivery.order.total.toLocaleString()} DA</strong>) du client.
-                                    Ensuite, vous payez chaque magasin sa part, et vous gardez <strong>{breakdown.totalToAgent.toLocaleString()} DA</strong> pour votre livraison.
-                                    {breakdown.serviceFee > 0 && ' Les frais service seront facturés plus tard par Achrilik.'}
-                                </p>
+                            {/* Info */}
+                            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded-lg text-xs text-yellow-900 leading-relaxed">
+                                <strong>ℹ️ Process :</strong> Collectez <strong>{delivery.order.total.toLocaleString()} DA</strong> du client, payez chaque magasin sa part, et gardez <strong>{breakdown.totalToAgent.toLocaleString()} DA</strong> pour votre livraison.
                             </div>
                         </div>
                     );
                 })()}
 
-                {/* Agent Notes */}
-                <div className="bg-white rounded-lg p-4 shadow">
-                    <h2 className="font-bold text-lg mb-3">Notes</h2>
+                {/* Notes */}
+                <div className="bg-white rounded-xl p-4 shadow border border-gray-200">
+                    <h2 className="font-bold text-base mb-3 text-gray-800">📝 Notes</h2>
                     <textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Ajoutez vos notes ici..."
-                        className="textarea textarea-bordered w-full"
+                        className="textarea textarea-bordered w-full text-sm"
                         rows={3}
                     />
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                    {delivery.status === 'PENDING' && (
-                        <button
-                            onClick={startDelivery}
-                            disabled={updating}
-                            className="btn btn-primary btn-block btn-lg"
-                        >
-                            {updating ? <span className="loading loading-spinner"></span> : null}
-                            Démarrer la Livraison
-                        </button>
-                    )}
-
-                    {delivery.status === 'IN_TRANSIT' && (
-                        <button
-                            onClick={markAsDelivered}
-                            disabled={updating}
-                            className="btn btn-success btn-block btn-lg"
-                        >
-                            {updating ? <span className="loading loading-spinner"></span> : <CheckCircle className="w-5 h-5" />}
-                            Marquer comme Livrée
-                        </button>
-                    )}
-
-                    {(delivery.status === 'PENDING' || delivery.status === 'IN_TRANSIT') && notes !== delivery.agentNotes && (
-                        <button
-                            onClick={() => updateStatus(delivery.status)}
-                            disabled={updating}
-                            className="btn btn-outline btn-block"
-                        >
-                            Sauvegarder les Notes
-                        </button>
-                    )}
-                </div>
-
-                {/* Timeline */}
-                <div className="bg-white rounded-lg p-4 shadow">
-                    <h2 className="font-bold text-lg mb-3 flex items-center gap-2">
+                {/* Historique */}
+                <div className="bg-white rounded-xl p-4 shadow border border-gray-200">
+                    <h2 className="font-bold text-base mb-3 flex items-center gap-2 text-gray-800">
                         <Clock className="w-5 h-5" />
                         Historique
                     </h2>
                     <ul className="timeline timeline-vertical">
                         <li>
-                            <div className="timeline-start">Créée</div>
+                            <div className="timeline-start text-xs">Créée</div>
                             <div className="timeline-middle">
-                                <div className="w-4 h-4 rounded-full bg-primary"></div>
+                                <div className="w-4 h-4 rounded-full bg-[#006233]"></div>
                             </div>
-                            <div className="timeline-end timeline-box">
+                            <div className="timeline-end timeline-box text-xs">
                                 {new Date(delivery.order.createdAt).toLocaleString('fr-FR')}
                             </div>
                         </li>
                         {delivery.status !== 'PENDING' && (
                             <li>
-                                <div className="timeline-start">En cours</div>
+                                <div className="timeline-start text-xs">En cours</div>
                                 <div className="timeline-middle">
-                                    <div className="w-4 h-4 rounded-full bg-info"></div>
+                                    <div className="w-4 h-4 rounded-full bg-blue-500"></div>
                                 </div>
-                                <div className="timeline-end timeline-box">
+                                <div className="timeline-end timeline-box text-xs">
                                     {delivery.updatedAt ? new Date(delivery.updatedAt).toLocaleString('fr-FR') : ''}
                                 </div>
                             </li>
                         )}
                         {delivery.status === 'DELIVERED' && (
                             <li>
-                                <div className="timeline-start">Livrée</div>
+                                <div className="timeline-start text-xs">Livrée</div>
                                 <div className="timeline-middle">
-                                    <div className="w-4 h-4 rounded-full bg-success"></div>
+                                    <div className="w-4 h-4 rounded-full bg-green-500"></div>
                                 </div>
-                                <div className="timeline-end timeline-box">
+                                <div className="timeline-end timeline-box text-xs">
                                     {delivery.updatedAt ? new Date(delivery.updatedAt).toLocaleString('fr-FR') : ''}
                                 </div>
                             </li>
                         )}
                     </ul>
                 </div>
+            </div>
+
+            {/* Fixed Bottom Action Buttons */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 space-y-2 shadow-2xl">
+                {/* Save notes if changed */}
+                {(delivery.status === 'PENDING' || delivery.status === 'IN_TRANSIT') && notes !== delivery.agentNotes && (
+                    <button
+                        onClick={() => updateStatus(delivery.status)}
+                        disabled={updating}
+                        className="btn btn-outline btn-sm btn-block"
+                    >
+                        Sauvegarder les notes
+                    </button>
+                )}
+
+                {delivery.status === 'PENDING' && (
+                    <button
+                        onClick={startDelivery}
+                        disabled={updating}
+                        className="btn btn-block btn-lg text-white font-black text-base"
+                        style={{ backgroundColor: '#006233' }}
+                    >
+                        {updating ? <span className="loading loading-spinner"></span> : '🚀'}
+                        Démarrer la livraison
+                    </button>
+                )}
+
+                {delivery.status === 'IN_TRANSIT' && (
+                    <button
+                        onClick={markAsDelivered}
+                        disabled={updating || !allPickupsConfirmed}
+                        className={`btn btn-block btn-lg font-black text-base ${allPickupsConfirmed ? 'btn-success' : 'btn-disabled'}`}
+                    >
+                        {updating ? <span className="loading loading-spinner"></span> : <CheckCircle className="w-5 h-5" />}
+                        {allPickupsConfirmed
+                            ? 'Marquer comme livrée ✅'
+                            : `Confirmez d'abord les collectes (${Object.values(pickupConfirmed).filter(Boolean).length}/${uniqueStores.length})`
+                        }
+                    </button>
+                )}
             </div>
         </div>
     );
