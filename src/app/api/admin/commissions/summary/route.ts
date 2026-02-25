@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/adminAuth';
 
 // GET: Dashboard commissions - Vue globale + par vendeur
 export async function GET(request: NextRequest) {
-    try {
-        // Vérifier si user est admin (à implémenter)
+    const guard = await requireAdminAuth(request);
+    if (guard) return guard;
 
-        // 1. Récupérer toutes les commandes DELIVERED avec commission
+    try {
         const deliveredOrders = await prisma.order.findMany({
             where: {
                 status: 'DELIVERED',

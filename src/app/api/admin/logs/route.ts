@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminAuth } from '@/lib/adminAuth';
 
 // GET /api/admin/logs - Fetch admin logs with filters
 export async function GET(request: NextRequest) {
+    const guard = await requireAdminAuth(request);
+    if (guard) return guard;
+
     try {
         const searchParams = request.nextUrl.searchParams;
         const action = searchParams.get('action');

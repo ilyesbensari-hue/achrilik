@@ -1,10 +1,13 @@
 import { NextRequest } from 'next/server';
-import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { prisma } from '@/lib/prisma';
 import { generateCSVResponse, generatePDFResponse, generateSimplePDF } from '@/lib/exportUtils';
+import { requireAdminAuth } from '@/lib/adminAuth';
 
-// GET /api/admin/export/users - Export users data
+// GET /api/admin/export/users - Export users data (ADMIN ONLY)
 export async function GET(request: NextRequest) {
+    const guard = await requireAdminAuth(request);
+    if (guard) return guard;
+
     try {
         const searchParams = request.nextUrl.searchParams;
         const format = searchParams.get('format') || 'csv';

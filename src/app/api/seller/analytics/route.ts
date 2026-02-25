@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireSellerAuth } from '@/lib/adminAuth';
 
 export async function GET(req: NextRequest) {
+    const guard = await requireSellerAuth(req);
+    if (guard) return guard;
+
     try {
         // Get sellerId from query params
         const sellerId = req.nextUrl.searchParams.get('sellerId');

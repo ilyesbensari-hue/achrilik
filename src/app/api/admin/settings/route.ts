@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAdminAction, AdminActions, TargetTypes } from '@/lib/adminLogger';
 import { randomBytes } from 'crypto';
+import { requireAdminAuth } from '@/lib/adminAuth';
 
 // GET /api/admin/settings - Get all settings or specific setting
 export async function GET(request: NextRequest) {
+    const guard = await requireAdminAuth(request);
+    if (guard) return guard;
+
     try {
         const searchParams = request.nextUrl.searchParams;
         const key = searchParams.get('key');
@@ -39,6 +43,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/admin/settings - Create or update a setting
 export async function POST(request: NextRequest) {
+    const guard = await requireAdminAuth(request);
+    if (guard) return guard;
+
     try {
         const { key, value, category, description, adminId } = await request.json();
 
@@ -83,6 +90,9 @@ export async function POST(request: NextRequest) {
 
 // DELETE /api/admin/settings - Delete a setting
 export async function DELETE(request: NextRequest) {
+    const guard = await requireAdminAuth(request);
+    if (guard) return guard;
+
     try {
         const searchParams = request.nextUrl.searchParams;
         const key = searchParams.get('key');
