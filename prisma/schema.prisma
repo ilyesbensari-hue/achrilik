@@ -27,54 +27,42 @@ model AdminLog {
 }
 
 model Banner {
-  id          String   @id @default(cuid())
-  title       String
-  title_ar    String?  // Titre en arabe
-  subtitle    String?
-  subtitle_ar String?  // Sous-titre en arabe
-  image       String
-  videoUrl    String?  // NEW: Support vidéo/animation
-  link        String?
-  buttonText  String   @default("Voir l'offre")
-  buttonText_ar String? // Texte bouton en arabe
-  isActive    Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  title         String
+  title_ar      String?
+  subtitle      String?
+  subtitle_ar   String?
+  image         String
+  videoUrl      String?
+  link          String?
+  buttonText    String   @default("Voir l'offre")
+  buttonText_ar String?
+  isActive      Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Category {
-  id          String     @id @default(cuid())
-  name        String     // Ex: "T-Shirts & Polos"
-  slug        String     @unique // Ex: "tshirts-polos"
-  description String?
-  image       String?    // URL image catégorie
-  icon        String?    // Emoji ou icône
-  
-  // Hiérarchie (3 niveaux: Vêtements > Homme > T-Shirts)
-  parentId    String?
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Category[] @relation("CategoryHierarchy")
-  
-  // Ordre d'affichage
-  order       Int        @default(0)
-  
-  // SEO
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  description     String?
+  image           String?
+  icon            String?
+  parentId        String?
+  order           Int        @default(0)
   metaTitle       String?
   metaDescription String?
-  keywords        String[] // Array de mots-clés
-  
-  // Statut
-  isActive    Boolean    @default(true)
-  isFeatured  Boolean    @default(false)
-  
-  // Relations
-  products    Product[]
-  
-  // Timestamps
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
+  keywords        String[]
+  isActive        Boolean    @default(true)
+  isFeatured      Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  parent          Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        Category[] @relation("CategoryHierarchy")
+  products        Product[]
+
   @@index([parentId])
   @@index([slug])
 }
@@ -91,66 +79,60 @@ model EmailTemplate {
 }
 
 model Order {
-  id                  String         @id
-  userId              String
-  total               Float
-  subtotal            Float?         // Montant produits uniquement (sans livraison)
-  
-  // FREE DELIVERY TRACKING
-  customerDeliveryFee Float?         @default(0) // Ce que le client paie
-  actualDeliveryFee   Float?         @default(0) // Ce que le vendeur paie au livreur
-  freeDeliveryApplied Boolean        @default(false) // Flag pour analytics
-  
-  paymentMethod       String
-  deliveryType        String
-  createdAt           DateTime       @default(now())
-  estimatedDelivery   DateTime?
-  notes               String?
-  shippingAddress     String?
-  shippingCity        String?
-  shippingName        String?
-  shippingPhone       String?
-  storeAddress        String?
-  storeCity           String?
-  storeId             String?
-  storeName           String?
-  trackingNumber      String?
-  amountReceived      Float?
-  deliveryPersonName  String?
-  deliveryPersonPhone String?
-  isPaid              Boolean        @default(false)
-  paidAt              DateTime?
-  cancellationReason  String?
-  status              OrderStatus    @default(PENDING)
-  codAmount           Float?
-  codReceived         Boolean        @default(false)
-  codReceivedAmount   Float?
-  codReceivedAt       DateTime?
-  deliveryStatus      DeliveryStatus @default(PENDING)
-  lastUpdatedAt       DateTime?
-  lastUpdatedBy       String?
-  paymentReceipt      String?
-  sellerNotes         String?
-  shippingWilaya      String?
-  deliveryLatitude    Float?         // GPS coordinates for delivery
-  deliveryLongitude   Float?         // GPS coordinates for delivery
-  trackingUrl         String?
-  statusHistory       Json?          // Historique transitions status [{from, to, at, by}]
-  merchantNotes       String?        // Notes du commerçant
-  deliveryNotes       String?        // Notes du livreur
-  
-  // PLATFORM COMMISSION
-  platformCommission     Float?    // Montant commission plateforme (en DA)
-  platformCommissionRate Float?    // Taux appliqué au moment de la commande (%)
-  commissionPaid         Boolean   @default(false)
+  id                     String         @id
+  userId                 String
+  total                  Float
+  paymentMethod          String
+  deliveryType           String
+  createdAt              DateTime       @default(now())
+  estimatedDelivery      DateTime?
+  notes                  String?
+  shippingAddress        String?
+  shippingCity           String?
+  shippingName           String?
+  shippingPhone          String?
+  storeAddress           String?
+  storeCity              String?
+  storeId                String?
+  storeName              String?
+  trackingNumber         String?
+  amountReceived         Float?
+  deliveryPersonName     String?
+  deliveryPersonPhone    String?
+  isPaid                 Boolean        @default(false)
+  paidAt                 DateTime?
+  cancellationReason     String?
+  status                 OrderStatus    @default(PENDING)
+  codAmount              Float?
+  codReceived            Boolean        @default(false)
+  codReceivedAmount      Float?
+  codReceivedAt          DateTime?
+  deliveryStatus         DeliveryStatus @default(PENDING)
+  lastUpdatedAt          DateTime?
+  lastUpdatedBy          String?
+  paymentReceipt         String?
+  sellerNotes            String?
+  shippingWilaya         String?
+  deliveryLatitude       Float?
+  deliveryLongitude      Float?
+  trackingUrl            String?
+  statusHistory          Json?
+  merchantNotes          String?
+  deliveryNotes          String?
+  commissionPaid         Boolean        @default(false)
   commissionPaidAt       DateTime?
-  commissionPaymentNote  String?   // Note admin lors paiement
-  
-  delivery            Delivery?
-  Store               Store?         @relation(fields: [storeId], references: [id])
-  User                User           @relation(fields: [userId], references: [id])
-  OrderItem           OrderItem[]
-  Review              Review[]       // NEW: Avis liés à cette commande
+  commissionPaymentNote  String?
+  platformCommission     Float?
+  platformCommissionRate Float?
+  actualDeliveryFee      Float?         @default(0)
+  customerDeliveryFee    Float?         @default(0)
+  freeDeliveryApplied    Boolean        @default(false)
+  subtotal               Float?
+  delivery               Delivery?
+  Store                  Store?         @relation(fields: [storeId], references: [id])
+  User                   User           @relation(fields: [userId], references: [id])
+  OrderItem              OrderItem[]
+  Review                 Review[]
 
   @@index([createdAt])
   @@index([isPaid])
@@ -187,87 +169,58 @@ model PasswordResetToken {
 }
 
 model Product {
-  id              String     @id @default(cuid())
-  title           String
-  description     String
-  price           Int
-  images          String
-  categoryId      String?
-  storeId         String
-  status          String     @default("PENDING")
-  rejectionReason String?
-  createdAt       DateTime   @default(now())
-  
-  // CARACTÉRISTIQUES DÉTAILLÉES
-  // Matière & Composition
-  material        String?    // Ex: "100% Coton Bio"
-  composition     String?    // Détails composition
-  
-  // Coupe & Style
-  cutType         String?    // Ex: "Slim Fit", "Regular Fit"
-  fit             String?    // Ex: "Ajusté", "Ample"
-  length          String?    // Ex: "Manches courtes", "Longueur genou"
-  
-  // Détails de Design
-  neckline        String?    // Ex: "Col rond", "Col V", "Col chemise"
-  pattern         String?    // Ex: "Uni", "Rayé", "Imprimé"
-  closure         String?    // Ex: "Boutons", "Zip", "Élastique"
-  pockets         String?    // Ex: "2 poches latérales"
-  
-  // Entretien
-  careInstructions String?   // Ex: "Lavage machine 30°, Ne pas repasser"
-  
-  // Origine & Fabrication
-  countryOfManufacture String? // Pays de fabrication
-  brand           String?    // Ex: "Achrilik Original"
-  supplierReference String?  // Référence fournisseur
-  
-  // STOCKAGE ET LOGISTIQUE - NEW
-  storageZone     String?    // Zone de stockage du produit
-  storageWilaya   String?    // Wilaya de stockage (58 wilayas)
-  
-  // Guide des Tailles
-  sizeGuide       String?    // JSON ou texte
-  availableSizes  String[]   // Ex: ["S", "M", "L", "XL"]
-  
-  // Dimensions & Poids (pour livraison)
-  dimensions      String?    // Texte libre (legacy)
-  weight          Float?     // En kg
-  productLength   Float?     // En cm (renamed from 'length' to avoid conflict)
-  width           Float?     // En cm
-  height          Float?     // En cm
-  
-  // Promotion & Pricing
-  discountPrice   Float?
-  promotionLabel  String?
-  
-  // Specs & Warranty
-  technicalSpecs  String?
-  warranty        String?
-  
-  // BADGES & LABELS
-  badges          String[]   // Ex: ["Nouveauté", "Éco-responsable", "Made in Algeria"]
-  isNew           Boolean    @default(false)
-  isTrending      Boolean    @default(false)
-  isBestSeller    Boolean    @default(false)
-  
-  // SEO
-  metaTitle       String?
-  metaDescription String?
-  keywords        String[]   @default([])
-  
-  // STATISTIQUES
-  viewCount       Int        @default(0)
-  favoriteCount   Int        @default(0)
-  salesCount      Int        @default(0)
-  
-  // RELATIONS
-  AdminLog        AdminLog[]
-  Category        Category?  @relation(fields: [categoryId], references: [id])
-  Store           Store      @relation(fields: [storeId], references: [id])
-  Review          Review[]
-  Variant         Variant[]
-  Wishlist        Wishlist[]
+  id                   String     @id @default(cuid())
+  title                String
+  description          String
+  price                Int
+  images               String
+  categoryId           String?
+  storeId              String
+  status               String     @default("PENDING")
+  rejectionReason      String?
+  createdAt            DateTime   @default(now())
+  material             String?
+  composition          String?
+  cutType              String?
+  fit                  String?
+  length               String?
+  neckline             String?
+  pattern              String?
+  closure              String?
+  pockets              String?
+  careInstructions     String?
+  countryOfManufacture String?
+  brand                String?
+  supplierReference    String?
+  sizeGuide            String?
+  availableSizes       String[]
+  dimensions           String?
+  weight               Float?
+  productLength        Float?
+  width                Float?
+  height               Float?
+  discountPrice        Float?
+  promotionLabel       String?
+  technicalSpecs       String?
+  warranty             String?
+  badges               String[]
+  isNew                Boolean    @default(false)
+  isTrending           Boolean    @default(false)
+  isBestSeller         Boolean    @default(false)
+  metaTitle            String?
+  metaDescription      String?
+  keywords             String[]   @default([])
+  viewCount            Int        @default(0)
+  favoriteCount        Int        @default(0)
+  salesCount           Int        @default(0)
+  storageWilaya        String?
+  storageZone          String?
+  AdminLog             AdminLog[]
+  Category             Category?  @relation(fields: [categoryId], references: [id])
+  Store                Store      @relation(fields: [storeId], references: [id])
+  Review               Review[]
+  Variant              Variant[]
+  Wishlist             Wishlist[]
 
   @@index([categoryId])
   @@index([createdAt])
@@ -277,41 +230,25 @@ model Product {
 
 model Review {
   id                 String    @id @default(cuid())
-  
-  // Relations
   productId          String
   userId             String
-  orderId            String?   // NEW: Lien vers la commande pour vérifier l'achat
-  
-  // Contenu avis
-  rating             Int       // 1-5
-  title              String?   // Titre de l'avis
-  comment            String?   // Commentaire
-  
-  // Photos client (array d'URLs)
-  images             String?   // Legacy: single string
-  photos             String[]  @default([]) // New: array of URLs
-  
-  // Vérification
+  orderId            String?
+  rating             Int
+  title              String?
+  comment            String?
+  images             String?
+  photos             String[]  @default([])
   isVerifiedPurchase Boolean   @default(false)
-  
-  // Réponse vendeur
   sellerResponse     String?
   sellerResponseDate DateTime?
-  
-  // Utilité
   helpfulCount       Int       @default(0)
-  
-  // Timestamps
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
-  
-  // Relations
+  Order              Order?    @relation(fields: [orderId], references: [id])
   Product            Product   @relation(fields: [productId], references: [id])
   User               User      @relation(fields: [userId], references: [id])
-  Order              Order?    @relation(fields: [orderId], references: [id])
 
-  @@unique([userId, productId]) // Un seul avis par utilisateur/produit
+  @@unique([userId, productId])
   @@index([productId])
   @@index([userId])
   @@index([orderId])
@@ -326,7 +263,7 @@ model Store {
   longitude              Float?
   address                String?
   city                   String?
-  storageCity            String?        @db.VarChar(100) // Ville où les produits sont stockés physiquement
+  storageCity            String?        @db.VarChar(100)
   phone                  String?
   hours                  String?
   clickCollect           Boolean        @default(true)
@@ -335,11 +272,8 @@ model Store {
   verifiedAt             DateTime?
   verifiedBy             String?
   defaultDeliveryAgentId String?
-  
-  // LIVRAISON GRATUITE - Par boutique/commande
-  offersFreeDelivery     Boolean        @default(false) // Livraison gratuite si montant minimum atteint
-  freeDeliveryThreshold  Int?           // Montant minimum pour livraison gratuite (en DA)
-  
+  freeDeliveryThreshold  Int?
+  offersFreeDelivery     Boolean        @default(false)
   Order                  Order[]
   Product                Product[]
   defaultDeliveryAgent   DeliveryAgent? @relation(fields: [defaultDeliveryAgentId], references: [id])
@@ -359,12 +293,12 @@ model SystemSettings {
 }
 
 model PlatformSettings {
-  id              String   @id @default(cuid())
-  commissionRate  Float    @default(0)  // Taux commission en % (0-100)
-  updatedAt       DateTime @updatedAt
-  updatedBy       String?  // Admin user ID qui a modifié
-  previousRate    Float?   // Ancien taux pour historique
-  
+  id             String   @id @default(cuid())
+  commissionRate Float    @default(0)
+  updatedAt      DateTime @updatedAt
+  updatedBy      String?
+  previousRate   Float?
+
   @@index([updatedAt])
 }
 
@@ -380,8 +314,8 @@ model User {
   city               String?
   roles              Role[]               @default([BUYER])
   wilaya             String?
-  latitude           Float?               // GPS coordinates
-  longitude          Float?               // GPS coordinates
+  latitude           Float?
+  longitude          Float?
   AdminLog           AdminLog[]
   DeliveryAgent      DeliveryAgent?
   Order              Order[]
@@ -394,33 +328,19 @@ model User {
 model Variant {
   id              String      @id @default(cuid())
   productId       String
-  
-  // SKU unique par variant
-  sku             String?     @unique // Ex: "ACH-HOM-TSH-001-M-NOIR"
-  
-  // Attributs du variant
-  size            String?     // Ex: "M", "42", "L" - Now optional for bags
-  color           String      // Ex: "Noir"
-  colorHex        String?     // Ex: "#000000"
-  colorImage      String?     // URL image de ce variant
-  
-  // Dimensions (pour sacs, valises, accessoires)
-  length          Float?      // Longueur (cm)
-  width           Float?      // Largeur (cm)
-  height          Float?      // Hauteur (cm)
-  
-  // Stock & Prix
+  sku             String?     @unique
+  size            String?
+  color           String
+  colorHex        String?
+  colorImage      String?
   stock           Int
-  priceAdjustment Float?      // Prix supplémentaire si variant plus cher
-  
-  // Statut
+  priceAdjustment Float?
   isAvailable     Boolean     @default(true)
-  
-  // Timestamps
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-  
-  // Relations
+  height          Float?
+  length          Float?
+  width           Float?
   OrderItem       OrderItem[]
   Product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -477,15 +397,12 @@ model Delivery {
   codTransferred   Boolean        @default(false)
   codTransferredAt DateTime?
   agentNotes       String?
-  
-  // PAIEMENT DU LIVREUR
-  deliveryFee      Float?         // Frais de livraison à payer au livreur
-  agentPaid        Boolean        @default(false) // Livreur payé pour cette livraison
-  agentPaidAt      DateTime?      // Date paiement livreur
-  agentPaymentNote String?        // Note admin sur paiement
-  
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  agentPaid        Boolean        @default(false)
+  agentPaidAt      DateTime?
+  agentPaymentNote String?
+  deliveryFee      Float?
   agent            DeliveryAgent? @relation(fields: [agentId], references: [id])
   order            Order          @relation(fields: [orderId], references: [id])
 
@@ -494,33 +411,42 @@ model Delivery {
   @@index([status])
 }
 
-enum OrderStatus {
-  PENDING              // En attente (client vient de commander)
-  PAYMENT_PENDING      // Paiement en attente
-  CONFIRMED            // Confirmée par client
-  AT_MERCHANT          // Chez le commerçant (préparation)
-  READY_FOR_PICKUP     // Prête pour enlèvement livreur
-  WITH_DELIVERY_AGENT  // Chez le livreur
-  OUT_FOR_DELIVERY     // En cours de livraison
-  SHIPPED              // Expédiée (en transit)
-  DELIVERED            // Livrée
-  RETURNED             // Retournée (échec livraison)
-  CANCELLED            // Annulée
-}
-
-// Configuration des frais de livraison gérés par l'admin
 model DeliveryFeeConfig {
-  id                     String   @id @default(cuid())
-  fromCity               String   @db.VarChar(100)  // Ville de stockage (ex: "Oran")
-  toWilaya               String   @db.VarChar(100)  // Wilaya de destination (ex: "Oran", "Alger", "Autre")
-  baseFee                Int      @default(500)     // Frais de base en DA
-  isActive               Boolean  @default(true)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id        String   @id @default(cuid())
+  fromCity  String   @db.VarChar(100)
+  toWilaya  String   @db.VarChar(100)
+  baseFee   Int      @default(500)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([fromCity, toWilaya])
   @@index([fromCity])
   @@index([toWilaya])
+}
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@index([key])
+}
+
+enum OrderStatus {
+  PENDING
+  PAYMENT_PENDING
+  CONFIRMED
+  AT_MERCHANT
+  READY_FOR_PICKUP
+  WITH_DELIVERY_AGENT
+  OUT_FOR_DELIVERY
+  SHIPPED
+  DELIVERED
+  RETURNED
+  CANCELLED
 }
 
 enum DeliveryStatus {
@@ -539,15 +465,4 @@ enum Role {
   SELLER
   DELIVERY_AGENT
   ADMIN
-}
-
-// System configuration for feature flags and maintenance mode
-model SystemConfig {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  value     String
-  updatedAt DateTime @updatedAt
-  updatedBy String?
-  
-  @@index([key])
 }

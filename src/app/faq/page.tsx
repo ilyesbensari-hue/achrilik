@@ -18,7 +18,7 @@ export default function FAQPage() {
                 </div>
 
                 {/* Categories */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
                     <button className="bg-purple-500 text-white p-4 rounded-xl font-semibold hover:bg-purple-600 transition-colors">
                         <Package className="w-6 h-6 mx-auto mb-2" />
                         Commande
@@ -30,10 +30,6 @@ export default function FAQPage() {
                     <button className="bg-purple-600 text-white p-4 rounded-xl font-semibold hover:bg-purple-700 transition-colors">
                         <CreditCard className="w-6 h-6 mx-auto mb-2" />
                         Paiement
-                    </button>
-                    <button className="bg-pink-600 text-white p-4 rounded-xl font-semibold hover:bg-pink-700 transition-colors">
-                        <RefreshCw className="w-6 h-6 mx-auto mb-2" />
-                        Retours
                     </button>
                 </div>
 
@@ -208,20 +204,22 @@ export default function FAQPage() {
                         </div>
                     </div>
 
-                    {/* Retours Section */}
+                    {/* Garantie Section */}
                     <div className="bg-white p-6 rounded-2xl shadow-md">
                         <h2 className="text-2xl font-bold text-pink-600 mb-6 flex items-center gap-2">
-                            <RefreshCw className="w-6 h-6" />
-                            Retours & Échanges
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Garantie Vendeur
                         </h2>
                         <div className="space-y-4">
                             <details className="group cursor-pointer">
                                 <summary className="font-semibold text-gray-900 text-lg list-none flex justify-between items-center">
-                                    <span>Puis-je retourner un produit ?</span>
+                                    <span>Qu'est-ce que la garantie vendeur ?</span>
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    Oui ! Vous disposez de <strong>7 jours</strong> après réception pour retourner un produit si : il ne correspond pas à la description, il est défectueux, ou vous avez changé d'avis (produit non porté, avec étiquettes).
+                                    Chaque vendeur propose sa propre garantie sur ses produits. La durée et les conditions de garantie sont affichées sur la fiche produit. <strong>Pour les produits électroniques, nous recommandons une garantie minimale de 6 mois.</strong>
                                 </p>
                             </details>
 
@@ -229,11 +227,11 @@ export default function FAQPage() {
 
                             <details className="group cursor-pointer">
                                 <summary className="font-semibold text-gray-900 text-lg list-none flex justify-between items-center">
-                                    <span>Que faire si le produit est défectueux ?</span>
+                                    <span>Comment voir la garantie d'un produit ?</span>
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    Vous pouvez refuser le colis directement à la livraison. Si vous constatez le défaut après réception, contactez-nous dans les 7 jours via WhatsApp ou email avec des photos du produit. Nous procéderons à un échange ou un remboursement.
+                                    La garantie est clairement affichée sur chaque fiche produit avec un badge vert 🛡️. Vous verrez la durée de garantie (exemple : "Garantie: 6 mois") avant de passer commande.
                                 </p>
                             </details>
 
@@ -241,11 +239,12 @@ export default function FAQPage() {
 
                             <details className="group cursor-pointer">
                                 <summary className="font-semibold text-gray-900 text-lg list-none flex justify-between items-center">
-                                    <span>Les frais de retour sont-ils à ma charge ?</span>
+                                    <span>Que faire si mon produit est défectueux ?</span>
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    Si le produit est défectueux ou ne correspond pas à la description, les frais de retour sont à notre charge. Si c'est un changement d'avis, les frais de retour sont à votre charge.
+                                    <strong>À la livraison :</strong> Vous pouvez inspecter le produit et refuser le colis si vous constatez un défaut visible.<br /><br />
+                                    <strong>Après livraison :</strong> Si vous découvrez un défaut pendant la période de garantie, contactez directement le vendeur via la page boutique. Le vendeur s'engage à réparer, remplacer ou rembourser le produit défectueux selon les termes de sa garantie.
                                 </p>
                             </details>
 
@@ -253,11 +252,23 @@ export default function FAQPage() {
 
                             <details className="group cursor-pointer">
                                 <summary className="font-semibold text-gray-900 text-lg list-none flex justify-between items-center">
-                                    <span>Comment procéder à un échange ?</span>
+                                    <span>Puis-je retourner un produit si je change d'avis ?</span>
                                     <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
                                 </summary>
                                 <p className="text-gray-600 mt-3 leading-relaxed pl-4">
-                                    Contactez notre service client via WhatsApp (+213 551 22 33 44) en précisant : numéro de commande, produit concerné, et raison de l'échange. Nous vous guiderons dans la procédure.
+                                    Non, nous n'acceptons pas les retours pour changement d'avis. C'est pourquoi nous vous recommandons fortement d'<strong>inspecter le produit à la livraison</strong> avant de payer le livreur. Vous avez le droit d'ouvrir le colis et de vérifier que le produit correspond bien à votre commande.
+                                </p>
+                            </details>
+
+                            <hr className="border-gray-200" />
+
+                            <details className="group cursor-pointer">
+                                <summary className="font-semibold text-gray-900 text-lg list-none flex justify-between items-center">
+                                    <span>Comment contacter le vendeur pour la garantie ?</span>
+                                    <span className="text-pink-500 group-open:rotate-180 transition-transform">▼</span>
+                                </summary>
+                                <p className="text-gray-600 mt-3 leading-relaxed pl-4">
+                                    Sur la fiche produit ou dans votre historique de commandes, cliquez sur le nom de la boutique pour accéder aux informations de contact du vendeur. Vous pourrez le contacter directement pour faire valoir votre garantie.
                                 </p>
                             </details>
                         </div>

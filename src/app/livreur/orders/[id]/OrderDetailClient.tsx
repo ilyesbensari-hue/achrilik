@@ -346,7 +346,7 @@ export default function OrderDetailClient({ deliveryId, initialUser }: OrderDeta
                                     {state === 'pending' && !isProblemOpen && (
                                         <div className="grid grid-cols-2 gap-2 pt-1">
                                             <button
-                                                onClick={() => setPickupStatus(storeId, 'collected')}
+                                                onClick={() => setPickupStatus(store.id, 'collected')}
                                                 className="flex flex-col items-center justify-center gap-1 py-4 bg-green-500 text-white rounded-2xl font-black text-sm active:bg-green-600 shadow-md"
                                             >
                                                 <CheckCircle className="w-7 h-7" />

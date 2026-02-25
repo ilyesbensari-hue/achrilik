@@ -10,12 +10,14 @@ export const CART_LIMITS = {
 export type CartValidationErrorType =
     | 'MAX_ITEMS_PER_STORE'
     | 'MAX_STORES'
-    | 'MAX_TOTAL';
+    | 'MAX_TOTAL'
+    | 'DIFFERENT_WILAYA';
 
 export interface CartValidationError {
     type: CartValidationErrorType;
     message: string;
     storeName?: string;
+    wilaya?: string;
     currentCount: number;
     maxAllowed: number;
 }
@@ -26,6 +28,7 @@ export interface CartItem {
     variantId: string;
     storeId: string;
     storeName: string;
+    storageWilaya?: string;   // Wilaya de stockage de la boutique
     quantity: number;
     price: number;
 }
@@ -50,6 +53,21 @@ function groupItemsByStore(items: CartItem[]): Record<string, CartItem[]> {
 export function validateCart(cartItems: CartItem[]): CartValidationError | null {
     if (cartItems.length === 0) {
         return null; // Panier vide = valide
+    }
+
+    // 0. Vérifier contrainte intra-wilaya
+    const wilayas = cartItems
+        .map(item => item.storageWilaya)
+        .filter(Boolean);
+    const uniqueWilayas = [...new Set(wilayas)];
+    if (uniqueWilayas.length > 1) {
+        return {
+            type: 'DIFFERENT_WILAYA',
+            message: `Tous vos articles doivent provenir de boutiques dans la même wilaya. Votre panier contient des articles de: ${uniqueWilayas.join(', ')}. Commandez séparément par wilaya.`,
+            wilaya: uniqueWilayas[0],
+            currentCount: uniqueWilayas.length,
+            maxAllowed: 1
+        };
     }
 
     // 1. Vérifier nombre de boutiques

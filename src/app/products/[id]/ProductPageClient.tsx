@@ -109,6 +109,24 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
             return;
         }
 
+        // ── Vérification contrainte intra-wilaya ──────────────────────────
+        const newItemWilaya = product.storageWilaya || product.Store?.storageWilaya || null;
+        if (newItemWilaya && cart.length > 0) {
+            const existingWilayas = [...new Set(
+                cart
+                    .filter((item: any) => item.storageWilaya)
+                    .map((item: any) => item.storageWilaya)
+            )];
+            if (existingWilayas.length > 0 && !existingWilayas.includes(newItemWilaya)) {
+                showToast(
+                    `🗺️ Article impossible à ajouter\n\nVotre panier contient des articles de boutiques à ${existingWilayas[0]}. Ce produit vient de ${newItemWilaya}.\n\nLes livraisons sont limitées à une wilaya par commande. Videz votre panier ou commandez séparément.`,
+                    'error'
+                );
+                return;
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────
+
         // Prepare cart item
         const cartItem = {
             id: `${product.id}-${variant.id}`,
@@ -116,17 +134,15 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
             title: product.title,
             price: product.price,
             variantId: variant.id,
-            size: selectedSize || variant.size || 'Standard', // Use variant size for electronics
+            size: selectedSize || variant.size || 'Standard',
             color: selectedColor || variant.color || 'N/A',
             image: images[0],
             storeId: product.storeId,
             storeName: product.Store?.name || 'Boutique',
+            storageWilaya: newItemWilaya,   // ← inclus pour future validation
             stock: variant.stock,
             quantity
         };
-
-        // Note: Cart limits validation now happens in the cart page
-        // This avoids importing Prisma client in browser environment
 
         cart.push(cartItem);
         localStorage.setItem('cart', JSON.stringify(cart));
@@ -137,6 +153,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
             onClick: () => router.push('/cart')
         });
     };
+
 
     return (
         <>

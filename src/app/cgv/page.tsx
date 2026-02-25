@@ -126,53 +126,50 @@ export default function CGVPage() {
                         </ul>
                     </section>
 
-                    {/* Section 7 - Retours */}
+                    {/* Section 7 - Garantie */}
                     <section className="mb-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
                             <span className="mr-3">7.</span>
-                            Droit de rétractation et retours
+                            Garantie Vendeur
                         </h2>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-3">À la livraison</h3>
                         <p className="text-gray-700 mb-4">
-                            Vous pouvez <strong>refuser le colis</strong> à la livraison si :
+                            Les garanties sont proposées et gérées directement par chaque vendeur :
                         </p>
                         <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
-                            <li>Le produit ne correspond pas à votre commande</li>
-                            <li>Le produit est endommagé ou défectueux</li>
-                            <li>L'emballage est abîmé</li>
-                        </ul>
-
-                        <h3 className="text-xl font-semibold text-gray-800 mb-3">Après livraison</h3>
-                        <p className="text-gray-700 mb-4">
-                            Vous disposez de <strong>7 jours</strong> à compter de la réception pour nous contacter si :
-                        </p>
-                        <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
-                            <li>Le produit est défectueux</li>
-                            <li>Le produit ne correspond pas à la description</li>
-                            <li>Vous avez changé d'avis (produit non porté, avec étiquettes)</li>
+                            <li>La durée et les conditions de garantie sont affichées sur chaque fiche produit</li>
+                            <li><strong>Pour les produits électroniques, une garantie minimale de 6 mois est fortement recommandée</strong></li>
+                            <li>En cas de défaut couvert par la garantie, contactez directement le vendeur via la page boutique</li>
+                            <li>Le vendeur s'engage à réparer, remplacer ou rembourser le produit défectueux selon les termes de sa garantie</li>
                         </ul>
 
                         <div className="bg-purple-50 p-4 rounded-xl border-l-4 border-purple-500 mt-4">
                             <p className="text-sm text-gray-700">
-                                <strong>Contact :</strong> Pour tout retour, contactez-nous via WhatsApp au +213 551 22 33 44 ou par email à contact@achrilik.com
+                                <strong>⚠️ Important :</strong> Achrilik facilite la mise en relation mais n'intervient pas dans l'exécution des garanties. Les litiges liés à la garantie doivent être résolus directement entre l'acheteur et le vendeur.
                             </p>
                         </div>
                     </section>
 
-                    {/* Section 8 - Garantie */}
-                    <section className="mb-8">
+                    {/* Section 8 - Inspection et Acceptation */}
+                    <section className="mb-8 border-l-4 border-purple-500 pl-6 bg-purple-50 p-6 rounded-r-lg">
                         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
                             <span className="mr-3">8.</span>
-                            Garantie
+                            Inspection à la Livraison
                         </h2>
                         <p className="text-gray-700 mb-4">
-                            Tous nos produits bénéficient de la garantie légale de conformité :
+                            <strong>Pas de retour pour changement d'avis.</strong> C'est pourquoi nous vous offrons le droit d'inspecter votre commande avant de la payer :
                         </p>
-                        <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
-                            <li>Le produit doit être conforme à la description</li>
-                            <li>Le produit doit être exempt de défauts de fabrication</li>
-                            <li>En cas de défaut, vous pouvez demander un échange ou un remboursement</li>
+                        <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4 mb-4">
+                            <li>Vous pouvez ouvrir le colis en présence du livreur</li>
+                            <li>Vérifier que le produit correspond à votre commande</li>
+                            <li>Vérifier l'état du produit (pas de défaut visible)</li>
+                            <li>Refuser le colis si le produit ne correspond pas ou est endommagé</li>
                         </ul>
+
+                        <div className="bg-white p-4 rounded-lg mt-4">
+                            <p className="text-sm text-gray-700 font-medium">
+                                💡 En acceptant et payant le colis, vous reconnaissez que le produit correspond à votre commande et est exempt de défaut visible. Les défauts cachés restent couverts par la garantie vendeur.
+                            </p>
+                        </div>
                     </section>
 
                     {/* Section 9 - Responsabilité */}

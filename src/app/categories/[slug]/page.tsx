@@ -24,6 +24,18 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
     const [filtersInitialized, setFiltersInitialized] = useState(false);
 
+    // Helper: Detect if this is a shoe category
+    const isShoeCategory = () => {
+        if (!category) return false;
+        const slug = category.slug?.toLowerCase() || '';
+        const name = category.name?.toLowerCase() || '';
+        return slug.includes('chaussure') ||
+            slug.includes('basket') ||
+            slug.includes('soulier') ||
+            name.includes('chaussure') ||
+            name.includes('basket');
+    };
+
     useEffect(() => {
         Promise.all([
             fetch('/api/products', { cache: 'no-store' }).then(res => res.json()),
@@ -517,7 +529,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                     onClick={() => setExpandedSection(expandedSection === 'size' ? null : 'size')}
                                                     className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <span className="font-semibold text-gray-900">Taille</span>
+                                                    <span className="font-semibold text-gray-900">
+                                                        {isShoeCategory() ? 'Pointure' : 'Taille'}
+                                                    </span>
                                                     <svg
                                                         className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'size' ? 'rotate-180' : ''}`}
                                                         fill="none"
@@ -542,8 +556,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                                         }
                                                                     }}
                                                                     className={`px-3 py-2 rounded-lg border-2 font-semibold transition-all text-sm ${selectedSizes.includes(size)
-                                                                            ? 'bg-[#006233] text-white border-[#006233]'
-                                                                            : 'bg-white text-gray-700 border-gray-200 hover:border-[#006233]'
+                                                                        ? 'bg-[#006233] text-white border-[#006233]'
+                                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-[#006233]'
                                                                         }`}
                                                                 >
                                                                     {size}

@@ -68,6 +68,9 @@ export default function AddProductPage() {
     const [brand, setBrand] = useState('');
     const [supplierReference, setSupplierReference] = useState('');
 
+    // NEW: Warranty
+    const [warranty, setWarranty] = useState('');
+
     // NEW: Sizes & Dimensions
     const [availableSizes, setAvailableSizes] = useState<string[]>([]);
     const [weight, setWeight] = useState('');
@@ -244,6 +247,8 @@ export default function AddProductPage() {
                     isNew,
                     isTrending,
                     isBestSeller,
+                    // Warranty
+                    warranty: warranty || null,
                     // Storage Location
                     storageZone: storageZone || null,
                     storageWilaya: storageWilaya || null
@@ -367,6 +372,32 @@ export default function AddProductPage() {
                                 value={composition}
                                 onChange={e => setComposition(e.target.value)}
                             />
+                        </div>
+
+                        {/* Warranty */}
+                        <div className="bg-green-50 p-4 rounded-xl border-2 border-green-300">
+                            <label className="label mb-2 block flex items-center gap-2">
+                                <span className="text-lg">🛡️</span>
+                                <span>Garantie (optionnel mais recommandé)</span>
+                            </label>
+                            <select
+                                className="input mb-2"
+                                value={warranty}
+                                onChange={e => setWarranty(e.target.value)}
+                            >
+                                <option value="">Aucune garantie</option>
+                                <option value="3 mois">3 mois</option>
+                                <option value="6 mois">6 mois (recommandé pour électronique)</option>
+                                <option value="1 an">1 an</option>
+                                <option value="2 ans">2 ans</option>
+                            </select>
+                            <p className="text-xs text-gray-600 flex items-start gap-2">
+                                <span>💡</span>
+                                <span>
+                                    <strong>Astuce:</strong> Offrir une garantie rassure vos clients et augmente vos ventes !
+                                    <strong className="block mt-1 text-green-700">Pour l'électronique, une garantie de 6 mois est fortement recommandée.</strong>
+                                </span>
+                            </p>
                         </div>
                     </div>
 

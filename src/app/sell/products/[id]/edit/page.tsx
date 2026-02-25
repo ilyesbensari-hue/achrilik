@@ -39,10 +39,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [careInstructions, setCareInstructions] = useState('');
     const [brand, setBrand] = useState('');
 
+    // NEW: Warranty
+    const [warranty, setWarranty] = useState('');
+
     // Variants - Updated to support dimensions
-    const [variants, setVariants] = useState<{ 
-        size?: string | null, 
-        color: string, 
+    const [variants, setVariants] = useState<{
+        size?: string | null,
+        color: string,
         stock: number,
         length?: number | null,
         width?: number | null,
@@ -53,7 +56,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [vSize, setVSize] = useState('');
     const [vColor, setVColor] = useState('#000000');
     const [vStock, setVStock] = useState(10);
-    
+
     // Dimension inputs (for bags)
     const [productLength, setProductLength] = useState('');
     const [width, setWidth] = useState('');
@@ -114,6 +117,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setPattern(data.pattern || '');
                 setCareInstructions(data.careInstructions || '');
                 setBrand(data.brand || '');
+                setWarranty(data.warranty || '');
                 // NOTE: Badges ne sont plus chargés ni modifiables par les vendeurs
                 setVariants(data.Variant.map((v: any) => ({
                     size: v.size || null,
@@ -123,7 +127,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     width: v.width || null,
                     height: v.height || null
                 })));
-                
+
                 // Initialize first variant size if available
                 if (data.Variant.length > 0 && data.Variant[0].size) {
                     setVSize(data.Variant[0].size);
@@ -169,9 +173,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             return;
         }
 
-        setVariants([...variants, { 
-            size: currentSize, 
-            color: vColor, 
+        setVariants([...variants, {
+            size: currentSize,
+            color: vColor,
             stock: vStock,
             length: currentLength,
             width: currentWidth,
@@ -214,6 +218,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     pattern: pattern || null,
                     careInstructions: careInstructions || null,
                     brand: brand || null,
+                    warranty: warranty || null,
                     // NOTE: Badges ne sont plus envoyés - calculés côté serveur
                     variants
                 })
@@ -378,6 +383,32 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                     onChange={e => setComposition(e.target.value)}
                                 />
                             </div>
+
+                            {/* Warranty */}
+                            <div className="bg-green-50 p-4 rounded-xl border-2 border-green-300">
+                                <label className="label mb-2 block flex items-center gap-2">
+                                    <span className="text-lg">🛡️</span>
+                                    <span>Garantie (optionnel mais recommandé)</span>
+                                </label>
+                                <select
+                                    className="input mb-2"
+                                    value={warranty}
+                                    onChange={e => setWarranty(e.target.value)}
+                                >
+                                    <option value="">Aucune garantie</option>
+                                    <option value="3 mois">3 mois</option>
+                                    <option value="6 mois">6 mois (recommandé pour électronique)</option>
+                                    <option value="1 an">1 an</option>
+                                    <option value="2 ans">2 ans</option>
+                                </select>
+                                <p className="text-xs text-gray-600 flex items-start gap-2">
+                                    <span>💡</span>
+                                    <span>
+                                        <strong>Astuce:</strong> Offrir une garantie rassure vos clients et augmente vos ventes !
+                                        <strong className="block mt-1 text-green-700">Pour l'électronique, une garantie de 6 mois est fortement recommandée.</strong>
+                                    </span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -400,9 +431,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 <label className="label mb-1 block">
                                     {sizeConfig.sizeLabel}{sizeConfig.required ? ' *' : ' (optionnel)'}
                                 </label>
-                                <select 
+                                <select
                                     className="input"
-                                    value={vSize} 
+                                    value={vSize}
                                     onChange={e => setVSize(e.target.value)}
                                     required={sizeConfig.required}
                                 >
@@ -419,9 +450,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                             <div className="mb-4 grid grid-cols-3 gap-3">
                                 <div>
                                     <label className="label mb-1 block">L (cm) *</label>
-                                    <input 
-                                        type="number" 
-                                        className="input" 
+                                    <input
+                                        type="number"
+                                        className="input"
                                         placeholder="Longueur"
                                         value={productLength}
                                         onChange={e => setProductLength(e.target.value)}
@@ -430,9 +461,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <div>
                                     <label className="label mb-1 block">l (cm) *</label>
-                                    <input 
-                                        type="number" 
-                                        className="input" 
+                                    <input
+                                        type="number"
+                                        className="input"
                                         placeholder="Largeur"
                                         value={width}
                                         onChange={e => setWidth(e.target.value)}
@@ -441,9 +472,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <div>
                                     <label className="label mb-1 block">H (cm) *</label>
-                                    <input 
-                                        type="number" 
-                                        className="input" 
+                                    <input
+                                        type="number"
+                                        className="input"
                                         placeholder="Hauteur"
                                         value={height}
                                         onChange={e => setHeight(e.target.value)}
