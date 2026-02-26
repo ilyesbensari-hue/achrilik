@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { requireAuth } from '@/lib/adminAuth';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 export async function POST(request: NextRequest) {
+    const guard = await requireAuth(request);
+    if (guard) return guard;
+
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
