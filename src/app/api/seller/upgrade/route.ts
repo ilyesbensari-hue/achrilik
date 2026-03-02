@@ -45,7 +45,9 @@ export async function POST(request: NextRequest) {
                     longitude: longitude ? parseFloat(longitude) : null,
                     clickCollect: hasPhysicalStore !== false, // Default true if physical store
                     ownerId: userId,
-                    verified: false // Explicitly set verified to false initially
+                    verified: true, // Auto-certify all new stores
+                    verifiedAt: new Date(),
+                    verifiedBy: 'system'
                 }
             })
         ]);
