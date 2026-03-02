@@ -10,8 +10,15 @@ const nextConfig = {
         destination: 'https://achrilik.com/:path*',
         permanent: true,
       },
+      // Legacy slug redirect
+      {
+        source: '/categories/vtements-femme',
+        destination: '/categories/femmes',
+        permanent: true,
+      },
     ];
   },
+
   images: {
     formats: ['image/webp', 'image/avif'],
     remotePatterns: [
