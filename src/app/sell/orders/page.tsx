@@ -35,7 +35,10 @@ export default function SellerOrdersPage() {
                     return;
                 }
                 const user = JSON.parse(userStr);
-                if (user.role !== 'SELLER') {
+                // Gère user.role (string) ET user.roles (tableau) pour compatibilité
+                const isSeller = user.role === 'SELLER' ||
+                    (Array.isArray(user.roles) && user.roles.includes('SELLER'));
+                if (!isSeller) {
                     router.push('/');
                     return;
                 }
@@ -61,13 +64,14 @@ export default function SellerOrdersPage() {
 
         fetchStoreAndOrders();
 
-        // Auto-refresh every 15 seconds
+        // Auto-refresh every 60 seconds (réduit pour éviter le "saute")
         const interval = setInterval(() => {
             fetchStoreAndOrders();
-        }, 15000);
+        }, 60000);
 
         return () => clearInterval(interval);
-    }, [router]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // [] = une seule fois au mount, pas de boucle sur router
 
     const transitionStatus = async (orderId: string, newStatus: OrderStatus, notes?: string) => {
         try {

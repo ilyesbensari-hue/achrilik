@@ -48,7 +48,10 @@ export default function AnalyticsPage() {
         if (userSession) {
             try {
                 const user = JSON.parse(userSession);
-                if (user.role !== 'SELLER') {
+                // Gère user.role (string) ET user.roles (tableau)
+                const isSeller = user.role === 'SELLER' ||
+                    (Array.isArray(user.roles) && user.roles.includes('SELLER'));
+                if (!isSeller) {
                     window.location.href = '/';
                     return;
                 }
