@@ -135,7 +135,8 @@ export default function AddProductPage() {
                     return;
                 }
 
-                setStoreId(user.storeId || '');
+                // FIX: use myStore.id from API (not user.storeId from localStorage which is often missing)
+                setStoreId(myStore.id);
             });
         } catch (error) {
             console.error('Failed to parse user:', error);
@@ -204,10 +205,10 @@ export default function AddProductPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!storeId) return alert('Boutique introuvable');
+        if (!storeId) return alert('Boutique introuvable. Veuillez actualiser la page.');
         if (!categoryId) return alert('Veuillez sélectionner une catégorie complète');
         if (variants.length === 0) return alert('Ajoutez au moins une variante');
-        if (images.length === 0) return alert('Ajoutez au moins une image');
+        if (images.length === 0) return alert('⚠️ Au moins 1 photo est obligatoire. Ajoutez 2-3 photos pour de meilleurs résultats.');
 
         setLoading(true);
         try {
@@ -297,9 +298,27 @@ export default function AddProductPage() {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="label mb-1 block">Images du produit</label>
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4">
+                        <label className="label mb-1 block font-bold flex items-center gap-2">
+                            <span>📸</span>
+                            <span>Photos du produit <span className="text-red-500">*</span></span>
+                        </label>
+                        {/* Recommendation banner */}
+                        <div className={`mb-3 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${images.length === 0
+                                ? 'bg-red-100 text-red-700 border border-red-300'
+                                : images.length === 1
+                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                    : 'bg-green-100 text-green-700 border border-green-300'
+                            }`}>
+                            <span>{images.length === 0 ? '⚠️' : images.length === 1 ? '💡' : '✅'}</span>
+                            <span>
+                                {images.length === 0 && 'Au moins 1 photo est obligatoire.'}
+                                {images.length === 1 && 'Bonne photo ! Ajoutez-en 1 à 2 de plus pour rassurer vos clients.'}
+                                {images.length >= 2 && `${images.length} photos — parfait ! Les produits avec 2-3 photos se vendent mieux.`}
+                            </span>
+                        </div>
                         <ImageUpload onImagesChange={setImages} maxImages={5} />
+                        <p className="text-xs text-gray-500 mt-2">📌 <strong>Recommandé :</strong> 2 à 3 photos (face, dos, détail). Min 1 obligatoire.</p>
                     </div>
 
                     {/* Enhanced Product Details Section */}
