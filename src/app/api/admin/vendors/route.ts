@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
                 },
                 _count: {
                     select: {
-                        Product: true
+                        Product: true,
+                        Order: true
                     }
                 }
             },
@@ -62,6 +63,7 @@ export async function GET(request: NextRequest) {
                 clickCollect: store.clickCollect,
                 owner: store.User,
                 productCount: store._count.Product,
+                orderCount: store._count.Order,
             }))
         });
 
