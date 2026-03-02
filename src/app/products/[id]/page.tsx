@@ -6,6 +6,7 @@ import SellerRating from '@/components/SellerRating';
 import ProductPageClient from './ProductPageClient';
 import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
 import { prisma } from '@/lib/prisma'; // Direct DB access for efficiency
+import { getSizeConfig } from '@/lib/variantHelpers';
 
 // Enable ISR with 5 minute revalidation
 export const revalidate = 300;
@@ -122,7 +123,24 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     const { similar, complementary } = await getRecommendations(product);
 
-    const sizes = Array.from(new Set(product.Variant?.map((v: any) => v.size) || [])) as string[];
+    // Filter variants sizes based on actual category configuration
+    // This prevents tech/sac products from showing clothing sizes (XS/S/M/L) from DB variants
+    const sizeConfig = getSizeConfig(product.Category?.slug, product.Category?.name);
+    let sizes: string[];
+    if (!sizeConfig.required && sizeConfig.options.length === 0) {
+        // Tech / no-size categories: never show a size selector
+        sizes = [];
+    } else if (sizeConfig.options.length > 0) {
+        // Custom options (bags: Unique/Petit/Moyen/Grand): only keep DB values that match these options
+        const validSizeValues = new Set(sizeConfig.options.map((o: { value: string }) => o.value));
+        const dbSizes = Array.from(new Set(product.Variant?.map((v: any) => v.size).filter(Boolean) || [])) as string[];
+        const matchingDbSizes = dbSizes.filter((s: string) => validSizeValues.has(s));
+        // If DB has no matching sizes, show all category options (guidance mode)
+        sizes = matchingDbSizes.length > 0 ? matchingDbSizes : sizeConfig.options.map((o: { value: string }) => o.value);
+    } else {
+        // Clothing / shoes: use raw DB sizes
+        sizes = Array.from(new Set(product.Variant?.map((v: any) => v.size).filter(Boolean) || [])) as string[];
+    }
     const colors = Array.from(new Set(product.Variant?.map((v: any) => v.color) || [])) as string[];
     const images = product.images ? product.images.split(',') : [];
 
