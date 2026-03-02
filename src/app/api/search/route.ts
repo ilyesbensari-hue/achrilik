@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import Fuse from 'fuse.js';
+import { sanitizeImageUrl } from '@/lib/imageHelpers';
+
+const TEST_FILTER = process.env.NODE_ENV === 'production' ? {
+    title: { not: { startsWith: '[TEST]' } },
+    NOT: { id: { startsWith: 'prod-' } }
+} : {};
 
 // GET /api/search?q=xxx - Recherche intelligente avec fuzzy matching
 export async function GET(request: NextRequest) {
@@ -20,7 +26,8 @@ export async function GET(request: NextRequest) {
         const [products, stores] = await Promise.all([
             prisma.product.findMany({
                 where: {
-                    status: 'APPROVED'
+                    status: 'APPROVED',
+                    ...TEST_FILTER,
                 },
                 include: {
                     Store: {
@@ -82,7 +89,10 @@ export async function GET(request: NextRequest) {
         const matchedStores = storeResults.map(result => result.item);
 
         return NextResponse.json({
-            products: matchedProducts,
+            products: matchedProducts.map(p => ({
+                ...p,
+                images: sanitizeImageUrl(p.images),
+            })),
             stores: matchedStores,
             query,
             stats: {

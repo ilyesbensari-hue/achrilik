@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { parseImages } from '@/lib/imageHelpers';
 import Link from 'next/link';
 import WishlistButton from '@/components/WishlistButton';
 import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
@@ -36,7 +37,7 @@ export default function ProductCardBase({
     imageAspectRatio = 'portrait',
     wishlistButtonSize = 'sm'
 }: ProductCardBaseProps) {
-    const images = product.images.split(',');
+    const images = parseImages(product.images);
     const avgRating = product.Review?.length
         ? product.Review.reduce((acc: number, r: any) => acc + r.rating, 0) / product.Review.length
         : 0;

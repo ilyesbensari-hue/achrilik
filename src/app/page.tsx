@@ -4,7 +4,14 @@ import MobileHeader from '@/components/home/MobileHeader';
 import Navbar from '@/components/Navbar';
 import JsonLd, { generateOrganizationSchema } from '@/components/JsonLd';
 import { prisma } from '@/lib/prisma';
+import { firstImage } from '@/lib/imageHelpers';
 import HeroSection from '@/components/HeroSection';
+
+// A filtrer les produits de test en production
+const TEST_FILTER = process.env.NODE_ENV === 'production' ? {
+  title: { not: { startsWith: '[TEST]' } },
+  NOT: { id: { startsWith: 'prod-' } }
+} : {};
 
 // Lazy load heavy components
 const HeroVideoBanner = dynamicImport(() => import('@/components/home/HeroVideoBanner'), {
@@ -64,13 +71,12 @@ async function getFeaturedProducts() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
-        Store: {
-          verified: true
-        },
+        Store: { verified: true },
         OR: [
           { promotionLabel: { not: null } },
           { discountPrice: { not: null } }
-        ]
+        ],
+        ...TEST_FILTER,
       },
       orderBy: {
         createdAt: 'desc'
@@ -78,41 +84,34 @@ async function getFeaturedProducts() {
       take: 3
     });
 
-    return products.map(p => {
-      const images = p.images ? p.images.split(',') : [];
-      return {
-        id: p.id,
-        title: p.title,
-        image: images[0] || '/placeholder-product.png',
-      };
-    });
+    return products.map(p => ({
+      id: p.id,
+      title: p.title,
+      image: firstImage(p.images),
+    }));
   } catch (error) {
     console.error('Failed to fetch featured products:', error);
     return [];
   }
 }
 
-// Helper function to map products
 function mapProducts(products: any[]) {
-  return products.map(p => {
-    const images = p.images ? p.images.split(',') : [];
-    return {
-      id: p.id,
-      title: p.title,
-      price: p.price,
-      discountPrice: p.discountPrice,
-      promotionLabel: p.promotionLabel,
-      image: images[0] || '/placeholder-product.png',
-      categoryName: p.Category?.name || 'Produit',
-      createdAt: p.createdAt,
-      Store: p.Store ? {
-        name: p.Store.name,
-        city: p.Store.city,
-        offersFreeDelivery: p.Store.offersFreeDelivery,
-        freeDeliveryThreshold: p.Store.freeDeliveryThreshold
-      } : undefined
-    };
-  });
+  return products.map(p => ({
+    id: p.id,
+    title: p.title,
+    price: p.price,
+    discountPrice: p.discountPrice,
+    promotionLabel: p.promotionLabel,
+    image: firstImage(p.images),
+    categoryName: p.Category?.name || 'Produit',
+    createdAt: p.createdAt,
+    Store: p.Store ? {
+      name: p.Store.name,
+      city: p.Store.city,
+      offersFreeDelivery: p.Store.offersFreeDelivery,
+      freeDeliveryThreshold: p.Store.freeDeliveryThreshold
+    } : undefined
+  }));
 }
 
 // getBestSellers function removed - Best Seller feature discontinued
@@ -123,9 +122,8 @@ async function getNewArrivals() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
-        Store: {
-          verified: true
-        }
+        Store: { verified: true },
+        ...TEST_FILTER,
       },
       select: {
         id: true,
@@ -168,21 +166,12 @@ async function getPromotions() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
-        Store: {
-          verified: true
-        },
+        Store: { verified: true },
         OR: [
-          {
-            discountPrice: {
-              not: null
-            }
-          },
-          {
-            promotionLabel: {
-              not: null
-            }
-          }
-        ]
+          { discountPrice: { not: null } },
+          { promotionLabel: { not: null } }
+        ],
+        ...TEST_FILTER,
       },
       select: {
         id: true,
@@ -259,9 +248,8 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
       where: {
         categoryId: { in: categoryIds },
         status: 'APPROVED',
-        Store: {
-          verified: true
-        }
+        Store: { verified: true },
+        ...TEST_FILTER,
       },
       select: {
         id: true,

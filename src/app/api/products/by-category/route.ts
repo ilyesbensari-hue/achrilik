@@ -1,6 +1,12 @@
 
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { firstImage } from '@/lib/imageHelpers';
+
+const TEST_FILTER = process.env.NODE_ENV === 'production' ? {
+    title: { not: { startsWith: '[TEST]' } },
+    NOT: { id: { startsWith: 'prod-' } }
+} : {};
 
 // Helper: Recursively get all descendant category IDs
 async function getAllDescendantCategoryIds(categoryId: string): Promise<string[]> {
@@ -38,7 +44,8 @@ export async function GET(request: NextRequest) {
         const products = await prisma.product.findMany({
             where: {
                 categoryId: { in: categoryIds },
-                status: 'APPROVED'
+                status: 'APPROVED',
+                ...TEST_FILTER,
             },
             include: {
                 Category: true,
@@ -49,18 +56,15 @@ export async function GET(request: NextRequest) {
             take: limit
         });
 
-        const mappedProducts = products.map(p => {
-            const images = p.images ? p.images.split(',') : [];
-            return {
-                id: p.id,
-                title: p.title,
-                price: p.price,
-                discountPrice: p.discountPrice,
-                image: images[0] || '/placeholder-product.png',
-                categoryName: p.Category?.name || '',
-                categoryId: p.categoryId
-            };
-        });
+        const mappedProducts = products.map(p => ({
+            id: p.id,
+            title: p.title,
+            price: p.price,
+            discountPrice: p.discountPrice,
+            image: firstImage(p.images),
+            categoryName: p.Category?.name || '',
+            categoryId: p.categoryId
+        }));
 
         return NextResponse.json(mappedProducts);
     } catch (error) {

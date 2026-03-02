@@ -20,6 +20,12 @@ export async function GET(request: NextRequest) {
       status: showAll === 'true' ? undefined : 'APPROVED'
     };
 
+    // En production, exclure les produits de test (sauf pour admin/seller avec showAll=true)
+    if (process.env.NODE_ENV === 'production' && showAll !== 'true') {
+      whereClause.title = { not: { startsWith: '[TEST]' } };
+      whereClause.NOT = { id: { startsWith: 'prod-' } };
+    }
+
     if (storeId) whereClause.storeId = storeId;
 
     // Add Category filtering with optional recursive children
