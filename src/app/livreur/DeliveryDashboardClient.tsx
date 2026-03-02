@@ -7,19 +7,29 @@ interface DeliveryDashboardClientProps {
     initialUser: any;
 }
 
-interface Delivery {
-    id: string;
-    orderId: string;
-    status: string;
-    // Pickup (Point de collecte)
-    pickupAddress: string;
+interface PickupPoint {
+    storeId: string | null;
     storeName: string;
     storeAddress: string;
     storeCity: string;
     storePhone: string;
-    storeContact: string;
     storeLatitude: number | null;
     storeLongitude: number | null;
+    pickupAddress: string;
+}
+
+interface Delivery {
+    id: string;
+    orderId: string;
+    status: string;
+    // Pickup (Point de collecte) — backward compat
+    pickupAddress: string;
+    storeName: string;
+    storePhone: string;
+    storeLatitude: number | null;
+    storeLongitude: number | null;
+    // NEW: tous les points de collecte
+    pickupPoints?: PickupPoint[];
     // Delivery (Point de livraison)
     deliveryAddress: string;
     deliveryWilaya: string;
@@ -36,6 +46,7 @@ interface Delivery {
         color: string;
         quantity: number;
         price: number;
+        storeId: string | null;
     }>;
     createdAt: string;
 }
@@ -163,7 +174,10 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
             ) : (
                 <div className="space-y-3">
                     {filteredDeliveries.map(delivery => {
-                        const pickupCount = getUniqueStores(delivery.items);
+                        const pickupPoints = delivery.pickupPoints && delivery.pickupPoints.length > 0
+                            ? delivery.pickupPoints
+                            : [{ storeName: delivery.storeName, pickupAddress: delivery.pickupAddress, storePhone: delivery.storePhone, storeLatitude: delivery.storeLatitude, storeLongitude: delivery.storeLongitude, storeId: null, storeAddress: '', storeCity: '' }];
+                        const pickupCount = pickupPoints.length;
                         const pickupBadgeColor = pickupCount === 1
                             ? 'bg-green-500'
                             : pickupCount === 2
@@ -207,70 +221,72 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                     </div>
                                 </div>
 
-                                {/* Points de collecte & livraison */}
-                                <div className="grid grid-cols-2 gap-2 mb-3">
-                                    {/* Point de collecte */}
-                                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
-                                        <div className="flex items-center gap-1.5 mb-2">
-                                            <span className="text-base">📦</span>
-                                            <span className="text-[10px] font-bold text-green-700 uppercase">
-                                                Pt. Collecte{pickupCount > 1 ? ` 1/${pickupCount}` : ''}
-                                            </span>
+                                {/* Tous les Points de collecte */}
+                                <div className="mb-3 space-y-2">
+                                    {pickupPoints.map((pt, idx) => (
+                                        <div key={pt.storeId || idx} className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                                <span className="text-base">📦</span>
+                                                <span className="text-[10px] font-bold text-green-700 uppercase">
+                                                    Pt. Collecte{pickupCount > 1 ? ` ${idx + 1}/${pickupCount}` : ''}
+                                                </span>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <div className="font-bold text-sm text-gray-900 line-clamp-1">{pt.storeName}</div>
+                                                <div className="text-[11px] text-gray-600 line-clamp-2">{pt.pickupAddress}</div>
+                                                {pt.storePhone && (
+                                                    <a
+                                                        href={`tel:${pt.storePhone}`}
+                                                        className="text-[11px] font-semibold text-green-700 hover:underline flex items-center gap-1"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        📞 <span className="line-clamp-1">{pt.storePhone}</span>
+                                                    </a>
+                                                )}
+                                                {pt.storeLatitude && pt.storeLongitude && (
+                                                    <a
+                                                        href={`https://www.google.com/maps/dir/?api=1&destination=${pt.storeLatitude},${pt.storeLongitude}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-green-600 text-white text-[10px] font-bold rounded-md hover:bg-green-700"
+                                                    >
+                                                        🗺️ GPS
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.storeName}</div>
-                                            <div className="text-[11px] text-gray-600 line-clamp-2">{delivery.pickupAddress}</div>
-                                            {delivery.storePhone && (
-                                                <a
-                                                    href={`tel:${delivery.storePhone}`}
-                                                    className="text-[11px] font-semibold text-green-700 hover:underline flex items-center gap-1"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    📞 <span className="line-clamp-1">{delivery.storePhone}</span>
-                                                </a>
-                                            )}
-                                            {delivery.storeLatitude && delivery.storeLongitude && (
-                                                <a
-                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.storeLatitude},${delivery.storeLongitude}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-green-600 text-white text-[10px] font-bold rounded-md hover:bg-green-700"
-                                                >
-                                                    🗺️ GPS
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
+                                    ))}
 
-                                    {/* Point de livraison */}
-                                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-3">
-                                        <div className="flex items-center gap-1.5 mb-2">
-                                            <span className="text-base">🏠</span>
-                                            <span className="text-[10px] font-bold text-blue-700 uppercase">Pt. Livraison</span>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.customerName}</div>
-                                            <div className="text-[11px] text-gray-600 line-clamp-2">{delivery.deliveryAddress}</div>
+                                </div>
+
+                                {/* Point de livraison */}
+                                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-3 mb-3">
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <span className="text-base">🏠</span>
+                                        <span className="text-[10px] font-bold text-blue-700 uppercase">Pt. Livraison</span>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.customerName}</div>
+                                        <div className="text-[11px] text-gray-600 line-clamp-2">{delivery.deliveryAddress}</div>
+                                        <a
+                                            href={`tel:${delivery.customerPhone}`}
+                                            className="text-[11px] font-semibold text-blue-700 hover:underline flex items-center gap-1"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            📞 <span className="line-clamp-1">{delivery.customerPhone}</span>
+                                        </a>
+                                        {delivery.deliveryLatitude && delivery.deliveryLongitude && (
                                             <a
-                                                href={`tel:${delivery.customerPhone}`}
-                                                className="text-[11px] font-semibold text-blue-700 hover:underline flex items-center gap-1"
+                                                href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.deliveryLatitude},${delivery.deliveryLongitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                                 onClick={(e) => e.stopPropagation()}
+                                                className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-md hover:bg-blue-700"
                                             >
-                                                📞 <span className="line-clamp-1">{delivery.customerPhone}</span>
+                                                🗺️ GPS
                                             </a>
-                                            {delivery.deliveryLatitude && delivery.deliveryLongitude && (
-                                                <a
-                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.deliveryLatitude},${delivery.deliveryLongitude}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-md hover:bg-blue-700"
-                                                >
-                                                    🗺️ GPS
-                                                </a>
-                                            )}
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
 

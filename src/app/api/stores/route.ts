@@ -50,6 +50,10 @@ export async function POST(request: Request) {
                     address,
                     city,
                     clickCollect: clickCollect !== undefined ? clickCollect : true,
+                    // Auto-vérification à la création (l'admin peut retirer si besoin)
+                    verified: true,
+                    verifiedAt: new Date(),
+                    verifiedBy: 'system',
                 },
             });
 
@@ -66,3 +70,4 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Failed to create store', details: error }, { status: 500 });
     }
 }
+

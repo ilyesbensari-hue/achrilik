@@ -117,32 +117,43 @@ export async function GET() {
         };
 
         // Map deliveries with pickup/delivery info and order items
-        const deliveriesWithDetails = (deliveries as any[]).map((d: any) => ({
-            ...d,
-            // Delivery info (Point B - client)
-            totalAmount: d.order?.total || 0,
-            customerName: d.order?.shippingName || '',
-            customerPhone: d.order?.shippingPhone || '',
-            deliveryAddress: `${d.order?.shippingAddress || ''}, ${d.order?.shippingCity || ''}, ${d.order?.shippingWilaya || ''}`.trim(),
-            deliveryLatitude: d.order?.deliveryLatitude || null,
-            deliveryLongitude: d.order?.deliveryLongitude || null,
-            deliveryWilaya: d.order?.shippingWilaya || '',
+        const deliveriesWithDetails = (deliveries as any[]).map((d: any) => {
+            // Build pickupPoints: unique stores from all items
+            const storesMap = new Map<string, any>();
+            (d.order?.OrderItem || []).forEach((item: any) => {
+                const store = item.Variant?.Product?.Store;
+                if (store?.id && !storesMap.has(store.id)) {
+                    storesMap.set(store.id, {
+                        storeId: store.id,
+                        storeName: store.name || 'Boutique',
+                        storeAddress: store.address || '',
+                        storeCity: store.city || store.storageCity || '',
+                        storePhone: store.phone || '',
+                        storeLatitude: store.latitude || null,
+                        storeLongitude: store.longitude || null,
+                        pickupAddress: store.address
+                            ? `${store.address}, ${store.city || store.storageCity || ''}`.trim()
+                            : 'Adresse non renseignée',
+                    });
+                }
+            });
+            const pickupPoints = storesMap.size > 0
+                ? Array.from(storesMap.values())
+                : [{
+                    storeId: null,
+                    storeName: d.order?.Store?.name || 'Magasin',
+                    storeAddress: d.order?.Store?.address || '',
+                    storeCity: d.order?.Store?.city || d.order?.Store?.storageCity || '',
+                    storePhone: d.order?.Store?.phone || d.order?.Store?.User?.phone || '',
+                    storeLatitude: d.order?.Store?.latitude || null,
+                    storeLongitude: d.order?.Store?.longitude || null,
+                    pickupAddress: d.order?.Store?.address
+                        ? `${d.order.Store.address}, ${d.order.Store.city || d.order.Store.storageCity || ''}`.trim()
+                        : 'Adresse non renseignée',
+                }];
 
-            // Pickup info (Point A - vendor/store)
-            storeName: d.order?.Store?.name || 'Magasin',
-            storeAddress: d.order?.Store?.address || '',
-            storeCity: d.order?.Store?.city || d.order?.Store?.storageCity || '',
-            storePhone: d.order?.Store?.phone || d.order?.Store?.User?.phone || '',
-            storeContact: d.order?.Store?.User?.name || '',
-            storeLatitude: d.order?.Store?.latitude || null,
-            storeLongitude: d.order?.Store?.longitude || null,
-            pickupAddress: d.order?.Store?.address
-                ? `${d.order.Store.address}, ${d.order.Store.city || d.order.Store.storageCity || ''}`.trim()
-                : 'Adresse non renseignée',
-
-            // Map order items with store info for pickup count
-            items: d.order?.OrderItem?.map((item: any) => {
-                // Safe ly parse product images
+            // Map order items
+            const items = (d.order?.OrderItem || []).map((item: any) => {
                 let image = null;
                 try {
                     if (item.Variant?.Product?.images) {
@@ -150,11 +161,9 @@ export async function GET() {
                         image = Array.isArray(parsed) ? parsed[0] : parsed;
                     }
                 } catch {
-                    // If parse fails, images might be a plain URL string
                     image = item.Variant?.Product?.images;
                 }
                 image = image || item.Variant?.colorImage || null;
-
                 return {
                     id: item.id,
                     productName: item.Variant?.Product?.title || 'Produit',
@@ -166,8 +175,32 @@ export async function GET() {
                     storeId: item.Variant?.Product?.Store?.id || null,
                     storeName: item.Variant?.Product?.Store?.name || null
                 };
-            }) || []
-        }));
+            });
+
+            return {
+                ...d,
+                totalAmount: d.order?.total || 0,
+                customerName: d.order?.shippingName || '',
+                customerPhone: d.order?.shippingPhone || '',
+                deliveryAddress: `${d.order?.shippingAddress || ''}, ${d.order?.shippingCity || ''}, ${d.order?.shippingWilaya || ''}`.trim(),
+                deliveryLatitude: d.order?.deliveryLatitude || null,
+                deliveryLongitude: d.order?.deliveryLongitude || null,
+                deliveryWilaya: d.order?.shippingWilaya || '',
+                // Backward compat: first store
+                storeName: pickupPoints[0]?.storeName || 'Magasin',
+                storeAddress: pickupPoints[0]?.storeAddress || '',
+                storeCity: pickupPoints[0]?.storeCity || '',
+                storePhone: pickupPoints[0]?.storePhone || '',
+                storeContact: d.order?.Store?.User?.name || '',
+                storeLatitude: pickupPoints[0]?.storeLatitude || null,
+                storeLongitude: pickupPoints[0]?.storeLongitude || null,
+                pickupAddress: pickupPoints[0]?.pickupAddress || 'Adresse non renseignée',
+                // NEW: all pickup points
+                pickupPoints,
+                items,
+            };
+        });
+
 
         return NextResponse.json({
             deliveries: deliveriesWithDetails,
