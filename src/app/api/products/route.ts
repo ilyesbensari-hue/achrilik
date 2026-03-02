@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
     };
 
     // En production, exclure les produits de test (sauf pour admin/seller avec showAll=true)
+    // Note: seul le filtre titre [TEST] est utilisé, pas le filtre ID 'prod-' qui cachait les produits de seed légitimes
     if (process.env.NODE_ENV === 'production' && showAll !== 'true') {
-      whereClause.title = { not: { startsWith: '[TEST]' } };
-      whereClause.NOT = { id: { startsWith: 'prod-' } };
+      whereClause.NOT = { title: { startsWith: '[TEST]' } };
     }
 
     if (storeId) whereClause.storeId = storeId;
