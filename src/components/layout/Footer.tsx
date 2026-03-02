@@ -43,10 +43,10 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/tel:+213551223344" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
+                                <a href="tel:+213551223344" className="text-sm text-gray-600 hover:text-rose-600 flex items-center gap-2">
                                     <Phone className="h-4 w-4" />
                                     Service Client
-                                </Link>
+                                </a>
                             </li>
                         </ul>
                     </div>
@@ -75,12 +75,14 @@ export default function Footer() {
                     <div>
                         <h4 className="font-bold text-gray-900 mb-4">Suivez-nous</h4>
                         <div className="flex gap-4">
-                            <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600 border border-gray-100 hover:bg-blue-50 transition-colors">
+                            {/* TODO: remplacer par la vraie URL Facebook */}
+                            {/* <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600 border border-gray-100 hover:bg-blue-50 transition-colors">
                                 <Facebook className="h-5 w-5" />
-                            </a>
-                            <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-pink-600 border border-gray-100 hover:bg-pink-50 transition-colors">
+                            </a> */}
+                            {/* TODO: remplacer par la vraie URL Instagram */}
+                            {/* <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-pink-600 border border-gray-100 hover:bg-pink-50 transition-colors">
                                 <Instagram className="h-5 w-5" />
-                            </a>
+                            </a> */}
                             <a href="https://www.tiktok.com/@achrilik" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-900 border border-gray-100 hover:bg-gray-50 transition-colors">
                                 <TikTokIcon className="h-5 w-5" />
                             </a>

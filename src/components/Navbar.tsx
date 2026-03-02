@@ -17,6 +17,21 @@ export default function Navbar() {
     const { wishlistCount } = useWishlist();
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [currentLang, setCurrentLang] = useState<'fr' | 'ar'>('fr');
+
+    // Sync language preference from localStorage
+    useEffect(() => {
+        const storedLang = localStorage.getItem('achrilik_lang') as 'fr' | 'ar' | null;
+        if (storedLang) setCurrentLang(storedLang);
+    }, []);
+
+    const toggleLang = () => {
+        const newLang = currentLang === 'fr' ? 'ar' : 'fr';
+        setCurrentLang(newLang);
+        localStorage.setItem('achrilik_lang', newLang);
+        // Notify HeroVideoBanner via custom event
+        window.dispatchEvent(new CustomEvent('achrilik_lang_change', { detail: newLang }));
+    };
 
     useEffect(() => {
         const handleStorage = () => {
@@ -142,7 +157,7 @@ export default function Navbar() {
                                         <span className="text-sm font-medium text-gray-700">Mon Profil</span>
                                     </Link>
 
-                                    {user.role === 'SELLER' && (
+                                    {(user.role === 'SELLER' || (Array.isArray(user.roles) && user.roles.includes('SELLER'))) && (
                                         <Link
                                             href="/sell"
                                             className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
@@ -152,7 +167,7 @@ export default function Navbar() {
                                         </Link>
                                     )}
 
-                                    {user.role === 'ADMIN' && (
+                                    {(user.role === 'ADMIN' || (Array.isArray(user.roles) && user.roles.includes('ADMIN'))) && (
                                         <Link
                                             href="/admin"
                                             className="flex items-center gap-3 px-4 py-3 bg-purple-50 hover:bg-purple-100 transition-colors"
@@ -200,6 +215,16 @@ export default function Navbar() {
                                 </span>
                             )}
                         </Link>
+
+                        {/* Language toggle (always visible) */}
+                        <button
+                            onClick={toggleLang}
+                            className="flex-shrink-0 px-3 py-1.5 text-sm font-bold text-[#006233] border border-[#006233] rounded-full hover:bg-[#006233] hover:text-white transition-colors"
+                            aria-label="Changer de langue"
+                            title={currentLang === 'fr' ? 'Version Arabe' : 'Version Française'}
+                        >
+                            {currentLang === 'fr' ? 'العربية' : 'FR'}
+                        </button>
                     </div>
                 </div>
             </div>

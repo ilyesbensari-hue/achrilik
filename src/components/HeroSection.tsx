@@ -15,9 +15,9 @@ export default function HeroSection() {
             <div className="relative max-w-7xl mx-auto px-4 py-8 sm:py-10 md:py-12">
                 {/* Main Content */}
                 <div className="text-center mb-6">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-gray-900">
-                        Mode & Tendance Algérie 🇩🇿
-                    </h1>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight text-gray-900">
+                        Mode & Tendance Algérie
+                    </h2>
                 </div>
 
                 {/* 2 Features - Simple & Clean */}

@@ -25,8 +25,8 @@ const ClothingProductSections = dynamicImport(() => import('@/components/home/Cl
 const BottomNav = dynamicImport(() => import('@/components/home/BottomNav'));
 
 export const metadata = {
-  title: 'Achrilik - Shopping en Ligne Algérie | Mode, Tech & Maison',
-  description: 'Découvrez les meilleures offres en Algérie. Livraison 58 Wilayas, Paiement à la livraison.',
+  title: 'Achrilik - Mode & Tendance Algérie | Vêtements en Ligne',
+  description: 'Achrilik – Mode, maroquinerie et électronique en Algérie. Large choix de vêtements, sacs et accessoires. Livraison dans les 58 wilayas, paiement à la livraison.',
 };
 
 // Force dynamic rendering to enable searchParams filtering

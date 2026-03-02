@@ -4,7 +4,8 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://achrilik.com'
+    // Force canonical without www
+    const baseUrl = 'https://achrilik.com'
 
     // Static pages
     const staticPages: MetadataRoute.Sitemap = [
@@ -45,7 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             take: 1000, // Limit for performance
         })
 
-        const productPages: MetadataRoute.Sitemap = products.map((product) => ({
+        // Filter out test products (IDs starting with 'prod-' or named [TEST])
+        const filteredProducts = products.filter(
+            (p) => !p.id.startsWith('prod-')
+        )
+
+        const productPages: MetadataRoute.Sitemap = filteredProducts.map((product) => ({
             url: `${baseUrl}/products/${product.id}`,
             lastModified: product.createdAt,
             changeFrequency: 'weekly' as const,

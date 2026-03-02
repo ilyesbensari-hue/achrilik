@@ -35,7 +35,7 @@ export default function SearchBar({ className = '' }: { className?: string }) {
                     value={query}
                     onChange={handleInputChange}
                     onFocus={() => setShowAutocomplete(true)}
-                    placeholder="Tapez votre boutique ou votre produit"
+                    placeholder="Rechercher un produit..."
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006233] text-sm"
                 />
                 <button

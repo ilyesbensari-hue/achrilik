@@ -29,6 +29,19 @@ export default function HeroVideoBanner() {
     const [loading, setLoading] = useState(true);
     const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
+    // Sync lang from Navbar (reads localStorage + listens to custom event)
+    useEffect(() => {
+        const stored = localStorage.getItem('achrilik_lang') as 'fr' | 'ar' | null;
+        if (stored) setCurrentLang(stored);
+
+        const handleLangChange = (e: Event) => {
+            const lang = (e as CustomEvent<'fr' | 'ar'>).detail;
+            setCurrentLang(lang);
+        };
+        window.addEventListener('achrilik_lang_change', handleLangChange);
+        return () => window.removeEventListener('achrilik_lang_change', handleLangChange);
+    }, []);
+
     // Load banners from API
     useEffect(() => {
         const fetchBanners = () => {
@@ -267,14 +280,7 @@ export default function HeroVideoBanner() {
                 </div>
             )}
 
-            {/* Language Toggle - Glassmorphism */}
-            <button
-                onClick={() => setCurrentLang(prev => prev === 'fr' ? 'ar' : 'fr')}
-                className="absolute top-4 right-4 z-20 px-3 py-1.5 bg-black/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[11px] font-bold tracking-wide hover:bg-black/30 transition-all shadow-lg active:scale-95"
-                aria-label="Changer de langue"
-            >
-                {currentLang === 'fr' ? 'العربية' : 'FR'}
-            </button>
+            {/* Language toggle moved to Navbar */}
 
             <style jsx>{`
         @keyframes fade-in-up {

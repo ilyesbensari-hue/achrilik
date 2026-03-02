@@ -1,6 +1,17 @@
 import * as Sentry from "@sentry/nextjs";
 
 const nextConfig = {
+  // Redirection 301: www → sans www (version canonique)
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.achrilik.com' }],
+        destination: 'https://achrilik.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     formats: ['image/webp', 'image/avif'],
     remotePatterns: [
