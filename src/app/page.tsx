@@ -5,7 +5,6 @@ import Navbar from '@/components/Navbar';
 import JsonLd, { generateOrganizationSchema } from '@/components/JsonLd';
 import { prisma } from '@/lib/prisma';
 import HeroSection from '@/components/HeroSection';
-import TrustSection from '@/components/home/TrustSection';
 
 // Lazy load heavy components
 const HeroVideoBanner = dynamicImport(() => import('@/components/home/HeroVideoBanner'), {
@@ -497,7 +496,6 @@ export default async function Home({
         )}
 
         {/* 10. Trust & Legal Section */}
-        <TrustSection />
 
         {/* 11. Bottom Navigation - Mobile Only */}
         <div className="md:hidden">

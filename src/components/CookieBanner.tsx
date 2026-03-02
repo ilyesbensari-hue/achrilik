@@ -21,6 +21,8 @@ export default function CookieBanner() {
     };
 
     const handleClose = () => {
+        // Fermeture = acceptation implicite, on persiste pour ne plus réafficher
+        localStorage.setItem('achrilik_cookies_accepted', 'true');
         setIsVisible(false);
     };
 

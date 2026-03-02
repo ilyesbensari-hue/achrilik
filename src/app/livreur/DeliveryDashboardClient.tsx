@@ -21,7 +21,10 @@ interface PickupPoint {
 interface Delivery {
     id: string;
     orderId: string;
-    status: string;
+    status: string; // DeliveryStatus: PENDING | IN_TRANSIT | DELIVERED | FAILED | RETURNED
+    // Statut de l'ordre côté vendeur
+    orderStatus: string;
+    pickupReady: boolean; // true si le vendeur a marqué READY_FOR_PICKUP
     // Pickup (Point de collecte) — backward compat
     pickupAddress: string;
     storeName: string;
@@ -220,6 +223,16 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
                                         <span className="text-xs font-bold">{pickupCount} collecte{pickupCount > 1 ? 's' : ''}</span>
                                     </div>
                                 </div>
+
+                                {/* Badge prêt à collecter / en préparation */}
+                                {delivery.status === 'PENDING' && (
+                                    <div className={`mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${delivery.pickupReady
+                                            ? 'bg-green-100 text-green-700 border border-green-300'
+                                            : 'bg-orange-100 text-orange-700 border border-orange-300'
+                                        }`}>
+                                        {delivery.pickupReady ? '✅ Prêt à collecter' : '⏳ En préparation vendeur'}
+                                    </div>
+                                )}
 
                                 {/* Tous les Points de collecte */}
                                 <div className="mb-3 space-y-2">

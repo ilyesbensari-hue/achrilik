@@ -170,43 +170,34 @@ export default function SellerOrdersPage() {
                         : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
                         }`}
                 >
-                    En attente ({statusCounts['PENDING'] || 0})
+                    🆕 Nouvelles ({(statusCounts['PENDING'] || 0)})
                 </button>
                 <button
                     onClick={() => setSelectedStatus('CONFIRMED')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'CONFIRMED'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                        }`}
-                >
-                    Confirmées ({statusCounts['CONFIRMED'] || 0})
-                </button>
-                <button
-                    onClick={() => setSelectedStatus('AT_MERCHANT')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'AT_MERCHANT'
                         ? 'bg-purple-600 text-white'
                         : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
                         }`}
                 >
-                    En préparation ({statusCounts['AT_MERCHANT'] || 0})
+                    📦 En préparation ({(statusCounts['CONFIRMED'] || 0) + (statusCounts['AT_MERCHANT'] || 0)})
                 </button>
                 <button
                     onClick={() => setSelectedStatus('READY_FOR_PICKUP')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'READY_FOR_PICKUP'
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                        }`}
-                >
-                    Prêtes pour enlèvement ({statusCounts['READY_FOR_PICKUP'] || 0})
-                </button>
-                <button
-                    onClick={() => setSelectedStatus('DELIVERED')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'DELIVERED'
                         ? 'bg-green-600 text-white'
                         : 'bg-green-50 text-green-700 hover:bg-green-100'
                         }`}
                 >
-                    Livrées ({statusCounts['DELIVERED'] || 0})
+                    ✅ Prêt pour livreur ({statusCounts['READY_FOR_PICKUP'] || 0})
+                </button>
+                <button
+                    onClick={() => setSelectedStatus('DELIVERED')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedStatus === 'DELIVERED'
+                        ? 'bg-gray-700 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                >
+                    🎉 Livrées ({statusCounts['DELIVERED'] || 0})
                 </button>
             </div>
 
@@ -292,8 +283,8 @@ export default function SellerOrdersPage() {
                                     </div>
                                 )}
 
-                                {/* Actions */}
-                                <div className="flex gap-2 flex-wrap">
+                                {/* Actions vendeur — flux simplifié en 2 étapes */}
+                                <div className="flex gap-2 flex-wrap items-center">
                                     {!order.isPaid && order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
                                         <button
                                             onClick={() => markAsPaid(order.id)}
@@ -303,33 +294,25 @@ export default function SellerOrdersPage() {
                                         </button>
                                     )}
 
+                                    {/* Étape 1: Accepter la commande */}
                                     {order.status === 'PENDING' && (
                                         <button
                                             onClick={() => transitionStatus(order.id, 'CONFIRMED')}
                                             className="btn btn-sm bg-blue-600 text-white hover:bg-blue-700"
                                         >
                                             <CheckCircle className="w-4 h-4 mr-1" />
-                                            Accepter
+                                            Accepter la commande
                                         </button>
                                     )}
 
-                                    {order.status === 'CONFIRMED' && (
-                                        <button
-                                            onClick={() => transitionStatus(order.id, 'AT_MERCHANT')}
-                                            className="btn btn-sm bg-purple-600 text-white hover:bg-purple-700"
-                                        >
-                                            <Package className="w-4 h-4 mr-1" />
-                                            En préparation
-                                        </button>
-                                    )}
-
-                                    {order.status === 'AT_MERCHANT' && (
+                                    {/* Étape 2: Marquer prêt pour le livreur */}
+                                    {(order.status === 'CONFIRMED' || order.status === 'AT_MERCHANT') && (
                                         <button
                                             onClick={() => transitionStatus(order.id, 'READY_FOR_PICKUP')}
-                                            className="btn btn-sm bg-indigo-600 text-white hover:bg-indigo-700"
+                                            className="btn btn-sm bg-green-600 text-white hover:bg-green-700"
                                         >
                                             <PackageCheck className="w-4 h-4 mr-1" />
-                                            Prêt pour enlèvement
+                                            📦 Prêt pour le livreur
                                         </button>
                                     )}
 

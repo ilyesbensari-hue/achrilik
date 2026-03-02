@@ -36,6 +36,7 @@ export async function GET() {
                 order: {
                     select: {
                         id: true,
+                        status: true,
                         shippingName: true,
                         shippingPhone: true,
                         shippingAddress: true,
@@ -186,6 +187,9 @@ export async function GET() {
                 deliveryLatitude: d.order?.deliveryLatitude || null,
                 deliveryLongitude: d.order?.deliveryLongitude || null,
                 deliveryWilaya: d.order?.shippingWilaya || '',
+                // Statut de l'ordre pour le livreur (prêt à collecter ?)
+                orderStatus: d.order?.status || 'PENDING',
+                pickupReady: d.order?.status === 'READY_FOR_PICKUP' || d.order?.status === 'WITH_DELIVERY_AGENT',
                 // Backward compat: first store
                 storeName: pickupPoints[0]?.storeName || 'Magasin',
                 storeAddress: pickupPoints[0]?.storeAddress || '',

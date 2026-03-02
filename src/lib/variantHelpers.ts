@@ -61,6 +61,7 @@ export function getSizeConfig(categorySlug?: string, categoryName?: string): Siz
         combined.includes('telephone') ||
         combined.includes('téléphone') ||
         combined.includes('power bank') ||
+        combined.includes('powerbank') ||
         combined.includes('câble') ||
         combined.includes('cable') ||
         combined.includes('chargeur') ||
@@ -69,7 +70,11 @@ export function getSizeConfig(categorySlug?: string, categoryName?: string): Siz
         combined.includes('batterie') ||
         combined.includes('coque') ||
         combined.includes('tablette') ||
-        combined.includes('ordinateur');
+        combined.includes('ordinateur') ||
+        combined.includes('casque') ||
+        combined.includes('enceinte') ||
+        combined.includes('montre connect') ||
+        combined.includes('smartwatch');
 
     if (isTech) {
         return {
@@ -172,13 +177,21 @@ export function getSizeConfig(categorySlug?: string, categoryName?: string): Siz
     // ==========================================
     // SACS & ACCESSOIRES (Bags) - NOT TECH
     // ==========================================
+    const BAG_SLUGS = [
+        'sacs-main', 'sac-main', 'sacs-a-main', 'sac-a-main',
+        'maroquinerie', 'bagagerie', 'valises',
+        'sacs-dos', 'sac-dos', 'sac-voyage', 'sacs-voyage',
+        'pochettes', 'portefeuilles',
+    ];
+
     if (
-        (combined.includes('sac') ||
-            combined.includes('valise') ||
-            combined.includes('bagagerie') ||
-            combined.includes('maroquinerie')) &&
-        !combined.includes('electronique') &&
-        !combined.includes('électronique')
+        BAG_SLUGS.includes(slug) ||
+        combined.includes('sac') ||
+        combined.includes('valise') ||
+        combined.includes('bagagerie') ||
+        combined.includes('maroquinerie') ||
+        combined.includes('pochette') ||
+        combined.includes('portefeuille')
     ) {
         return {
             options: [
@@ -189,6 +202,41 @@ export function getSizeConfig(categorySlug?: string, categoryName?: string): Siz
             ],
             showDimensions: true, // Enable L×W×H inputs
             sizeLabel: 'Taille (optionnel)',
+            required: false,
+        };
+    }
+
+    // ==========================================
+    // ACCESSOIRES SANS TAILLE (bijoux, ceintures, chapeaux, lunettes...)
+    // ==========================================
+    const NO_SIZE_SLUGS = [
+        'bijoux', 'colliers', 'bracelets', 'bagues', 'boucles-oreilles',
+        'ceintures', 'chapeaux', 'casquettes', 'bonnets', 'echarpes', 'foulards',
+        'lunettes', 'lunettes-soleil', 'accessoires', 'accessoires-cheveux',
+        'parfums', 'montres',
+    ];
+
+    const isNoSizeAccessory = NO_SIZE_SLUGS.includes(slug) ||
+        combined.includes('bijou') ||
+        combined.includes('collier') ||
+        combined.includes('bracelet') ||
+        combined.includes('bague') ||
+        combined.includes('ceinture') ||
+        combined.includes('chapeau') ||
+        combined.includes('casquette') ||
+        combined.includes('bonnet') ||
+        combined.includes('echarpe') ||
+        combined.includes('écharpe') ||
+        combined.includes('foulard') ||
+        combined.includes('lunette') ||
+        combined.includes('parfum') ||
+        combined.includes('montre');
+
+    if (isNoSizeAccessory) {
+        return {
+            options: [], // PAS DE TAILLE
+            showDimensions: false,
+            sizeLabel: '',
             required: false,
         };
     }
