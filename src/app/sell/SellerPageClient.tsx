@@ -302,7 +302,7 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                             ✏️ Ma boutique en ligne
                         </button>
                         <Link href="/sell/settings" className="btn btn-outline whitespace-nowrap">
-                            ⚙️ Paramètres
+                            🚚 Livraison Gratuite
                         </Link>
                         <Link href="/sell/new" className="btn btn-primary whitespace-nowrap">
                             + Ajouter un produit
