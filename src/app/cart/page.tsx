@@ -8,12 +8,14 @@ import Image from 'next/image';
 import { validateCart, getRemainingCapacity, CART_LIMITS } from '@/lib/cartLimits';
 import { calculateFreeDeliveryStatus, getIncentiveStores } from '@/lib/freeDeliveryHelpers';
 import FreeDeliveryIncentivePopup from '@/components/FreeDeliveryIncentivePopup';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const MapPicker = dynamic(() => import('@/components/Map'), { ssr: false });
 
 export default function CartPage() {
     const router = useRouter();
-    const { user, isLoading } = useAuth(); // Use AuthContext
+    const { user, isLoading } = useAuth();
+    const { tr } = useTranslation();
     const [cart, setCart] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
 
@@ -136,12 +138,12 @@ export default function CartPage() {
         if (e) e.preventDefault();
 
         if (!user) {
-            alert('Veuillez vous connecter pour commander');
+            alert(tr('error_session'));
             router.push('/login?callbackUrl=/cart');
             return;
         }
 
-        if (cart.length === 0) return alert('Panier vide');
+        if (cart.length === 0) return alert(tr('cart_empty'));
 
         // Redirect to full checkout page for address/payment details
         router.push('/checkout');
@@ -191,12 +193,12 @@ export default function CartPage() {
     };
 
     if (isLoading) {
-        return <div className="container py-10 text-center">Chargement...</div>;
+        return <div className="container py-10 text-center">{tr('loading')}</div>;
     }
 
     return (
         <div className="container py-10">
-            <h1 className="text-3xl font-bold mb-6">Mon Panier</h1>
+            <h1 className="text-3xl font-bold mb-6">{tr('cart_title')}</h1>
 
             {/* Free Delivery Progress Banner */}
             {enrichedCart.length > 0 && (() => {
@@ -222,10 +224,10 @@ export default function CartPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="text-lg font-bold text-green-700">
-                                                    🎉 Félicitations ! Livraison GRATUITE pour {store.storeName}
+                                                    🎉 {tr('free_delivery_achieved')} — {store.storeName}
                                                 </h3>
                                                 <p className="text-sm text-green-600">
-                                                    Vous avez atteint le seuil de {store.freeDeliveryThreshold?.toLocaleString()} DA
+                                                    {tr('free_delivery_threshold_reached', { amount: store.freeDeliveryThreshold?.toLocaleString() ?? '' })} DA
                                                 </p>
                                             </div>
                                         </div>
@@ -244,7 +246,7 @@ export default function CartPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="text-base font-bold text-orange-700 mb-1">
-                                                    🚚 Plus que {store.amountToFreeDelivery?.toLocaleString()} DA pour la livraison gratuite !
+                                                    🚚 {tr('free_delivery_remaining', { amount: store.amountToFreeDelivery?.toLocaleString() ?? '' })}
                                                 </h3>
                                                 <p className="text-sm text-orange-600 mb-3">
                                                     {store.storeName} • {store.totalAmount.toLocaleString()} DA / {store.freeDeliveryThreshold?.toLocaleString()} DA
@@ -259,8 +261,8 @@ export default function CartPage() {
                                                         />
                                                     </div>
                                                     <div className="flex justify-between text-xs text-gray-600 mt-1">
-                                                        <span>{progress.toFixed(0)}% atteint</span>
-                                                        <span className="font-semibold text-orange-600">Continue !</span>
+                                                        <span>{progress.toFixed(0)}% {tr('progress_achieved')}</span>
+                                                        <span className="font-semibold text-orange-600">{tr('progress_continue')} !</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -286,12 +288,12 @@ export default function CartPage() {
                                     </svg>
                                 </div>
                                 <div className="ml-3">
-                                    <h3 className="text-sm font-medium text-yellow-800">Panier mixte détecté</h3>
+                                    <h3 className="text-sm font-medium text-yellow-800">{tr('mixed_cart_title')}</h3>
                                     <div className="mt-2 text-sm text-yellow-700">
                                         <p>
-                                            Votre panier contient des articles de vendeurs <strong>100% en ligne</strong> (livraison obligatoire).
+                                            {tr('mixed_cart_description_part1')} <strong>{tr('mixed_cart_online_sellers')}</strong> {tr('mixed_cart_description_part2')}
                                             <br />
-                                            Par conséquent, <strong>la livraison à domicile</strong> s'applique à l'ensemble de la commande.
+                                            {tr('mixed_cart_consequence_part1')} <strong>{tr('mixed_cart_consequence_part2')}</strong> {tr('mixed_cart_consequence_part3')}
                                         </p>
                                     </div>
                                 </div>
@@ -301,8 +303,8 @@ export default function CartPage() {
 
                     {cart.length === 0 ? (
                         <div className="text-center py-10 bg-gray-50 rounded-xl">
-                            <p className="text-xl mb-4">Votre panier est vide.</p>
-                            <a href="/" className="btn btn-primary">Découvrir nos produits</a>
+                            <p className="text-xl mb-4">{tr('cart_empty')}</p>
+                            <a href="/" className="btn btn-primary">{tr('home_cta')}</a>
                         </div>
                     ) : (
                         cart.map((item, i) => {
@@ -317,11 +319,11 @@ export default function CartPage() {
                                             <h3 className="font-bold text-gray-900 truncate pr-4">{item.title}</h3>
                                             {store && (
                                                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${isOnlineOnly ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-                                                    {isOnlineOnly ? '🚚 Livraison Uniquement' : '🏪 Retrait Disponible'}
+                                                    {isOnlineOnly ? `🚚 ${tr('checkout_standard').split('(')[0].trim()}` : `🏪 ${tr('checkout_pickup')}`}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-gray-500 mb-2">Taille: {item.size} | Couleur: {item.color}</p>
+                                        <p className="text-sm text-gray-500 mb-2">{tr('product_size')}: {item.size} | {tr('product_color')}: {item.color}</p>
                                         <div className="flex items-center justify-between mt-2 gap-3">
                                             {/* Quantity controls */}
                                             <div className="flex items-center border border-gray-300 rounded-lg">
@@ -329,7 +331,7 @@ export default function CartPage() {
                                                     onClick={() => updateQuantity(i, (item.quantity || 1) - 1)}
                                                     className="min-w-[44px] min-h-[44px] px-3 py-2 hover:bg-gray-100 transition-colors flex items-center justify-center"
                                                     disabled={(item.quantity || 1) <= 1}
-                                                    aria-label="Diminuer la quantité"
+                                                    aria-label={tr('cart_decrease_quantity')}
                                                 >
                                                     −
                                                 </button>
@@ -339,7 +341,7 @@ export default function CartPage() {
                                                 <button
                                                     onClick={() => updateQuantity(i, (item.quantity || 1) + 1)}
                                                     className="min-w-[44px] min-h-[44px] px-3 py-2 hover:bg-gray-100 transition-colors flex items-center justify-center"
-                                                    aria-label="Augmenter la quantité"
+                                                    aria-label={tr('cart_increase_quantity')}
                                                 >
                                                     +
                                                 </button>
@@ -353,9 +355,9 @@ export default function CartPage() {
                                                 <button
                                                     onClick={() => removeItem(i)}
                                                     className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors mt-1"
-                                                    aria-label="Supprimer l'article"
+                                                    aria-label={tr('cart_remove')}
                                                 >
-                                                    Supprimer
+                                                    {tr('cart_remove')}
                                                 </button>
                                             </div>
                                         </div>
@@ -369,13 +371,13 @@ export default function CartPage() {
                 {/* Summary Card */}
                 {cart.length > 0 && (
                     <div className="card h-fit sticky top-24 p-6 bg-white shadow-sm border border-gray-100 rounded-2xl">
-                        <h2 className="text-xl font-bold mb-6">Résumé</h2>
+                        <h2 className="text-xl font-bold mb-6">{tr('checkout_summary').replace('5. ', '')}</h2>
                         <div className="flex justify-between mb-4 text-gray-600">
-                            <span>Sous-total</span>
+                            <span>{tr('cart_subtotal')}</span>
                             <span>{total.toLocaleString()} DA</span>
                         </div>
                         <div className="flex justify-between mb-6 text-xl font-black text-gray-900 border-t pt-4">
-                            <span>Total</span>
+                            <span>{tr('cart_total')}</span>
                             <span>{total.toLocaleString()} DA</span>
                         </div>
 
@@ -383,11 +385,11 @@ export default function CartPage() {
                             onClick={handleCheckout}
                             className="btn btn-primary w-full py-4 text-lg font-bold shadow-xl shadow-green-100 hover:shadow-2xl hover:-translate-y-1 transition-all"
                         >
-                            {user ? 'PAYER' : 'SE CONNECTER ET PAYER'}
+                            {user ? tr('cart_checkout') : tr('nav_login')}
                         </button>
 
                         <p className="text-center text-xs text-gray-500 mt-4">
-                            Livraison et taxes calculées à l'étape suivante.
+                            {tr('checkout_secure')}
                         </p>
                     </div>
                 )}

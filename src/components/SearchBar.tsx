@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SearchAutocomplete from './search/SearchAutocomplete';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function SearchBar({ className = '' }: { className?: string }) {
     const [query, setQuery] = useState('');
     const [showAutocomplete, setShowAutocomplete] = useState(false);
     const router = useRouter();
+    const { tr } = useTranslation();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,18 +37,17 @@ export default function SearchBar({ className = '' }: { className?: string }) {
                     value={query}
                     onChange={handleInputChange}
                     onFocus={() => setShowAutocomplete(true)}
-                    placeholder="Rechercher un produit..."
+                    placeholder={tr('nav_search_placeholder')}
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006233] text-sm"
                 />
                 <button
                     type="submit"
                     className="btn btn-primary px-6 py-2 whitespace-nowrap font-bold"
                 >
-                    GO
+                    {tr('btn_submit') === 'Envoyer' ? 'GO' : '🔍'}
                 </button>
             </form>
 
-            {/* Autocomplete dropdown */}
             {showAutocomplete && (
                 <SearchAutocomplete
                     query={query}

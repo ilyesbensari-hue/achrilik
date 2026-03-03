@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function RegisterPage() {
     const router = useRouter();
     const { refresh } = useAuth();
+    const { tr } = useTranslation();
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,10 +36,10 @@ export default function RegisterPage() {
                 router.refresh();
             } else {
                 const data = await response.json();
-                setError(data.error || "Une erreur s'est produite lors de l'inscription.");
+                setError(data.error || tr('error_generic'));
             }
         } catch (error) {
-            setError("Erreur de connexion au serveur.");
+            setError(tr('error_generic'));
         } finally {
             setIsLoading(false);
         }
@@ -48,16 +50,18 @@ export default function RegisterPage() {
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Créer un compte
+                        {tr('register_title')}
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                        Rejoignez la communauté Achrilik
+                        {tr('home_newsletter_title')}
                     </p>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm space-y-4">
                         <div>
-                            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">Nom complet</label>
+                            <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                                {tr('checkout_fullname')}
+                            </label>
                             <input
                                 id="name"
                                 name="name"
@@ -68,7 +72,9 @@ export default function RegisterPage() {
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">Adresse Email</label>
+                            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                                {tr('register_email')}
+                            </label>
                             <input
                                 id="email"
                                 name="email"
@@ -80,7 +86,9 @@ export default function RegisterPage() {
                             />
                         </div>
                         <div>
-                            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">Mot de passe</label>
+                            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                                {tr('register_password')}
+                            </label>
                             <input
                                 id="password"
                                 name="password"
@@ -90,7 +98,9 @@ export default function RegisterPage() {
                                 className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm"
                                 placeholder="••••••••"
                             />
-                            <p className="text-xs text-gray-500 mt-1">Minimum 8 caractères</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {tr('error_password_short')}
+                            </p>
                         </div>
                     </div>
 
@@ -106,13 +116,13 @@ export default function RegisterPage() {
                             disabled={isLoading}
                             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#006233] hover:bg-[#004d28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50"
                         >
-                            {isLoading ? 'Création en cours...' : "S'inscrire"}
+                            {isLoading ? tr('loading') : tr('register_btn')}
                         </button>
                     </div>
 
                     <div className="text-center mt-4">
                         <Link href="/login" className="text-sm text-green-600 hover:text-green-500 font-medium">
-                            Déjà un compte ? Se connecter
+                            {tr('register_has_account')} {tr('register_login_link')}
                         </Link>
                     </div>
                 </form>

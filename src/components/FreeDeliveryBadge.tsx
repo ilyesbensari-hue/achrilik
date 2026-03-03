@@ -28,8 +28,8 @@ export default function FreeDeliveryBadge({
         const iconSize = size === 'sm' ? 10 : 12;
 
         return (
-            <div className={`inline-flex items-center gap-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold shadow-sm ${sizeClasses[size]}`}>
-                <Truck className={`h-${iconSize} w-${iconSize}`} strokeWidth={2.5} />
+            <div className={`inline-flex items-center gap-1 bg-[#F0F9F5] text-[#004221] border border-[#00A854]/20 rounded-full font-bold shadow-sm ${sizeClasses[size]}`}>
+                <Truck className={`h-${iconSize} w-${iconSize} text-[#00753D]`} strokeWidth={2.5} />
                 <span>
                     {threshold && threshold > 0
                         ? `Gratuit dès ${threshold.toLocaleString('fr-DZ')} DA`

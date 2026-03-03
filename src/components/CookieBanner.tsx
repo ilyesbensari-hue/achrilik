@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { X } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CookieBanner() {
     const [isVisible, setIsVisible] = useState(false);
+    const { tr } = useTranslation();
 
     useEffect(() => {
         const hasAccepted = localStorage.getItem('achrilik_cookies_accepted');
         if (!hasAccepted) {
-            // Show banner after 1 second delay
             setTimeout(() => setIsVisible(true), 1000);
         }
     }, []);
@@ -21,7 +22,6 @@ export default function CookieBanner() {
     };
 
     const handleClose = () => {
-        // Fermeture = acceptation implicite, on persiste pour ne plus réafficher
         localStorage.setItem('achrilik_cookies_accepted', 'true');
         setIsVisible(false);
     };
@@ -37,10 +37,10 @@ export default function CookieBanner() {
                             <span className="text-2xl">🍪</span>
                             <div>
                                 <p className="text-sm sm:text-base font-medium">
-                                    Nous utilisons des cookies pour mémoriser votre panier d'achat
+                                    {tr('cookie_text')}
                                 </p>
                                 <p className="text-xs sm:text-sm text-purple-200 mt-1">
-                                    En continuant, vous acceptez notre utilisation des cookies.
+                                    {tr('cookie_text')}
                                 </p>
                             </div>
                         </div>
@@ -50,20 +50,20 @@ export default function CookieBanner() {
                                 href="/politique-confidentialite"
                                 className="text-xs sm:text-sm text-purple-200 hover:text-white underline whitespace-nowrap"
                             >
-                                En savoir plus
+                                {tr('btn_view_all')}
                             </Link>
 
                             <button
                                 onClick={handleAccept}
                                 className="bg-white text-purple-900 px-6 py-2 rounded-lg font-semibold hover:bg-purple-50 transition-colors whitespace-nowrap text-sm sm:text-base"
                             >
-                                Accepter
+                                {tr('cookie_accept')}
                             </button>
 
                             <button
                                 onClick={handleClose}
                                 className="text-white hover:text-purple-200 transition-colors p-1"
-                                aria-label="Fermer"
+                                aria-label={tr('btn_close')}
                             >
                                 <X className="w-5 h-5" />
                             </button>

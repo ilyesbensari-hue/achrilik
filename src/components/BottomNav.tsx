@@ -5,21 +5,21 @@ import { usePathname } from 'next/navigation';
 import { Home, Grid, ShoppingCart, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function BottomNav() {
     const pathname = usePathname();
     const [cartCount, setCartCount] = useState(0);
+    const { tr } = useTranslation();
 
     useEffect(() => {
         const updateCounts = () => {
             try {
                 const cartStorage = localStorage.getItem('cart');
                 logger.log('[BottomNav] Cart raw:', cartStorage);
-
                 if (cartStorage) {
                     const cart = JSON.parse(cartStorage);
                     const count = cart.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
-                    logger.log('[BottomNav] Calculated count:', count);
                     setCartCount(count);
                 } else {
                     setCartCount(0);
@@ -30,14 +30,9 @@ export default function BottomNav() {
             }
         };
 
-        // Initial
         updateCounts();
-
-        // Events
         window.addEventListener('cart-updated', updateCounts);
         window.addEventListener('storage', updateCounts);
-
-        // Polling 500ms
         const interval = setInterval(updateCounts, 500);
 
         return () => {
@@ -48,10 +43,10 @@ export default function BottomNav() {
     }, []);
 
     const navItems = [
-        { name: 'Accueil', href: '/', icon: Home },
-        { name: 'Catégories', href: '/categories', icon: Grid },
-        { name: 'Panier', href: '/cart', icon: ShoppingCart, count: cartCount },
-        { name: 'Profil', href: '/profile', icon: User },
+        { nameKey: 'bottom_home' as const, href: '/', icon: Home },
+        { nameKey: 'bottom_categories' as const, href: '/categories', icon: Grid },
+        { nameKey: 'bottom_cart' as const, href: '/cart', icon: ShoppingCart, count: cartCount },
+        { nameKey: 'bottom_profile' as const, href: '/profile', icon: User },
     ];
 
     return (
@@ -61,22 +56,19 @@ export default function BottomNav() {
                     const isActive = pathname === item.href;
                     return (
                         <Link
-                            key={item.name}
+                            key={item.nameKey}
                             href={item.href}
-                            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-[#C62828]' : 'text-gray-400'
-                                }`}
+                            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-[#C62828]' : 'text-gray-400'}`}
                         >
                             <div className="relative">
-                                <item.icon
-                                    className={`h-6 w-6 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`}
-                                />
+                                <item.icon className={`h-6 w-6 ${isActive ? 'stroke-[2.5px]' : 'stroke-2'}`} />
                                 {item.count && item.count > 0 ? (
                                     <span className="absolute -top-1 -right-1 bg-[#C62828] text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full border border-white">
                                         {item.count}
                                     </span>
                                 ) : null}
                             </div>
-                            <span className="text-[10px] font-medium">{item.name}</span>
+                            <span className="text-[10px] font-medium">{tr(item.nameKey)}</span>
                         </Link>
                     );
                 })}

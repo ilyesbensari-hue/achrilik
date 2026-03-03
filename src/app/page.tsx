@@ -399,7 +399,7 @@ export default async function Home({
   const shouldShowNouveautes = !categoryFilter || categoryFilter === 'nouveautes';
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50/30 via-white to-white">
+    <main className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9] selection:bg-rose-100 selection:text-rose-900">
       <JsonLd data={generateOrganizationSchema('https://achrilik.com')} />
 
       {/* Content - Responsive for both mobile and desktop */}

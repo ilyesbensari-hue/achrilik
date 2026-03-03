@@ -21,7 +21,7 @@ export default function MobileHeader() {
     }, []);
 
     return (
-        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_4px_20px_-12px_rgba(0,0,0,0.1)]">
+        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between px-4 h-16 gap-4">
                 {/* Logo & Bilingual Brand */}
                 <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">

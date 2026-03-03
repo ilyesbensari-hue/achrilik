@@ -56,8 +56,8 @@ export default function ProductCardBase({
 
     // Determine layout-specific classes
     const containerClass = layout === 'compact'
-        ? 'bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow'
-        : 'bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300';
+        ? 'bg-white rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300'
+        : 'bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300';
 
     return (
         <div className={`group ${containerClass}`}>
@@ -68,18 +68,18 @@ export default function ProductCardBase({
                     {badgePosition === 'top-left' && (
                         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                             {product.promotion && (
-                                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                <span className="bg-[#8B2323] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                                     {product.promotion}
                                 </span>
                             )}
                             {isNew && !product.promotion && (
-                                <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                <span className="bg-white text-[#1A1A1A] border border-gray-100 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                                     NOUVEAU
                                 </span>
                             )}
                             {/* Free Delivery Badge Tag */}
                             {product.Store?.offersFreeDelivery && (
-                                <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-1 rounded shadow-md flex items-center gap-1">
+                                <span className="bg-[#F0F9F5] text-[#004221] border border-[#00A854]/20 text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
                                     🚚 Livraison Gratuite
                                 </span>
                             )}
@@ -146,7 +146,7 @@ export default function ProductCardBase({
                     )}
 
                     {/* Price */}
-                    <p className="text-lg font-bold text-[#006233]">
+                    <p className="text-xl font-bold text-[#1A1A1A]">
                         {product.price.toLocaleString()} DA
                     </p>
 

@@ -166,7 +166,7 @@ export default function HeroVideoBanner() {
 
     return (
         <section
-            className="relative w-full mx-3 mt-4 mb-6 max-w-md md:max-w-7xl md:mx-auto overflow-hidden rounded-2xl shadow-xl h-[400px] md:h-[500px] lg:h-[600px]"
+            className="relative w-full mx-3 mt-4 mb-6 max-w-md md:max-w-7xl md:mx-auto overflow-hidden rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-black/5 h-[400px] md:h-[500px] lg:h-[600px] transform-gpu"
             dir={currentLang === 'ar' ? 'rtl' : 'ltr'}
         >
             {/* Background Video or Image */}
@@ -192,10 +192,10 @@ export default function HeroVideoBanner() {
                 />
             )}
 
-            {/* Overlay */}
+            {/* Overlay - Smoother gradient */}
             <div
-                className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50"
-                style={{ opacity: banner.overlay_opacity / 100 }}
+                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 mix-blend-multiply"
+                style={{ opacity: banner.overlay_opacity ? (banner.overlay_opacity / 100) + 0.1 : 0.45 }}
             />
 
             {/* Content */}
@@ -207,28 +207,28 @@ export default function HeroVideoBanner() {
           ${banner.text_position === 'right' ? 'justify-end text-right' : ''}
         `}
             >
-                <div className="max-w-2xl">
-                    <h1 className="text-white text-4xl md:text-5xl font-bold mb-4 drop-shadow-2xl animate-fade-in-up">
+                <div className="max-w-2xl px-2">
+                    <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-fade-in-up tracking-tight leading-tight">
                         {title}
                     </h1>
 
-                    <p className="text-white/95 text-lg md:text-xl mb-6 drop-shadow-lg animate-fade-in-up delay-100">
+                    <p className="text-white/95 text-lg md:text-xl lg:text-2xl mb-8 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] animate-fade-in-up delay-100 font-medium">
                         {subtitle}
                     </p>
 
                     <Link
                         href={banner.cta_link}
-                        className="group relative inline-flex items-center gap-2 px-8 py-3 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-50 transition-all hover:scale-105 shadow-[0_4px_14px_0_rgba(255,255,255,0.39)] overflow-hidden animate-fade-in-up delay-200"
+                        className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-white text-gray-900 font-bold rounded-full hover:bg-gray-50 transition-all duration-300 hover:scale-[1.03] shadow-[0_8px_30px_rgba(255,255,255,0.2)] hover:shadow-[0_8px_40px_rgba(255,255,255,0.3)] overflow-hidden animate-fade-in-up delay-200"
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             {ctaText}
                             <svg
-                                className={`w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 ${currentLang === 'ar' ? 'rotate-180 group-hover:-translate-x-1' : ''}`}
+                                className={`w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5 ${currentLang === 'ar' ? 'rotate-180 group-hover:-translate-x-1.5' : ''}`}
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                             </svg>
                         </span>
 
@@ -245,33 +245,33 @@ export default function HeroVideoBanner() {
                 <>
                     <button
                         onClick={goToPrevSlide}
-                        className="flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-black/40 backdrop-blur-md border border-white/30 rounded-full hover:bg-black/60 transition-all hover:scale-110 shadow-lg"
+                        className="flex absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110 shadow-lg group"
                         aria-label="Bannière précédente"
                     >
-                        <ChevronLeft className="h-5 w-5 text-white" strokeWidth={2.5} />
+                        <ChevronLeft className="h-6 w-6 text-white group-hover:-translate-x-0.5 transition-transform" strokeWidth={2.5} />
                     </button>
                     <button
                         onClick={goToNextSlide}
-                        className="flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 items-center justify-center bg-black/40 backdrop-blur-md border border-white/30 rounded-full hover:bg-black/60 transition-all hover:scale-110 shadow-lg"
+                        className="flex absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 items-center justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110 shadow-lg group"
                         aria-label="Bannière suivante"
                     >
-                        <ChevronRight className="h-5 w-5 text-white" strokeWidth={2.5} />
+                        <ChevronRight className="h-6 w-6 text-white group-hover:translate-x-0.5 transition-transform" strokeWidth={2.5} />
                     </button>
                 </>
             )}
 
             {/* Navigation Dots */}
             {banners.length >= 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2.5 z-20 bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
                     {banners.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentSlide(index)}
                             className={`
-                h-2 rounded-full transition-all duration-300
+                h-1.5 rounded-full transition-all duration-500 ease-out
                 ${currentSlide === index
-                                    ? 'bg-white w-8'
-                                    : 'bg-white/50 w-2 hover:bg-white/75'
+                                    ? 'bg-white w-8 shadow-[0_0_10px_rgba(255,255,255,0.7)]'
+                                    : 'bg-white/40 w-2 hover:bg-white/80 hover:w-4'
                                 }
               `}
                             aria-label={`Aller au slide ${index + 1}`}

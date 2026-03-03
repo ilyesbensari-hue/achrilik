@@ -4,11 +4,13 @@ import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 function LoginForm() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { refresh } = useAuth();
+    const { tr } = useTranslation();
 
     const callbackUrl = searchParams.get('callbackUrl') || '/';
     const [email, setEmail] = useState('');
@@ -21,14 +23,14 @@ function LoginForm() {
         {
             id: 'user' as const,
             icon: '🛍️',
-            title: 'Utilisateur',
-            description: 'Acheteur & Vendeur'
+            title: tr('nav_profile'),
+            description: tr('cat_all'),
         },
         {
             id: 'delivery' as const,
             icon: '🚚',
-            title: 'Livreur',
-            description: 'Livrer des commandes'
+            title: tr('checkout_standard').split('(')[0].trim(),
+            description: tr('footer_delivery'),
         }
     ];
 
@@ -45,19 +47,15 @@ function LoginForm() {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Map 'user' to 'client' for backward compatibility with API
                 body: JSON.stringify({ email, password, loginType: selectedType === 'user' ? 'client' : selectedType }),
             });
 
             if (res.ok) {
-                // Success
                 const data = await res.json();
                 localStorage.setItem('user', JSON.stringify(data.user));
-                // Trigger storage event to update Navbar
                 window.dispatchEvent(new Event('storage'));
-                await refresh(); // Refresh user context
+                await refresh();
 
-                // Redirect based on user role or login type
                 if (data.user.isSeller || data.user.role === 'SELLER') {
                     router.push('/sell');
                 } else if (selectedType === 'delivery') {
@@ -70,10 +68,10 @@ function LoginForm() {
                 router.refresh();
             } else {
                 const data = await res.json();
-                setError(data.error || 'Erreur de connexion');
+                setError(data.error || tr('error_generic'));
             }
         } catch (err) {
-            setError('Erreur de connexion serveur');
+            setError(tr('error_generic'));
         } finally {
             setIsLoading(false);
         }
@@ -83,42 +81,42 @@ function LoginForm() {
         <div className="card bg-white p-8 shadow-xl">
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                    Connexion
+                    {tr('login_title')}
                 </h2>
                 <p className="text-sm text-gray-600">
-                    Choisissez votre type de compte
+                    {tr('login_subtitle')}
                 </p>
             </div>
 
-            {/* Login Type Selection - Simplified to 2 options */}
-            <div className="grid grid-cols-2 gap-4 mb-8">{loginTypes.map((type) => (
-                <button
-                    key={type.id}
-                    type="button"
-                    onClick={() => setSelectedType(type.id)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${selectedType === type.id
-                        ? 'border-[#006233] bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                >
-                    <span className="text-3xl">{type.icon}</span>
-                    <div className="text-center">
-                        <div className={`text-sm font-bold ${selectedType === type.id ? 'text-[#006233]' : 'text-gray-700'
-                            }`}>
-                            {type.title}
+            {/* Login Type Selection */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+                {loginTypes.map((type) => (
+                    <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setSelectedType(type.id)}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${selectedType === type.id
+                            ? 'border-[#006233] bg-green-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                    >
+                        <span className="text-3xl">{type.icon}</span>
+                        <div className="text-center">
+                            <div className={`text-sm font-bold ${selectedType === type.id ? 'text-[#006233]' : 'text-gray-700'}`}>
+                                {type.title}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-0.5">
+                                {type.description}
+                            </div>
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
-                            {type.description}
-                        </div>
-                    </div>
-                </button>
-            ))}
+                    </button>
+                ))}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Adresse Email
+                        {tr('login_email')}
                     </label>
                     <input
                         id="email"
@@ -132,24 +130,21 @@ function LoginForm() {
 
                 <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                        Mot de passe
+                        {tr('login_password')}
                     </label>
                     <input
                         id="password"
                         name="password"
                         type="password"
-                        placeholder="Mot de passe"
+                        placeholder={tr('login_password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006233] focus:border-[#006233] outline-none transition-all"
                         required
                     />
-                    <div className="text-right">
-                        <Link
-                            href="/forgot-password"
-                            className="text-sm text-[#006233] hover:underline"
-                        >
-                            Mot de passe oublié ?
+                    <div className="text-right mt-1">
+                        <Link href="/forgot-password" className="text-sm text-[#006233] hover:underline">
+                            {tr('login_forgot')}
                         </Link>
                     </div>
                 </div>
@@ -165,23 +160,23 @@ function LoginForm() {
                     disabled={isLoading}
                     className="bg-[#006233] hover:bg-[#004d28] w-full py-3 px-4 rounded-lg text-white font-medium transition-colors shadow-sm mt-4 disabled:opacity-50"
                 >
-                    {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+                    {isLoading ? tr('loading') : tr('login_btn')}
                 </button>
             </form>
 
             <div className="mt-8 pt-6 border-t text-center">
-                <p className="text-sm text-gray-600 mb-4">Pas encore de compte ?</p>
+                <p className="text-sm text-gray-600 mb-4">{tr('login_no_account')}</p>
                 <Link
                     href="/register"
                     className="inline-block w-full py-2.5 px-4 rounded-lg border-2 border-[#006233] text-[#006233] font-medium hover:bg-green-50 transition-colors"
                 >
-                    Créer un compte
+                    {tr('login_register_link')}
                 </Link>
             </div>
 
             <div className="mt-6 text-center">
                 <Link href="/" className="text-sm text-gray-500 hover:text-gray-900">
-                    ← Retour à l'accueil
+                    ← {tr('not_found_back')}
                 </Link>
             </div>
         </div>
@@ -192,7 +187,7 @@ export default function LoginPage() {
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 p-4">
             <div className="w-full max-w-2xl">
-                <Suspense fallback={<div className="text-center p-8">Chargement...</div>}>
+                <Suspense fallback={<div className="text-center p-8">{/* loading */}</div>}>
                     <LoginForm />
                 </Suspense>
             </div>
