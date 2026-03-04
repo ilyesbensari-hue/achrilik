@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
 import Image from 'next/image';
 import { getSizeConfig } from '@/lib/variantHelpers';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ProductPageClientProps {
     product: any;
@@ -16,6 +17,7 @@ interface ProductPageClientProps {
 
 export default function ProductPageClient({ product, sizes: sizesProps, colors: colorsProps, images: imagesProps }: ProductPageClientProps) {
     const router = useRouter();
+    const { tr } = useTranslation();
 
     // Safe defaults to prevent crashes if props are null/undefined
     const images = imagesProps || [];
@@ -47,18 +49,11 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
         // Basic validation with detailed error messages
         // Skip size validation for categories without size requirement
         if (sizeConfig.required && sizes.length > 0 && !selectedSize) {
-            showToast(
-                `⚠️ Veuillez sélectionner une ${sizeConfig.sizeLabel}`,
-                'error'
-            );
+            showToast(`⚠️ ${tr('error_size_color')}`, 'error');
             return;
         }
         if (colors.length > 0 && !selectedColor) {
-            const colorList = colors.join(', ');
-            showToast(
-                `⚠️ Veuillez sélectionner une couleur`,
-                'error'
-            );
+            showToast(`⚠️ ${tr('error_size_color')}`, 'error');
             return;
         }
 
@@ -69,24 +64,17 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
         );
 
         if (!variant) {
-            showToast('❌ Combinaison taille/couleur indisponible', 'error');
+            showToast(`❌ ${tr('error_size_color')}`, 'error');
             return;
         }
 
-        // Check stock with detailed message
         if (variant.stock === 0) {
-            showToast(
-                `❌ Cette variante est en rupture de stock`,
-                'error'
-            );
+            showToast(`❌ ${tr('card_out_of_stock')}`, 'error');
             return;
         }
 
         if (variant.stock < quantity) {
-            showToast(
-                `⚠️ Stock insuffisant: seulement ${variant.stock} article(s) disponible(s)`,
-                'error'
-            );
+            showToast(`⚠️ ${tr('error_stock')}: ${variant.stock}`, 'error');
             return;
         }
 
@@ -98,14 +86,10 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
         );
 
         if (existingItem) {
-            showToast(
-                `ℹ️ Ce produit est déjà dans votre panier`,
-                'info',
-                {
-                    label: 'Voir le panier',
-                    onClick: () => router.push('/cart')
-                }
-            );
+            showToast(`ℹ️ ${tr('toast_cart_added')}`, 'info', {
+                label: tr('nav_cart'),
+                onClick: () => router.push('/cart')
+            });
             return;
         }
 
@@ -118,10 +102,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                     .map((item: any) => item.storageWilaya)
             )];
             if (existingWilayas.length > 0 && !existingWilayas.includes(newItemWilaya)) {
-                showToast(
-                    `🗺️ Article impossible à ajouter\n\nVotre panier contient des articles de boutiques à ${existingWilayas[0]}. Ce produit vient de ${newItemWilaya}.\n\nLes livraisons sont limitées à une wilaya par commande. Videz votre panier ou commandez séparément.`,
-                    'error'
-                );
+                showToast(`🗺️ ${tr('error_stock')}`, 'error');
                 return;
             }
         }
@@ -148,8 +129,8 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('storage'));
 
-        showToast('✅ Produit ajouté au panier', 'success', {
-            label: 'Voir le panier',
+        showToast(`✅ ${tr('toast_cart_added')}`, 'success', {
+            label: tr('nav_cart'),
             onClick: () => router.push('/cart')
         });
     };
@@ -168,7 +149,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            Aucune image
+                            {tr('card_photo')}
                         </div>
                     )}
                     {images.length > 1 && (
@@ -212,9 +193,9 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                         <div>
                             <div className="flex justify-between items-center mb-3">
                                 <label className="text-sm font-bold text-gray-900 dark:text-gray-900">
-                                    {sizeConfig.sizeLabel || 'Taille'}
+                                    {sizeConfig.sizeLabel || tr('product_size')}
                                 </label>
-                                {selectedSize && <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Sélectionné: {selectedSize}</span>}
+                                {selectedSize && <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">{tr('product_choose_size')}: {selectedSize}</span>}
                             </div>
                             <div className="flex gap-3 flex-wrap">
                                 {sizes.map((size) => {
@@ -246,11 +227,11 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                     {colors.length > 1 && (
                         <div>
                             <div className="flex justify-between items-center mb-3">
-                                <label className="text-sm font-bold text-gray-900 dark:text-gray-900">Couleur</label>
+                                <label className="text-sm font-bold text-gray-900 dark:text-gray-900">{tr('product_color')}</label>
                                 {selectedColor && (
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: selectedColor }}></div>
-                                        <span className="text-xs font-semibold text-gray-500">Sélectionné</span>
+                                        <span className="text-xs font-semibold text-gray-500">{tr('product_choose_color')}</span>
                                     </div>
                                 )}
                             </div>
@@ -296,7 +277,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
 
                     {/* Quantity */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-900 mb-3">Quantité</label>
+                        <label className="block text-sm font-bold text-gray-900 dark:text-gray-900 mb-3">{tr('product_quantity')}</label>
                         <div className="flex items-center gap-4 bg-white w-fit p-1 rounded-xl border border-gray-200 shadow-sm">
                             <button
                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -315,7 +296,7 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                                     const maxStock = variant?.stock || 999;
 
                                     if (quantity >= maxStock) {
-                                        showToast(`⚠️ Stock maximum atteint (${maxStock} disponible${maxStock > 1 ? 's' : ''})`, 'error');
+                                        showToast(`⚠️ ${tr('error_stock')} (${maxStock})`, 'error');
                                         return;
                                     }
                                     setQuantity(quantity + 1);
@@ -334,13 +315,13 @@ export default function ProductPageClient({ product, sizes: sizesProps, colors: 
                         onClick={handleAddToCart}
                         className="btn btn-primary w-full py-4 text-lg font-bold shadow-xl shadow-indigo-200 hover:shadow-2xl transition-all hover:-translate-y-1"
                     >
-                        🛒 Ajouter au panier
+                        🛒 {tr('product_add_cart')}
                     </button>
                     <Link
                         href="/cart"
                         className="btn btn-outline w-full py-4 text-center border-2 font-semibold hover:bg-gray-50"
                     >
-                        Voir le panier
+                        {tr('nav_cart')}
                     </Link>
                 </div>
             </div>

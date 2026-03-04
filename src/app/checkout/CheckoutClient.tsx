@@ -10,6 +10,7 @@ import ContactStep from './components/steps/ContactStep';
 import DeliveryStep from './components/steps/DeliveryStep';
 import ConfirmationStep from './components/steps/ConfirmationStep';
 import CartSummary from './components/CartSummary';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CheckoutClientProps {
     initialUser: any;
@@ -17,6 +18,7 @@ interface CheckoutClientProps {
 
 export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
     const router = useRouter();
+    const { tr } = useTranslation();
     const [cart, setCart] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
     const [stores, setStores] = useState<any[]>([]);
@@ -89,16 +91,16 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                 <div className="bg-white p-12 rounded-3xl shadow-lg text-center max-w-md">
                     <div className="text-8xl mb-6">🛒</div>
                     <h1 className="text-3xl font-black text-gray-900 mb-4">
-                        Votre panier est vide
+                        {tr('cart_empty')}
                     </h1>
                     <p className="text-gray-600 mb-8">
-                        Ajoutez des articles depuis la boutique pour commencer votre commande.
+                        {tr('cart_empty_sub')}
                     </p>
                     <Link
                         href="/"
                         className="inline-block bg-[#006233] text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-[#00753D] transition-all shadow-lg hover:shadow-xl"
                     >
-                        ← Retour à la boutique
+                        ← {tr('cart_continue')}
                     </Link>
                 </div>
             </div>
@@ -114,10 +116,10 @@ export default function CheckoutClient({ initialUser }: CheckoutClientProps) {
                         href="/cart"
                         className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold text-sm transition-colors mb-4"
                     >
-                        ← Retour au panier
+                        ← {tr('btn_back')}
                     </Link>
                     <h1 className="text-4xl font-black text-gray-900">
-                        🛍️ Finaliser la commande
+                        🛍️ {tr('checkout_title')}
                     </h1>
                 </div>
 

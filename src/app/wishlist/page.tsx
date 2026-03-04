@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import WishlistButton from '@/components/WishlistButton';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function WishlistPage() {
+    const { tr } = useTranslation();
     const [products, setProducts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [userId, setUserId] = useState<string | null>(null);
@@ -72,11 +74,11 @@ export default function WishlistPage() {
             <div className="container mx-auto px-4 py-12">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold mb-2">❤️ Mes Favoris</h1>
+                    <h1 className="text-4xl font-bold mb-2">❤️ {tr('wishlist_title')}</h1>
                     <p className="text-gray-600">
                         {products.length > 0
-                            ? `${products.length} produit${products.length > 1 ? 's' : ''} dans votre liste de favoris`
-                            : 'Votre liste de favoris est vide'
+                            ? `${products.length} ${tr('card_photo').replace('Photo', '')}${products.length > 1 ? 's' : ''}`
+                            : tr('wishlist_empty')
                         }
                     </p>
                 </div>
@@ -88,15 +90,15 @@ export default function WishlistPage() {
                             <svg className="w-24 h-24 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-3">Aucun favori pour le moment</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-3">{tr('wishlist_empty')}</h2>
                             <p className="text-gray-600 mb-6">
-                                Commencez à ajouter des produits à vos favoris en cliquant sur le cœur ❤️
+                                {tr('wishlist_empty_sub')}
                             </p>
                             <Link
                                 href="/"
                                 className="inline-block px-8 py-3 bg-[#006233] text-white font-semibold rounded-lg hover:bg-[#004d28] transition-colors"
                             >
-                                Découvrir les produits
+                                {tr('wishlist_discover')}
                             </Link>
                         </div>
                     </div>
@@ -172,9 +174,9 @@ export default function WishlistPage() {
 
                         {/* Recommendations Section - Placeholder for now */}
                         <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
-                            <h2 className="text-2xl font-bold mb-3">🎯 Recommandations basées sur vos favoris</h2>
+                            <h2 className="text-2xl font-bold mb-3">🎯 {tr('wishlist_discover')}</h2>
                             <p className="text-gray-600 mb-4">
-                                Bientôt disponible : des suggestions personnalisées basées sur vos goûts !
+                                {tr('wishlist_empty_sub')}
                             </p>
                         </div>
                     </>

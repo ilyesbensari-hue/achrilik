@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import CategoryList from '@/components/CategoryList';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Product {
     id: string;
@@ -19,8 +20,9 @@ interface Product {
 function SearchResults() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q') || '';
+    const { tr } = useTranslation();
     const [products, setProducts] = useState<Product[]>([]);
-    const [stores, setStores] = useState<any[]>([]); // Using any for store type for simplicity, or define interface
+    const [stores, setStores] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState(query);
 
@@ -77,7 +79,7 @@ function SearchResults() {
                 ) : query ? (
                     <>
                         <h1 className="text-xl font-bold text-gray-900 mb-6">
-                            Résultats pour "{query}"
+                            {tr('search_results')} "{query}"
                         </h1>
 
                         <div className="space-y-10">
@@ -85,7 +87,7 @@ function SearchResults() {
                             {stores.length > 0 && (
                                 <section>
                                     <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                        <span>🏪</span> Vendeurs ({stores.length})
+                                        <span>🏪</span> {tr('nav_myshop')} ({stores.length})
                                     </h2>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {stores.map((store: any) => (
@@ -116,13 +118,13 @@ function SearchResults() {
                             <section>
                                 {products.length > 0 && (
                                     <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                        <span>👕</span> Produits ({products.length})
+                                        <span>👕</span> {tr('cat_all')} ({products.length})
                                     </h2>
                                 )}
 
                                 {products.length === 0 && stores.length === 0 ? (
                                     <div className="text-center py-12 bg-white rounded-xl border border-dashed text-gray-500">
-                                        <p>Aucun résultat trouvé pour "{query}"</p>
+                                        <p>{tr('search_no_results')} "{query}"</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -162,7 +164,7 @@ function SearchResults() {
                     <div className="space-y-6">
                         {/* Categories List when no search query */}
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">Explorer par Catégorie</h2>
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 px-1">{tr('nav_explore')}</h2>
                             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                                 <CategoryList variant="mobile" />
                             </div>
