@@ -1,8 +1,11 @@
 'use client';
 
 import { Truck, Wallet } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function HeroSection() {
+    const { tr } = useTranslation();
+
     return (
         <section className="relative overflow-hidden bg-gradient-to-br from-rose-50/70 via-white to-emerald-50/60 backdrop-blur-[2px] border-b border-gray-100/50">
             {/* Background Pattern - softer */}
@@ -16,7 +19,7 @@ export default function HeroSection() {
                 {/* Main Content */}
                 <div className="text-center mb-8 relative z-10">
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 leading-tight tracking-tight text-gray-900 drop-shadow-sm">
-                        Mode & Tendance Algérie
+                        {tr('home_hero_title')}
                     </h2>
                 </div>
 
@@ -28,9 +31,9 @@ export default function HeroSection() {
                             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                                 <Truck className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600" />
                             </div>
-                            <h3 className="text-[15px] sm:text-lg md:text-xl font-bold mb-1.5 text-gray-900 tracking-tight">Livraison Oran</h3>
+                            <h3 className="text-[15px] sm:text-lg md:text-xl font-bold mb-1.5 text-gray-900 tracking-tight">{tr('home_delivery_title')}</h3>
                             <p className="text-gray-500 font-medium text-xs sm:text-sm">
-                                24-48h
+                                {tr('home_delivery_sub')}
                             </p>
                         </div>
                     </div>
@@ -41,9 +44,9 @@ export default function HeroSection() {
                             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                                 <Wallet className="w-7 h-7 sm:w-8 sm:h-8 text-rose-600" />
                             </div>
-                            <h3 className="text-[15px] sm:text-lg md:text-xl font-bold mb-1.5 text-gray-900 tracking-tight">Paiement Cash</h3>
+                            <h3 className="text-[15px] sm:text-lg md:text-xl font-bold mb-1.5 text-gray-900 tracking-tight">{tr('home_payment_title')}</h3>
                             <p className="text-gray-500 font-medium text-xs sm:text-sm">
-                                À la livraison
+                                {tr('home_payment_sub')}
                             </p>
                         </div>
                     </div>

@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Grid3x3, ShoppingCart, User, Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function BottomNav() {
     const pathname = usePathname();
     const [cartCount, setCartCount] = useState(0);
+    const { tr } = useTranslation();
 
     useEffect(() => {
         // Get cart count from localStorage
@@ -39,11 +41,11 @@ export default function BottomNav() {
     }, []);
 
     const navItems = [
-        { href: '/', label: 'Home', icon: Home },
-        { href: '/categories', label: 'Catégories', icon: Grid3x3 },
-        { href: '/wishlist', label: 'Favoris', icon: Heart },
-        { href: '/cart', label: 'Panier', icon: ShoppingCart, count: cartCount },
-        { href: '/profile', label: 'Profil', icon: User },
+        { href: '/', labelKey: 'nav_home', icon: Home },
+        { href: '/categories', labelKey: 'nav_categories', icon: Grid3x3 },
+        { href: '/wishlist', labelKey: 'nav_wishlist', icon: Heart },
+        { href: '/cart', labelKey: 'nav_cart', icon: ShoppingCart, count: cartCount },
+        { href: '/profile', labelKey: 'nav_profile', icon: User },
     ];
 
     return (
@@ -83,7 +85,7 @@ export default function BottomNav() {
                             </div>
 
                             <span className={`text-[10px] transition-all duration-300 tracking-wide ${isActive ? 'font-bold text-[#D32F2F] scale-105' : 'font-medium text-gray-500 scale-100'}`}>
-                                {item.label}
+                                {tr(item.labelKey as any)}
                             </span>
                         </Link>
                     );

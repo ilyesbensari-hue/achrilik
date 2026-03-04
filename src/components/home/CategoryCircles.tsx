@@ -1,15 +1,18 @@
 'use client';
 
-import { Tag, Sparkles, Shirt, Briefcase, Watch, User } from 'lucide-react';
+import { Tag, Sparkles, Shirt, Briefcase, Watch, User, Smartphone } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CategoryCircles() {
+    const { tr } = useTranslation();
+
     // Homepage category circles - synced with main categories
     const sections = [
         // Special sections first
         {
             slug: 'promos',
-            name: 'Promos',
+            nameKey: 'cat_promos',
             icon: Tag,
             bgColor: 'bg-red-100',
             iconColor: 'text-red-600',
@@ -17,7 +20,7 @@ export default function CategoryCircles() {
         },
         {
             slug: 'nouveautes',
-            name: 'Nouveautés',
+            nameKey: 'cat_new',
             icon: Sparkles,
             bgColor: 'bg-purple-100',
             iconColor: 'text-purple-600',
@@ -26,7 +29,7 @@ export default function CategoryCircles() {
         // Main categories
         {
             slug: 'femme',
-            name: 'Femme',
+            nameKey: 'cat_women',
             icon: User,
             bgColor: 'bg-pink-100',
             iconColor: 'text-pink-600',
@@ -34,7 +37,7 @@ export default function CategoryCircles() {
         },
         {
             slug: 'homme',
-            name: 'Homme',
+            nameKey: 'cat_men',
             icon: Shirt,
             bgColor: 'bg-blue-100',
             iconColor: 'text-blue-600',
@@ -42,7 +45,7 @@ export default function CategoryCircles() {
         },
         {
             slug: 'enfant',
-            name: 'Enfant',
+            nameKey: 'cat_kids',
             icon: User,
             bgColor: 'bg-green-100',
             iconColor: 'text-green-600',
@@ -50,7 +53,7 @@ export default function CategoryCircles() {
         },
         {
             slug: 'maroquinerie',
-            name: 'Maroquinerie',
+            nameKey: 'cat_maroquinerie',
             icon: Briefcase,
             bgColor: 'bg-amber-100',
             iconColor: 'text-amber-700',
@@ -58,7 +61,7 @@ export default function CategoryCircles() {
         },
         {
             slug: 'accessoires',
-            name: 'Accessoires',
+            nameKey: 'cat_accessories',
             icon: Watch,
             bgColor: 'bg-cyan-100',
             iconColor: 'text-cyan-600',
@@ -66,8 +69,8 @@ export default function CategoryCircles() {
         },
         {
             slug: 'electronique',
-            name: 'Électronique',
-            icon: Watch, // Using Watch as placeholder, will use proper icon
+            nameKey: 'cat_electronique',
+            icon: Smartphone,
             bgColor: 'bg-indigo-100',
             iconColor: 'text-indigo-600',
             href: '/categories/electronique'
@@ -90,7 +93,7 @@ export default function CategoryCircles() {
                                 <Icon className={`h-8 w-8 md:h-9 md:w-9 lg:h-11 lg:w-11 ${section.iconColor} drop-shadow-sm group-hover:scale-110 transition-transform duration-300`} strokeWidth={1.5} />
                             </div>
                             <span className="text-[11px] md:text-xs lg:text-sm font-semibold text-gray-600 text-center leading-tight tracking-[0.01em] group-hover:text-gray-900 transition-colors">
-                                {section.name}
+                                {tr(section.nameKey as any)}
                             </span>
                         </Link>
                     );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useRouter } from 'next/navigation';
+import { Heart } from 'lucide-react';
 
 interface WishlistButtonProps {
     productId: string;
@@ -14,11 +15,18 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    // Icon sizes - compact for product cards to avoid badge overlap
-    const iconSizes = {
+    // Container sizes
+    const containerSizes = {
         sm: 'w-8 h-8',
         md: 'w-10 h-10',
         lg: 'w-12 h-12'
+    };
+
+    // Icon sizes
+    const iconSizes = {
+        sm: 16,
+        md: 20,
+        lg: 24
     };
 
     const isInList = isInWishlist(productId);
@@ -31,7 +39,6 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
         if (typeof window !== 'undefined') {
             const userSession = localStorage.getItem('user');
             if (!userSession) {
-                // Redirect to login
                 router.push('/login?redirect=' + window.location.pathname);
                 return;
             }
@@ -58,7 +65,7 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
             disabled={isLoading}
             className={`
                 relative group
-                ${iconSizes[size]} 
+                ${containerSizes[size]}
                 flex items-center justify-center
                 rounded-full
                 bg-white/90 backdrop-blur-sm
@@ -71,31 +78,19 @@ export default function WishlistButton({ productId, size = 'md' }: WishlistButto
             aria-label={isInList ? 'Remove from wishlist' : 'Add to wishlist'}
         >
             {isLoading ? (
-                <svg className="w-5 h-5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
             ) : (
-                <svg
-                    className={`
-                        w-5 h-5
-                        transition-all duration-200
-                        ${isInList
-                            ? 'text-red-500 scale-110'
-                            : 'text-gray-600 group-hover:text-red-500'
-                        }
-                    `}
-                    fill={isInList ? 'currentColor' : 'none'}
-                    stroke="currentColor"
+                <Heart
+                    size={iconSizes[size]}
+                    className={`transition-all duration-200 ${isInList
+                            ? 'text-red-500 scale-110 fill-red-500'
+                            : 'text-gray-400 group-hover:text-red-500 group-hover:fill-red-100'
+                        }`}
                     strokeWidth={2}
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                </svg>
+                />
             )}
         </button>
     );

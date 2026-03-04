@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface HeroSliderProps {
     featuredProduct?: {
@@ -15,15 +16,16 @@ interface HeroSliderProps {
 
 export default function HeroSlider({ featuredProduct }: HeroSliderProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const { tr } = useTranslation();
 
     const slides = [
         // Slide 1: Featured Product (if available)
         ...(featuredProduct ? [{
             id: 0,
             bg: 'bg-gradient-to-br from-purple-600 to-pink-600',
-            title: 'Top Nouveauté',
+            title: tr('home_slide1_title'),
             subtitle: featuredProduct.title,
-            buttonText: 'Découvrir',
+            buttonText: tr('home_slide1_btn'),
             buttonColor: 'bg-white text-purple-600',
             image: featuredProduct.image,
             link: `/products/${featuredProduct.id}`,
@@ -34,12 +36,12 @@ export default function HeroSlider({ featuredProduct }: HeroSliderProps) {
         {
             id: 1,
             bg: 'bg-gray-100',
-            title: 'Mode & Tendance',
-            subtitle: 'Découvrez nos collections',
-            buttonText: 'Voir',
+            title: tr('home_slide2_title'),
+            subtitle: tr('home_slide2_sub'),
+            buttonText: tr('home_slide2_btn'),
             buttonColor: 'bg-[#C62828] text-white',
             image: '',
-            link: '/categories/vtements-femme',
+            link: '/categories/femmes',
             type: 'category' as const
         },
 
@@ -47,9 +49,9 @@ export default function HeroSlider({ featuredProduct }: HeroSliderProps) {
         {
             id: 2,
             bg: 'bg-[#C62828]',
-            title: 'PROMO HBAL !',
-            subtitle: 'Jusqu\'à -50%',
-            buttonText: "J'en profite",
+            title: tr('home_slide3_title'),
+            subtitle: tr('home_slide3_sub'),
+            buttonText: tr('home_slide3_btn'),
             buttonColor: 'bg-white text-[#C62828]',
             image: '',
             link: '/categories/promotions',
@@ -60,9 +62,9 @@ export default function HeroSlider({ featuredProduct }: HeroSliderProps) {
         {
             id: 3,
             bg: 'bg-[#2E7D32]',
-            title: 'Tewsal 7ta Lbab Dar',
-            subtitle: 'Livraison 58 Wilayas',
-            buttonText: 'Commander',
+            title: tr('home_slide4_title'),
+            subtitle: tr('home_slide4_sub'),
+            buttonText: tr('home_slide4_btn'),
             buttonColor: 'bg-white text-[#2E7D32]',
             image: '',
             link: '/products',
