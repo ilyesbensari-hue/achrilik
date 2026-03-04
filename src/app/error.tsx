@@ -2,6 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs"
 import { useEffect } from 'react'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function ErrorBoundary({
     error,
@@ -10,8 +11,9 @@ export default function ErrorBoundary({
     error: Error & { digest?: string }
     reset: () => void
 }) {
+    const { tr } = useTranslation();
+
     useEffect(() => {
-        // Log the error to Sentry
         Sentry.captureException(error)
     }, [error])
 
@@ -25,11 +27,11 @@ export default function ErrorBoundary({
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Oups ! Une erreur s'est produite
+                    {tr('error_title')}
                 </h2>
 
                 <p className="text-gray-600 mb-6">
-                    Nous sommes désolés, quelque chose s'est mal passé. Notre équipe a été notifiée et travaille sur le problème.
+                    {tr('error_desc')}
                 </p>
 
                 <div className="space-y-3">
@@ -37,20 +39,20 @@ export default function ErrorBoundary({
                         onClick={() => reset()}
                         className="w-full bg-[#006233] hover:bg-[#005029] text-white font-semibold py-3 px-4 rounded-lg transition-colors"
                     >
-                        Réessayer
+                        {tr('error_retry')}
                     </button>
 
                     <button
                         onClick={() => window.location.href = '/'}
                         className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition-colors"
                     >
-                        Retour à l'accueil
+                        {tr('error_home')}
                     </button>
                 </div>
 
                 {error.digest && (
                     <p className="mt-4 text-xs text-gray-500">
-                        Code d'erreur: {error.digest}
+                        {tr('error_code')}{error.digest}
                     </p>
                 )}
             </div>

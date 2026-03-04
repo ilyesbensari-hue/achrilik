@@ -6,10 +6,12 @@ import ImageUpload from '@/components/ImageUpload';
 import HierarchicalCategorySelector from '@/components/HierarchicalCategorySelector';
 import { ALGERIA_WILAYAS } from '@/constants/wilayas';
 import { getSizeConfig } from '@/lib/variantHelpers';
+import { useTranslation } from '@/hooks/useTranslation';
 
 
 export default function AddProductPage() {
     const router = useRouter();
+    const { tr } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [storeId, setStoreId] = useState('');
 
@@ -116,7 +118,7 @@ export default function AddProductPage() {
                 const myStore = stores.find((s: any) => s.ownerId === user.id);
 
                 if (!myStore) {
-                    alert('Vous devez d\'abord créer une boutique.');
+                    alert(tr('new_product_first_create'));
                     router.push('/sell');
                     return;
                 }
@@ -128,9 +130,7 @@ export default function AddProductPage() {
                 const isComplete = myStore.name && myStore.city && (!isPhysical || myStore.address);
 
                 if (!isComplete) {
-                    // Use a small timeout to ensure the alert is seen before redirect, 
-                    // or better, handled by the destination page, but alert is simple for now.
-                    alert('Veuillez compléter le profil de votre boutique (Ville, Adresse...) avant d\'ajouter des produits.');
+                    alert(tr('new_product_complete_store'));
                     router.push('/sell');
                     return;
                 }
@@ -205,10 +205,10 @@ export default function AddProductPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!storeId) return alert('Boutique introuvable. Veuillez actualiser la page.');
-        if (!categoryId) return alert('Veuillez sélectionner une catégorie complète');
-        if (variants.length === 0) return alert('Ajoutez au moins une variante');
-        if (images.length === 0) return alert('⚠️ Au moins 1 photo est obligatoire. Ajoutez 2-3 photos pour de meilleurs résultats.');
+        if (!storeId) return alert(tr('new_product_need_store'));
+        if (!categoryId) return alert(tr('new_product_need_cat'));
+        if (variants.length === 0) return alert(tr('new_product_need_variant'));
+        if (images.length === 0) return alert(tr('new_product_need_photo'));
 
         setLoading(true);
         try {
@@ -259,10 +259,10 @@ export default function AddProductPage() {
             if (res.ok) {
                 router.push('/sell');
             } else {
-                alert('Erreur lors de la création');
+                alert(tr('new_product_create_error'));
             }
         } catch (e) {
-            alert('Erreur technique');
+            alert(tr('orders_tech_error'));
         } finally {
             setLoading(false);
         }
@@ -271,16 +271,16 @@ export default function AddProductPage() {
     return (
         <div className="container py-10">
             <div className="card max-w-2xl mx-auto p-8">
-                <h1 className="text-2xl font-bold mb-6">Ajouter un produit</h1>
+                <h1 className="text-2xl font-bold mb-6">{tr('new_product_title')}</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="label mb-1 block">Titre du produit</label>
+                        <label className="label mb-1 block">{tr('new_product_name')}</label>
                         <input className="input" required value={title} onChange={e => setTitle(e.target.value)} />
                     </div>
 
                     <div>
-                        <label className="label mb-1 block">Description</label>
+                        <label className="label mb-1 block">{tr('new_product_desc')}</label>
                         <textarea className="input h-24 py-2" required value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
 
@@ -293,7 +293,7 @@ export default function AddProductPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="label mb-1 block">Prix (DA)</label>
+                            <label className="label mb-1 block">{tr('new_product_price')}</label>
                             <input className="input" type="number" required value={price} onChange={e => setPrice(e.target.value)} />
                         </div>
                     </div>
@@ -301,54 +301,47 @@ export default function AddProductPage() {
                     <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4">
                         <label className="label mb-1 block font-bold flex items-center gap-2">
                             <span>📸</span>
-                            <span>Photos du produit <span className="text-red-500">*</span></span>
+                            <span>{tr('new_product_photos')} <span className="text-red-500">*</span></span>
                         </label>
                         {/* Recommendation banner */}
                         <div className={`mb-3 px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${images.length === 0
-                                ? 'bg-red-100 text-red-700 border border-red-300'
-                                : images.length === 1
-                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                                    : 'bg-green-100 text-green-700 border border-green-300'
+                            ? 'bg-red-100 text-red-700 border border-red-300'
+                            : images.length === 1
+                                ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                : 'bg-green-100 text-green-700 border border-green-300'
                             }`}>
                             <span>{images.length === 0 ? '⚠️' : images.length === 1 ? '💡' : '✅'}</span>
                             <span>
-                                {images.length === 0 && 'Au moins 1 photo est obligatoire.'}
-                                {images.length === 1 && 'Bonne photo ! Ajoutez-en 1 à 2 de plus pour rassurer vos clients.'}
-                                {images.length >= 2 && `${images.length} photos — parfait ! Les produits avec 2-3 photos se vendent mieux.`}
+                                {images.length === 0 && tr('new_product_photo0')}
+                                {images.length === 1 && tr('new_product_photo1')}
+                                {images.length >= 2 && tr('new_product_photo2').replace('{n}', images.length.toString())}
                             </span>
                         </div>
                         <ImageUpload onImagesChange={setImages} maxImages={5} />
-                        <p className="text-xs text-gray-500 mt-2">📌 <strong>Recommandé :</strong> 2 à 3 photos (face, dos, détail). Min 1 obligatoire.</p>
+                        <p className="text-xs text-gray-500 mt-2">{tr('new_product_photo_hint')}</p>
                     </div>
 
                     {/* Enhanced Product Details Section */}
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-blue-200">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <span>📋</span>
-                            <span>Détails du Produit</span>
+                            <span>{tr('new_product_details')}</span>
                         </h3>
 
                         {/* Notice: Produits neufs uniquement */}
                         <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
                             <p className="text-sm text-blue-900 font-medium flex items-start gap-2">
                                 <span className="text-xl">⚠️</span>
-                                <span>
-                                    <strong>Important:</strong> Produits neufs uniquement.
-                                    Les articles d'occasion ne sont pas acceptés sur la plateforme.
-                                </span>
+                                <span>{tr('new_product_new_only')}</span>
                             </p>
                         </div>
 
                         <div className="space-y-4">
                             {/* Cut Type */}
                             <div>
-                                <label className="label mb-1 block">Type de coupe (optionnel)</label>
-                                <select
-                                    className="input"
-                                    value={cutType}
-                                    onChange={e => setCutType(e.target.value)}
-                                >
-                                    <option value="">Sélectionner...</option>
+                                <label className="label mb-1 block">{tr('new_product_cut')}</label>
+                                <select className="input" value={cutType} onChange={e => setCutType(e.target.value)}>
+                                    <option value="">{tr('nav_explore')}</option>
                                     <option value="Slim fit">Slim fit</option>
                                     <option value="Regular fit">Regular fit</option>
                                     <option value="Oversized">Oversized</option>
@@ -360,63 +353,41 @@ export default function AddProductPage() {
 
                             {/* Size Guide */}
                             <div>
-                                <label className="label mb-1 block">Guide des tailles (optionnel)</label>
-                                <textarea
-                                    className="input h-20 py-2"
-                                    placeholder="Ex: Taille normalement, prenez votre taille habituelle"
-                                    value={sizeGuide}
-                                    onChange={e => setSizeGuide(e.target.value)}
-                                />
+                                <label className="label mb-1 block">{tr('new_product_size_guide')}</label>
+                                <textarea className="input h-20 py-2" value={sizeGuide} onChange={e => setSizeGuide(e.target.value)} />
                             </div>
 
                             {/* Country of Manufacture */}
                             <div>
-                                <label className="label mb-1 block">Pays de fabrication (optionnel)</label>
-                                <input
-                                    type="text"
-                                    className="input"
-                                    placeholder="Ex: Algérie, Turquie, France..."
-                                    value={countryOfManufacture}
-                                    onChange={e => setCountryOfManufacture(e.target.value)}
-                                />
+                                <label className="label mb-1 block">{tr('new_product_country')}</label>
+                                <input type="text" className="input" value={countryOfManufacture} onChange={e => setCountryOfManufacture(e.target.value)} />
                             </div>
-                        </div>
 
-                        {/* Composition */}
-                        <div>
-                            <label className="label mb-1 block">Composition produit (optionnel)</label>
-                            <textarea
-                                className="input h-20 py-2"
-                                placeholder="Ex: 100% Coton, 80% Polyester 20% Élasthanne..."
-                                value={composition}
-                                onChange={e => setComposition(e.target.value)}
-                            />
-                        </div>
+                            <div>
+                                <label className="label mb-1 block">{tr('new_product_composition')}</label>
+                                <textarea className="input h-20 py-2" value={composition} onChange={e => setComposition(e.target.value)} />
+                            </div>
 
-                        {/* Warranty */}
-                        <div className="bg-green-50 p-4 rounded-xl border-2 border-green-300">
-                            <label className="label mb-2 block flex items-center gap-2">
-                                <span className="text-lg">🛡️</span>
-                                <span>Garantie (optionnel mais recommandé)</span>
-                            </label>
-                            <select
-                                className="input mb-2"
-                                value={warranty}
-                                onChange={e => setWarranty(e.target.value)}
-                            >
-                                <option value="">Aucune garantie</option>
-                                <option value="3 mois">3 mois</option>
-                                <option value="6 mois">6 mois (recommandé pour électronique)</option>
-                                <option value="1 an">1 an</option>
-                                <option value="2 ans">2 ans</option>
-                            </select>
-                            <p className="text-xs text-gray-600 flex items-start gap-2">
-                                <span>💡</span>
-                                <span>
-                                    <strong>Astuce:</strong> Offrir une garantie rassure vos clients et augmente vos ventes !
-                                    <strong className="block mt-1 text-green-700">Pour l'électronique, une garantie de 6 mois est fortement recommandée.</strong>
-                                </span>
-                            </p>
+                            <div className="bg-green-50 p-4 rounded-xl border-2 border-green-300">
+                                <label className="label mb-2 block flex items-center gap-2">
+                                    <span className="text-lg">🛡️</span>
+                                    <span>{tr('new_product_warranty')}</span>
+                                </label>
+                                <select className="input mb-2" value={warranty} onChange={e => setWarranty(e.target.value)}>
+                                    <option value="">{tr('new_product_no_warranty')}</option>
+                                    <option value="3 mois">3 {tr('order_detail_cod_amount').replace('(DA)', '').trim()} - 3 months</option>
+                                    <option value="6 mois">6 months</option>
+                                    <option value="1 an">1 {tr('new_product_country').replace(' (اختياري)', '')}</option>
+                                    <option value="2 ans">2 ans</option>
+                                </select>
+                                <p className="text-xs text-gray-600 flex items-start gap-2">
+                                    <span>💡</span>
+                                    <span>
+                                        {tr('new_product_warranty_tip')}
+                                        <strong className="block mt-1 text-green-700">{tr('new_product_warranty_elec')}</strong>
+                                    </span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -424,74 +395,41 @@ export default function AddProductPage() {
                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <span>📍</span>
-                            <span>Localisation du Stock</span>
-                            <span className="text-red-500 text-sm ml-2">* Obligatoire</span>
+                            <span>{tr('new_product_storage')}</span>
+                            <span className="text-red-500 text-sm ml-2">{tr('new_product_storage_required')}</span>
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Storage Wilaya */}
                             <div>
-                                <label className="label mb-1 block">
-                                    Wilaya de stockage <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    className="input"
-                                    value={storageWilaya}
-                                    onChange={e => setStorageWilaya(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Sélectionner une wilaya...</option>
+                                <label className="label mb-1 block">{tr('new_product_wilaya')} <span className="text-red-500">*</span></label>
+                                <select className="input" value={storageWilaya} onChange={e => setStorageWilaya(e.target.value)} required>
+                                    <option value="">{tr('nav_explore')}</option>
                                     {ALGERIA_WILAYAS.map(wilaya => (
                                         <option key={wilaya} value={wilaya}>{wilaya}</option>
                                     ))}
                                 </select>
                             </div>
 
-                            {/* Storage Zone */}
                             <div>
-                                <label className="label mb-1 block">
-                                    Zone de stockage <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    className="input"
-                                    placeholder="Ex: Centre-ville, Zone industrielle..."
-                                    value={storageZone}
-                                    onChange={e => setStorageZone(e.target.value)}
-                                    required
-                                />
+                                <label className="label mb-1 block">{tr('new_product_zone')} <span className="text-red-500">*</span></label>
+                                <input type="text" className="input" placeholder={tr('new_product_zone_ph')} value={storageZone} onChange={e => setStorageZone(e.target.value)} required />
                             </div>
                         </div>
 
-                        <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
-                            <span>💡</span>
-                            <span>
-                                Ces informations aident les clients à estimer les délais de livraison
-                                et les frais de port selon leur localisation.
-                            </span>
-                        </p>
+                        <p className="text-xs text-gray-600 mt-3">{tr('new_product_storage_hint')}</p>
                     </div>
 
                     {/* Promotion Label */}
                     <div className="bg-gradient-to-r from-red-50 to-orange-50 p-4 rounded-xl border-2 border-red-200">
                         <label className="label mb-2 block flex items-center gap-2">
                             <span className="text-lg">🏷️</span>
-                            <span>Label Promotion (optionnel)</span>
+                            <span>{tr('new_product_promo')}</span>
                         </label>
-                        <input
-                            className="input mb-2"
-                            placeholder="Ex: -20%, PROMO, SOLDES, NOUVEAU"
-                            value={promotionLabel}
-                            onChange={e => setPromotionLabel(e.target.value)}
-                            maxLength={20}
-                        />
-                        <p className="text-xs text-gray-600 mt-1">
-                            💡 <strong>Astuce:</strong> Ajoutez un badge accrocheur pour attirer l'attention !
-                            Exemples: "-30%", "PROMO", "SOLDES", "NOUVEAU", "OFFRE LIMITÉE"
-                        </p>
+                        <input className="input mb-2" placeholder={tr('new_product_promo_ph')} value={promotionLabel} onChange={e => setPromotionLabel(e.target.value)} maxLength={20} />
+                        <p className="text-xs text-gray-600 mt-1">{tr('new_product_promo_tip')}</p>
                         {promotionLabel && (
                             <div className="mt-3 p-2 bg-white rounded-lg border border-red-300">
-                                <p className="text-xs font-semibold text-gray-700 mb-1">Aperçu:</p>
+                                <p className="text-xs font-semibold text-gray-700 mb-1">{tr('new_product_preview')}</p>
                                 <span className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
                                     {promotionLabel}
                                 </span>
@@ -502,7 +440,7 @@ export default function AddProductPage() {
                     {/* Variants Section */}
                     <div className="bg-gray-50 p-4 rounded-xl border">
                         <h3 className="font-bold mb-4">
-                            {sizeConfig.options.length === 0 ? 'Variantes (Couleurs & Stock)' : `Variantes (${sizeConfig.sizeLabel || 'Tailles'} & Couleurs)`}
+                            {tr('new_product_variants')}
                         </h3>
 
                         {/* Responsive flex layout: stack on mobile, row on desktop */}
@@ -554,14 +492,14 @@ export default function AddProductPage() {
                             )}
 
                             <div className="flex-1 sm:flex-initial">
-                                <label className="text-xs font-bold uppercase mb-1 block">Couleur</label>
+                                <label className="text-xs font-bold uppercase mb-1 block">{tr('new_product_color')}</label>
                                 <input type="color" className="h-10 w-full sm:w-16 p-0 border-0 rounded" value={vColor} onChange={e => setVColor(e.target.value)} />
                             </div>
                             <div className="flex-1 sm:flex-initial">
-                                <label className="text-xs font-bold uppercase mb-1 block">Stock</label>
+                                <label className="text-xs font-bold uppercase mb-1 block">{tr('new_product_stock')}</label>
                                 <input type="number" className="input h-10 w-full sm:w-20" value={vStock} onChange={e => setVStock(parseInt(e.target.value))} />
                             </div>
-                            <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4 w-full sm:w-auto">Ajouter</button>
+                            <button type="button" onClick={addVariant} className="btn btn-secondary h-10 px-4 w-full sm:w-auto">{tr('new_product_add_variant')}</button>
                         </div>
 
                         <div className="space-y-2">
@@ -582,9 +520,9 @@ export default function AddProductPage() {
                     </div>
 
                     <div className="flex justify-end gap-4">
-                        <button type="button" onClick={() => router.back()} className="btn btn-outline">Annuler</button>
+                        <button type="button" onClick={() => router.back()} className="btn btn-outline">{tr('new_product_cancel')}</button>
                         <button type="submit" disabled={loading} className="btn btn-primary">
-                            {loading ? 'Publication...' : 'Publier le produit'}
+                            {loading ? tr('new_product_publishing') : tr('new_product_publish')}
                         </button>
                     </div>
                 </form>

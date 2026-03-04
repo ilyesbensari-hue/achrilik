@@ -1,5 +1,7 @@
+'use client';
 import React from 'react';
 import { OrderStatus } from '@prisma/client';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
     Clock,
     CreditCard,
@@ -95,7 +97,23 @@ export default function OrderStatusTimeline({
     statusHistory = [],
     compact = false,
 }: OrderStatusTimelineProps) {
-    // Vérifier si c'est un statut final (DELIVERED, RETURNED, CANCELLED)
+    const { tr } = useTranslation();
+
+    const TIMELINE_STEPS: TimelineStep[] = [
+        { status: 'PENDING', label: tr('status_PENDING'), Icon: Clock, color: 'bg-gray-400' },
+        { status: 'PAYMENT_PENDING', label: tr('orders_unpaid'), Icon: CreditCard, color: 'bg-yellow-500' },
+        { status: 'CONFIRMED', label: tr('status_ACCEPTED'), Icon: CheckCircle, color: 'bg-blue-500' },
+        { status: 'AT_MERCHANT', label: tr('orders_preparing'), Icon: Package, color: 'bg-purple-500' },
+        { status: 'READY_FOR_PICKUP', label: tr('orders_ready'), Icon: PackageCheck, color: 'bg-indigo-500' },
+        { status: 'WITH_DELIVERY_AGENT', label: tr('status_PICKED_UP'), Icon: Truck, color: 'bg-cyan-500' },
+        { status: 'OUT_FOR_DELIVERY', label: tr('status_IN_TRANSIT'), Icon: Navigation, color: 'bg-teal-500' },
+        { status: 'DELIVERED', label: tr('status_DELIVERED'), Icon: Home, color: 'bg-green-500' },
+    ];
+
+    const FINAL_STATUSES: Record<string, { label: string; Icon: React.ElementType; color: string }> = {
+        RETURNED: { label: tr('status_RETURNED'), Icon: RotateCcw, color: 'bg-orange-500' },
+        CANCELLED: { label: tr('orders_cancel'), Icon: XCircle, color: 'bg-red-500' },
+    };
     const isFinalStatus = ['DELIVERED', 'RETURNED', 'CANCELLED'].includes(currentStatus);
     const finalStatusInfo = FINAL_STATUSES[currentStatus];
 

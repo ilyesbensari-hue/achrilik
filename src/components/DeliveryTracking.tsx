@@ -1,19 +1,23 @@
 'use client';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 interface DeliveryTrackingProps {
     order: any;
 }
 
 export default function DeliveryTracking({ order }: DeliveryTrackingProps) {
+    const { tr } = useTranslation();
+
     const statusLabels: { [key: string]: string } = {
-        PENDING: 'En attente',
-        ACCEPTED: 'Acceptée',
-        READY_TO_SHIP: 'Prête à expédier',
-        PICKED_UP: 'Récupérée par livreur',
-        IN_TRANSIT: 'En transit',
-        DELIVERED: 'Livrée',
-        FAILED: 'Échec de livraison',
-        RETURNED: 'Retournée',
+        PENDING: tr('status_PENDING'),
+        ACCEPTED: tr('status_ACCEPTED'),
+        READY_TO_SHIP: tr('status_READY_TO_SHIP'),
+        PICKED_UP: tr('status_PICKED_UP'),
+        IN_TRANSIT: tr('status_IN_TRANSIT'),
+        DELIVERED: tr('status_DELIVERED'),
+        FAILED: tr('status_FAILED'),
+        RETURNED: tr('status_RETURNED'),
     };
 
     const statusColors: { [key: string]: string } = {
@@ -28,66 +32,50 @@ export default function DeliveryTracking({ order }: DeliveryTrackingProps) {
     };
 
     const statusIcons: { [key: string]: string } = {
-        PENDING: '⏳',
-        ACCEPTED: '✅',
-        READY_TO_SHIP: '📦',
-        PICKED_UP: '🚚',
-        IN_TRANSIT: '🛣️',
-        DELIVERED: '🎉',
-        FAILED: '❌',
-        RETURNED: '↩️',
+        PENDING: '⏳', ACCEPTED: '✅', READY_TO_SHIP: '📦',
+        PICKED_UP: '🚚', IN_TRANSIT: '🛣️', DELIVERED: '🎉',
+        FAILED: '❌', RETURNED: '↩️',
     };
 
     if (!order.deliveryStatus || order.deliveryStatus === 'PENDING') {
         return (
             <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <p className="text-gray-600">
-                    Le suivi de livraison sera disponible une fois que le vendeur aura accepté votre commande.
-                </p>
+                <p className="text-gray-600">{tr('order_detail_tracking_hint')}</p>
             </div>
         );
     }
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">🚚 Suivi de Livraison</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-6">{tr('order_detail_tracking')}</h3>
 
-            {/* Statut actuel */}
+            {/* Current status */}
             <div className="mb-6">
-                <p className="text-sm text-gray-600 mb-2">Statut actuel</p>
-                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${statusColors[order.deliveryStatus] || 'bg-gray-100 text-gray-800'
-                    }`}>
+                <p className="text-sm text-gray-600 mb-2">{tr('order_detail_status_label')}</p>
+                <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${statusColors[order.deliveryStatus] || 'bg-gray-100 text-gray-800'}`}>
                     <span className="text-lg">{statusIcons[order.deliveryStatus]}</span>
                     {statusLabels[order.deliveryStatus] || order.deliveryStatus}
                 </span>
             </div>
 
-            {/* Numéro de suivi */}
+            {/* Tracking number */}
             {order.trackingNumber && (
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900 mb-1">Numéro de suivi</p>
-                    <p className="text-xl font-mono font-bold text-blue-900">
-                        {order.trackingNumber}
-                    </p>
-
-                    {/* Lien de tracking */}
+                    <p className="text-sm font-medium text-blue-900 mb-1">{tr('order_detail_tracking_num')}</p>
+                    <p className="text-xl font-mono font-bold text-blue-900">{order.trackingNumber}</p>
                     {order.trackingUrl && (
-                        <a
-                            href={order.trackingUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-block mt-3 text-sm text-blue-600 hover:text-blue-800 underline"
-                        >
-                            🔗 Suivre ma livraison en temps réel →
+                        <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer"
+                            className="inline-block mt-3 text-sm text-blue-600 hover:text-blue-800 underline">
+                            🔗 {tr('order_detail_tracking_url_hint')} →
                         </a>
                     )}
                 </div>
             )}
 
-            {/* Progression visuelle */}
+            {/* Progress bar */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Progression</span>
+                    <span className="text-sm text-gray-600">{tr('buyer_order_delivery_mode')}</span>
                     <span className="text-sm font-medium text-[#006233]">
                         {order.deliveryStatus === 'DELIVERED' ? '100%' :
                             order.deliveryStatus === 'IN_TRANSIT' ? '75%' :
@@ -96,121 +84,58 @@ export default function DeliveryTracking({ order }: DeliveryTrackingProps) {
                     </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                        className={`h-2 rounded-full transition-all duration-500 ${order.deliveryStatus === 'DELIVERED' ? 'bg-green-600' :
-                                order.deliveryStatus === 'FAILED' || order.deliveryStatus === 'RETURNED' ? 'bg-red-600' :
-                                    'bg-[#006233]'
-                            }`}
-                        style={{
-                            width: order.deliveryStatus === 'DELIVERED' ? '100%' :
-                                order.deliveryStatus === 'IN_TRANSIT' ? '75%' :
-                                    order.deliveryStatus === 'PICKED_UP' ? '50%' :
-                                        order.deliveryStatus === 'READY_TO_SHIP' ? '25%' : '10%'
-                        }}
+                    <div className={`h-2 rounded-full transition-all duration-500 ${order.deliveryStatus === 'DELIVERED' ? 'bg-green-600' :
+                        order.deliveryStatus === 'FAILED' || order.deliveryStatus === 'RETURNED' ? 'bg-red-600' : 'bg-[#006233]'}`}
+                        style={{ width: order.deliveryStatus === 'DELIVERED' ? '100%' : order.deliveryStatus === 'IN_TRANSIT' ? '75%' : order.deliveryStatus === 'PICKED_UP' ? '50%' : order.deliveryStatus === 'READY_TO_SHIP' ? '25%' : '10%' }}
                     />
                 </div>
             </div>
 
-            {/* Timeline des étapes */}
+            {/* Steps timeline */}
             <div className="space-y-4">
-                <h4 className="font-medium text-gray-900">Étapes de livraison</h4>
-
+                <h4 className="font-medium text-gray-900">{tr('buyer_order_articles')}</h4>
                 <div className="relative pl-8 space-y-6">
-                    {/* Ligne verticale */}
                     <div className="absolute left-2 top-2 bottom-2 w-0.5 bg-gray-200" />
 
-                    {/* Étape: Commande acceptée */}
-                    <div className="relative">
-                        <div className={`absolute left-[-1.75rem] w-4 h-4 rounded-full border-2 ${['ACCEPTED', 'READY_TO_SHIP', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'].includes(order.deliveryStatus)
-                                ? 'bg-[#006233] border-[#006233]'
-                                : 'bg-white border-gray-300'
-                            }`} />
-                        <div>
-                            <p className="font-medium text-gray-900">Commande acceptée</p>
-                            <p className="text-sm text-gray-500">Le vendeur a accepté votre commande</p>
+                    {[
+                        { key: 'ACCEPTED', active: ['ACCEPTED', 'READY_TO_SHIP', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'], label: tr('status_ACCEPTED'), sub: tr('orders_accept') },
+                        { key: 'READY_TO_SHIP', active: ['READY_TO_SHIP', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'], label: tr('status_READY_TO_SHIP'), sub: tr('orders_ready_pickup') },
+                        { key: 'PICKED_UP', active: ['PICKED_UP', 'IN_TRANSIT', 'DELIVERED'], label: tr('status_PICKED_UP'), sub: tr('order_detail_tracking_hint') },
+                        { key: 'IN_TRANSIT', active: ['IN_TRANSIT', 'DELIVERED'], label: tr('status_IN_TRANSIT'), sub: '' },
+                        { key: 'DELIVERED', active: ['DELIVERED'], label: tr('status_DELIVERED'), sub: '', green: true },
+                    ].map((step) => (
+                        <div key={step.key} className="relative">
+                            <div className={`absolute left-[-1.75rem] w-4 h-4 rounded-full border-2 ${step.active.includes(order.deliveryStatus)
+                                ? (step.green ? 'bg-green-600 border-green-600' : 'bg-[#006233] border-[#006233]')
+                                : 'bg-white border-gray-300'}`} />
+                            <div>
+                                <p className="font-medium text-gray-900">{step.label}</p>
+                                {step.sub && <p className="text-sm text-gray-500">{step.sub}</p>}
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Étape: Prête à expédier */}
-                    <div className="relative">
-                        <div className={`absolute left-[-1.75rem] w-4 h-4 rounded-full border-2 ${['READY_TO_SHIP', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'].includes(order.deliveryStatus)
-                                ? 'bg-[#006233] border-[#006233]'
-                                : 'bg-white border-gray-300'
-                            }`} />
-                        <div>
-                            <p className="font-medium text-gray-900">Prête à expédier</p>
-                            <p className="text-sm text-gray-500">Votre colis est prêt</p>
-                        </div>
-                    </div>
-
-                    {/* Étape: Récupérée par le livreur */}
-                    <div className="relative">
-                        <div className={`absolute left-[-1.75rem] w-4 h-4 rounded-full border-2 ${['PICKED_UP', 'IN_TRANSIT', 'DELIVERED'].includes(order.deliveryStatus)
-                                ? 'bg-[#006233] border-[#006233]'
-                                : 'bg-white border-gray-300'
-                            }`} />
-                        <div>
-                            <p className="font-medium text-gray-900">Récupérée par le livreur</p>
-                            <p className="text-sm text-gray-500">Le colis a été pris en charge</p>
-                        </div>
-                    </div>
-
-                    {/* Étape: En transit */}
-                    <div className="relative">
-                        <div className={`absolute left-[-1.75rem] w-4 h-4 rounded-full border-2 ${['IN_TRANSIT', 'DELIVERED'].includes(order.deliveryStatus)
-                                ? 'bg-[#006233] border-[#006233]'
-                                : 'bg-white border-gray-300'
-                            }`} />
-                        <div>
-                            <p className="font-medium text-gray-900">En transit</p>
-                            <p className="text-sm text-gray-500">Votre colis est en route</p>
-                        </div>
-                    </div>
-
-                    {/* Étape: Livré */}
-                    <div className="relative">
-                        <div className={`absolute left-[-1.75rem] w-4 h-4 rounded-full border-2 ${order.deliveryStatus === 'DELIVERED'
-                                ? 'bg-green-600 border-green-600'
-                                : 'bg-white border-gray-300'
-                            }`} />
-                        <div>
-                            <p className="font-medium text-gray-900">Livré</p>
-                            <p className="text-sm text-gray-500">Votre colis a été livré</p>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Message de livraison réussie */}
+            {/* Success message */}
             {order.deliveryStatus === 'DELIVERED' && (
                 <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-900 font-medium">
-                        🎉 Votre commande a été livrée avec succès !
-                    </p>
-                    <p className="text-sm text-green-700 mt-1">
-                        Nous espérons que vous êtes satisfait de votre achat.
-                    </p>
+                    <p className="text-green-900 font-medium">🎉 {tr('orders_delivered')}</p>
                 </div>
             )}
 
-            {/* Message d'échec */}
+            {/* Failure message */}
             {(order.deliveryStatus === 'FAILED' || order.deliveryStatus === 'RETURNED') && (
                 <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-900 font-medium">
-                        ❌ Problème de livraison
-                    </p>
-                    <p className="text-sm text-red-700 mt-1">
-                        Veuillez contacter le vendeur pour plus d'informations.
-                    </p>
+                    <p className="text-red-900 font-medium">❌ {tr('status_FAILED')}</p>
+                    <p className="text-sm text-red-700 mt-1">{tr('order_detail_tracking_url_hint')}</p>
                 </div>
             )}
 
-            {/* Dernière mise à jour */}
+            {/* Last updated */}
             {order.lastUpdatedAt && (
                 <div className="mt-6 pt-4 border-t">
-                    <p className="text-xs text-gray-500">
-                        Dernière mise à jour: {new Date(order.lastUpdatedAt).toLocaleString('fr-FR')}
-                    </p>
+                    <p className="text-xs text-gray-500">{tr('order_detail_last_updated')}{new Date(order.lastUpdatedAt).toLocaleString('fr-DZ')}</p>
                 </div>
             )}
         </div>
