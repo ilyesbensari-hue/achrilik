@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const MapPicker = dynamic(() => import('@/components/StoreMap'), { ssr: false });
 
@@ -42,6 +43,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
     const { id } = use(params);
     const [store, setStore] = useState<Store | null>(null);
     const [loading, setLoading] = useState(true);
+    const { tr } = useTranslation();
 
     useEffect(() => {
         fetchStore();
@@ -49,7 +51,6 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
 
     const fetchStore = async () => {
         try {
-            // Optimized fetch: Direct API call for single store
             const res = await fetch(`/api/stores/${id}`);
             if (res.ok) {
                 const data = await res.json();
@@ -71,7 +72,6 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
         return null;
     };
 
-    // Calculate Store Stats
     const calculateStats = () => {
         if (!store?.Product) return { avgRating: 0, totalReviews: 0, allReviews: [] };
 
@@ -86,7 +86,6 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
         const sumRating = allReviews.reduce((acc, r) => acc + r.rating, 0);
         const avgRating = totalReviews > 0 ? sumRating / totalReviews : 0;
 
-        // Sort reviews by date desc
         allReviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         return { avgRating, totalReviews, allReviews };
@@ -103,9 +102,9 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
     if (!store) {
         return (
             <div className="container py-10 text-center">
-                <h2 className="text-2xl font-bold mb-4">Magasin introuvable</h2>
+                <h2 className="text-2xl font-bold mb-4">{tr('store_not_found')}</h2>
                 <Link href="/stores" className="btn btn-primary">
-                    Retour à la recherche
+                    {tr('store_back_search')}
                 </Link>
             </div>
         );
@@ -121,7 +120,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Retour à l'accueil
+                {tr('not_found_home')}
             </Link>
 
             {/* Store Header Card */}
@@ -148,7 +147,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                                     <span className="text-sm text-gray-500 font-medium">5.0</span>
                                 </div>
                                 <span className="text-sm text-gray-500 underline decoration-gray-300 decoration-dotted underline-offset-4">
-                                    {totalReviews} avis authentiques
+                                    {totalReviews} {tr('store_reviews_authentic')}
                                 </span>
                             </div>
 
@@ -171,7 +170,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                     {/* Contact */}
                     <div className="p-8">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            📍 Adresse & Contact
+                            📍 {tr('store_address_contact')}
                         </h3>
                         <div className="space-y-4">
                             {(store.address || store.city) && (
@@ -180,14 +179,14 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                                     <p>{store.city}</p>
                                     {mapsLink && (
                                         <a href={mapsLink} target="_blank" className="text-[#006233] text-xs font-semibold mt-2 inline-flex items-center gap-1 hover:underline">
-                                            🗺️ Voir sur la carte
+                                            🗺️ {tr('store_view_map')}
                                         </a>
                                     )}
                                 </div>
                             )}
                             {store.phone && (
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase tracking-wide font-bold mb-1">Téléphone</p>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wide font-bold mb-1">{tr('store_phone')}</p>
                                     <a href={`tel:${store.phone}`} className="text-lg font-mono font-medium text-gray-900 hover:text-[#006233]">
                                         {store.phone}
                                     </a>
@@ -199,12 +198,12 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                     {/* Hours */}
                     <div className="p-8">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            🕒 Horaires d'ouverture
+                            🕒 {tr('store_hours')}
                         </h3>
                         {store.hours ? (
                             <p className="text-gray-600 whitespace-pre-line">{store.hours}</p>
                         ) : (
-                            <p className="text-gray-400 italic">Non communiqué</p>
+                            <p className="text-gray-400 italic">{tr('loading_text').replace('...', '')}</p>
                         )}
                     </div>
 
@@ -216,7 +215,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                             </div>
                         ) : (
                             <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                                Carte non disponible
+                                {tr('store_map_unavailable')}
                             </div>
                         )}
                     </div>
@@ -229,7 +228,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="lg:col-span-2 space-y-8">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-black text-gray-900">
-                            La Collection <span className="text-[#006233]">({store.Product?.length || 0})</span>
+                            {tr('store_collection')} <span className="text-[#006233]">({store.Product?.length || 0})</span>
                         </h2>
                     </div>
 
@@ -251,9 +250,8 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-gray-400">Pas d'image</div>
+                                                <div className="flex items-center justify-center h-full text-gray-400">{tr('store_no_image')}</div>
                                             )}
-                                            {/* Quick Rating on Card */}
                                             {product.Review && product.Review.length > 0 && (
                                                 <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md text-white px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1">
                                                     <span className="text-yellow-400">★</span>
@@ -271,7 +269,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                         </div>
                     ) : (
                         <div className="bg-gray-50 rounded-xl p-10 text-center border-2 border-dashed border-gray-200">
-                            <p className="text-gray-500">Ce vendeur n'a pas encore ajouté de produits.</p>
+                            <p className="text-gray-500">{tr('store_no_products')}</p>
                         </div>
                     )}
                 </div>
@@ -280,7 +278,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="lg:col-span-1">
                     <div className="bg-gray-50 rounded-2xl p-6 sticky top-24">
                         <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                            💬 Avis Clients <span className="text-gray-400 font-normal text-base">({totalReviews})</span>
+                            💬 {tr('store_reviews_label')} <span className="text-gray-400 font-normal text-base">({totalReviews})</span>
                         </h2>
 
                         {allReviews.length > 0 ? (
@@ -311,8 +309,8 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                             </div>
                         ) : (
                             <div className="text-center py-10 text-gray-500">
-                                <p className="mb-2">💤 Aucun avis pour le moment</p>
-                                <p className="text-xs">Les avis collectés sur les produits de ce vendeur apparaîtront ici.</p>
+                                <p className="mb-2">💤 {tr('store_no_reviews')}</p>
+                                <p className="text-xs">{tr('store_reviews_later')}</p>
                             </div>
                         )}
                     </div>
