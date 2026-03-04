@@ -3,35 +3,37 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type UserRole = 'CLIENT' | 'SELLER' | 'DELIVERY';
 
-const ROLE_CONFIG = {
-    CLIENT: {
-        icon: '👤',
-        title: 'CLIENT',
-        description: 'Acheter des vêtements',
-        color: 'blue',
-        redirectAfterLogin: '/shop'
-    },
-    SELLER: {
-        icon: '🏪',
-        title: 'VENDEUR',
-        description: 'Gérer ma boutique',
-        color: 'green',
-        redirectAfterLogin: '/seller/dashboard'
-    },
-    DELIVERY: {
-        icon: '🚚',
-        title: 'LIVREUR',
-        description: 'Effectuer des livraisons',
-        color: 'orange',
-        redirectAfterLogin: '/delivery/dashboard'
-    }
-};
-
 export default function RoleSelectionPage() {
     const router = useRouter();
+    const { tr } = useTranslation();
+
+    const ROLE_CONFIG = {
+        CLIENT: {
+            icon: '👤',
+            title: 'CLIENT',
+            description: tr('role_client_desc'),
+            color: 'blue',
+            redirectAfterLogin: '/shop'
+        },
+        SELLER: {
+            icon: '🏪',
+            title: tr('sell_become_seller').toUpperCase(),
+            description: tr('role_seller_desc'),
+            color: 'green',
+            redirectAfterLogin: '/seller/dashboard'
+        },
+        DELIVERY: {
+            icon: '🚚',
+            title: 'LIVREUR',
+            description: tr('role_delivery_desc'),
+            color: 'orange',
+            redirectAfterLogin: '/delivery/dashboard'
+        }
+    };
 
     const handleRoleSelect = (role: UserRole) => {
         // Store selected role in sessionStorage for the login page
@@ -45,14 +47,14 @@ export default function RoleSelectionPage() {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-bold text-gray-900 mb-2">Achrilik</h1>
-                    <p className="text-gray-600">Connectez-vous à votre espace</p>
+                    <p className="text-gray-600">{tr('role_connect_title')}</p>
                 </div>
 
                 {/* Role Selection Card */}
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
                         <h2 className="text-xl font-semibold text-white text-center">
-                            Je me connecte en tant que :
+                            {tr('role_connect_as')}
                         </h2>
                     </div>
 
@@ -130,9 +132,9 @@ export default function RoleSelectionPage() {
                     {/* Footer */}
                     <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
                         <p className="text-center text-sm text-gray-600">
-                            Pas encore de compte ?{' '}
+                            {tr('role_no_account')}{' '}
                             <Link href="/register" className="text-indigo-600 hover:text-indigo-700 font-medium">
-                                S'inscrire
+                                {tr('nav_register')}
                             </Link>
                         </p>
                     </div>
@@ -144,7 +146,7 @@ export default function RoleSelectionPage() {
                         href="/"
                         className="text-gray-600 hover:text-gray-900 text-sm font-medium inline-flex items-center gap-2"
                     >
-                        ← Retour à l'accueil
+                        ← {tr('not_found_home')}
                     </Link>
                 </div>
             </div>

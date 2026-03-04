@@ -86,6 +86,13 @@ export const translations = {
     card_new: 'NOUVEAU',
     card_promo: 'PROMO',
     card_photo: 'Photo',
+    cart_stock_max: 'Stock maximum disponible',
+    role_connect_title: 'Connectez-vous à votre espace',
+    role_connect_as: 'Je me connecte en tant que :',
+    role_client_desc: 'Acheter des vêtements',
+    role_seller_desc: 'Gérer ma boutique',
+    role_delivery_desc: 'Effectuer des livraisons',
+    role_no_account: 'Pas encore de compte ?',
 
     // --- Product Page ---
     product_description: 'Description',
@@ -898,6 +905,13 @@ export const translations = {
     card_new: 'جديد',
     card_promo: 'عرض',
     card_photo: 'صورة',
+    cart_stock_max: 'الحد الأقصى للمخزون',
+    role_connect_title: 'سجّل دخولك',
+    role_connect_as: 'أسجّل الدخول بصفتي :',
+    role_client_desc: 'شراء الملابس',
+    role_seller_desc: 'إدارة متجري',
+    role_delivery_desc: 'القيام بعمليات التوصيل',
+    role_no_account: 'ليس لديك حساب بعد؟',
 
     // --- Product Page ---
     product_description: 'الوصف',

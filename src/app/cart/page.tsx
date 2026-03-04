@@ -165,7 +165,7 @@ export default function CartPage() {
 
         // Vérifier le stock disponible
         if (newQuantity > item.stock) {
-            alert(`Stock maximum disponible: ${item.stock}`);
+            alert(`${tr('cart_stock_max')}: ${item.stock}`);
             return;
         }
 
