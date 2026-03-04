@@ -5,11 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ProductGrid from '@/components/ProductGrid';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { tr } = useTranslation();
 
     const [products, setProducts] = useState<any[]>([]);
     const [category, setCategory] = useState<any>(null);
@@ -270,8 +272,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     if (!category) {
         return (
             <div className="container py-20 text-center">
-                <h1 className="text-3xl font-bold mb-4">Catégorie introuvable</h1>
-                <Link href="/" className="text-[#006233] hover:underline">← Retour à l'accueil</Link>
+                <h1 className="text-3xl font-bold mb-4">{tr('cat_page_not_found')}</h1>
+                <Link href="/" className="text-[#006233] hover:underline">← {tr('not_found_home')}</Link>
             </div>
         );
     }
@@ -287,7 +289,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
                             <p className="text-sm text-gray-500 mt-1">
-                                {filteredProducts.length} {filteredProducts.length > 1 ? 'produits' : 'produit'}
+                                {filteredProducts.length} {tr('cat_page_results')}
                             </p>
                         </div>
 
@@ -300,7 +302,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                                 </svg>
-                                <span className="font-semibold">Filtrer</span>
+                                <span className="font-semibold">{tr('cat_page_filter')}</span>
                                 {(selectedSubcategories.length > 0 || priceRange[0] !== 0 || priceRange[1] !== 50000 || selectedWilaya || selectedSizes.length > 0) && (
                                     <span className="ml-1 px-2 py-0.5 bg-white text-[#006233] rounded-full text-xs font-bold">
                                         {selectedSubcategories.length + (priceRange[0] !== 0 || priceRange[1] !== 50000 ? 1 : 0) + (selectedWilaya ? 1 : 0) + selectedSizes.length}
@@ -321,7 +323,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                     <div className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[600px] overflow-y-auto">
                                         {/* Header */}
                                         <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-xl">
-                                            <h3 className="font-bold text-gray-900">Filtres</h3>
+                                            <h3 className="font-bold text-gray-900">{tr('cat_page_filter')}</h3>
                                             <button
                                                 onClick={() => setShowFilterPanel(false)}
                                                 className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
@@ -340,7 +342,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                         onClick={() => setExpandedSection(expandedSection === 'categories' ? null : 'categories')}
                                                         className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                                     >
-                                                        <span className="font-semibold text-gray-900">Catégories</span>
+                                                        <span className="font-semibold text-gray-900">{tr('cat_page_categories')}</span>
                                                         <svg
                                                             className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'categories' ? 'rotate-180' : ''}`}
                                                             fill="none"
@@ -416,7 +418,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                     onClick={() => setExpandedSection(expandedSection === 'price' ? null : 'price')}
                                                     className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <span className="font-semibold text-gray-900">Prix</span>
+                                                    <span className="font-semibold text-gray-900">{tr('cat_page_price')}</span>
                                                     <svg
                                                         className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'price' ? 'rotate-180' : ''}`}
                                                         fill="none"
@@ -477,7 +479,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                         onClick={() => setExpandedSection(expandedSection === 'wilaya' ? null : 'wilaya')}
                                                         className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                                     >
-                                                        <span className="font-semibold text-gray-900">Wilaya</span>
+                                                        <span className="font-semibold text-gray-900">{tr('cat_page_wilaya')}</span>
                                                         <svg
                                                             className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'wilaya' ? 'rotate-180' : ''}`}
                                                             fill="none"
@@ -499,7 +501,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                                     className="w-4 h-4 text-[#006233] focus:ring-[#006233]"
                                                                 />
                                                                 <span className={`text-sm ${selectedWilaya === '' ? 'font-medium' : 'text-gray-700'}`}>
-                                                                    Toutes
+                                                                    {tr('cat_page_all_wilayas')}
                                                                 </span>
                                                             </label>
                                                             {availableWilayas.map((wilaya) => (
@@ -530,7 +532,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                     className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                                 >
                                                     <span className="font-semibold text-gray-900">
-                                                        {isShoeCategory() ? 'Pointure' : 'Taille'}
+                                                        {isShoeCategory() ? tr('cat_page_shoe_size') : tr('cat_page_size')}
                                                     </span>
                                                     <svg
                                                         className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'size' ? 'rotate-180' : ''}`}
@@ -579,13 +581,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                 }}
                                                 className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                                             >
-                                                Réinitialiser
+                                                {tr('cat_page_reset')}
                                             </button>
                                             <button
                                                 onClick={() => setShowFilterPanel(false)}
                                                 className="flex-1 px-4 py-2.5 bg-[#006233] text-white rounded-lg font-medium hover:bg-[#004d28] transition-colors"
                                             >
-                                                Appliquer
+                                                {tr('cat_page_apply')}
                                             </button>
                                         </div>
                                     </div>
@@ -601,9 +603,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 min-h-[400px]">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">Produits</h2>
+                            <h2 className="text-xl font-bold text-gray-900">{tr('cat_page_products')}</h2>
                             <p className="text-sm text-gray-500 mt-1">
-                                <span className="font-semibold text-gray-900">{filteredProducts.length}</span> résultats trouvés
+                                <span className="font-semibold text-gray-900">{filteredProducts.length}</span> {tr('cat_page_results')}
                             </p>
                         </div>
 
@@ -614,11 +616,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                     onChange={(e) => setSortBy(e.target.value)}
                                     className="w-full appearance-none px-4 py-2.5 pr-8 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006233]/20 focus:border-[#006233] cursor-pointer"
                                 >
-                                    <option value="">Trier par pertinence</option>
-                                    <option value="name">Nom (A-Z)</option>
-                                    <option value="price-asc">Prix croissant</option>
-                                    <option value="price-desc">Prix décroissant</option>
-                                    <option value="wilaya">Wilaya (A-Z)</option>
+                                    <option value="">{tr('cat_page_sort_relevance')}</option>
+                                    <option value="name">{tr('cat_page_sort_name')}</option>
+                                    <option value="price-asc">{tr('cat_page_sort_price_asc')}</option>
+                                    <option value="price-desc">{tr('cat_page_sort_price_desc')}</option>
+                                    <option value="wilaya">{tr('cat_page_sort_wilaya')}</option>
                                 </select>
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>

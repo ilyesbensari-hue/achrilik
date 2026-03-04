@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Category {
     id: string;
@@ -15,14 +16,24 @@ interface Category {
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
-    'Femmes': '👗',
-    'Hommes': '👔',
-    'Enfants': '👶',
-    'Accessoires': '🎧',
-    'High-Tech': '📱',
-    'Maroquinerie': '👜',
-    'Sacs': '👜',
-    'Chaussures': '👟',
+    'femmes': '👗',
+    'hommes': '👔',
+    'enfants': '👶',
+    'accessoires': '🎧',
+    'chaussures': '👟',
+    'maroquinerie': '👜',
+    'electronique': '📱',
+};
+
+// Map DB slug → translation key
+const SLUG_TO_KEY: Record<string, string> = {
+    'femmes': 'cat_women',
+    'hommes': 'cat_men',
+    'enfants': 'cat_kids',
+    'accessoires': 'cat_accessories',
+    'chaussures': 'cat_shoes',
+    'maroquinerie': 'cat_maroquinerie',
+    'electronique': 'cat_electronique',
 };
 
 interface CategoryListProps {
@@ -34,21 +45,18 @@ export default function CategoryList({ variant = 'mobile', onNavigate }: Categor
     const isDesktopDropdown = variant === 'desktop';
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
+    const { tr } = useTranslation();
+
+    // Helper: get translated name for a category slug
+    const getCategoryName = (cat: { name: string; slug: string }) => {
+        const key = SLUG_TO_KEY[cat.slug];
+        return key ? tr(key as any) : cat.name;
+    };
 
     useEffect(() => {
         fetch('/api/categories')
             .then(res => res.json())
             .then(data => {
-                // The API returns a flat list usually, but sometimes a tree.
-                // Assuming the API returns a flat list with parentId, OR a tree.
-                // Based on previous usage, it seemed to filter root categories.
-                // Let's assume the API returns the full structure or we build it.
-                // Checking previous code: "data.filter((c: any) => !c.parentId)"
-                // So it was expecting a list where it filtered roots.
-                // If the API returns a flat list, we relies on `children` being populated by the backend if it's a tree,
-                // OR we need to build the tree if it returns flat list.
-                // Let's assume the backend returns the tree structure properly `include: { children: ... }`
-
                 const rootCategories = data.filter((c: any) => !c.parentId);
                 setCategories(rootCategories);
             })
@@ -81,6 +89,7 @@ export default function CategoryList({ variant = 'mobile', onNavigate }: Categor
                     variant={variant}
                     depth={0}
                     onNavigate={onNavigate}
+                    getCategoryName={getCategoryName}
                 />
             ))}
         </div>
@@ -92,12 +101,14 @@ function CategoryItem({
     category,
     variant,
     depth,
-    onNavigate
+    onNavigate,
+    getCategoryName
 }: {
     category: Category;
     variant: 'sidebar' | 'mobile' | 'desktop';
     depth: number;
     onNavigate?: () => void;
+    getCategoryName: (cat: { name: string; slug: string }) => string;
 }) {
     const [expanded, setExpanded] = useState(false);
     const hasChildren = category.children && category.children.length > 0;
@@ -108,7 +119,7 @@ function CategoryItem({
 
     // Indentation for children
     const paddingLeft = depth === 0 ? '1rem' : `${depth * 1.5 + 1}rem`;
-    
+
     // Desktop dropdown styling
     if (isDesktopDropdown && depth === 0) {
         return (
@@ -117,9 +128,9 @@ function CategoryItem({
                 onClick={onNavigate}
                 className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
             >
-                <span className="text-2xl">{CATEGORY_ICONS[category.name] || '✨'}</span>
+                <span className="text-2xl">{CATEGORY_ICONS[category.slug] || '✨'}</span>
                 <span className="text-sm font-medium text-gray-900">
-                    {category.name}
+                    {getCategoryName(category)}
                 </span>
                 {category._count?.products > 0 && (
                     <span className="ml-auto text-xs text-gray-400">({category._count.products})</span>
@@ -140,9 +151,9 @@ function CategoryItem({
                     onClick={onNavigate}
                     className="flex items-center gap-3 flex-1"
                 >
-                    {depth === 0 && <span className="text-2xl">{CATEGORY_ICONS[category.name] || '✨'}</span>}
+                    {depth === 0 && <span className="text-2xl">{CATEGORY_ICONS[category.slug] || '✨'}</span>}
                     <span className={`font-semibold ${depth === 0 ? 'text-lg' : 'text-sm'} ${textColor}`}>
-                        {category.name}
+                        {getCategoryName(category)}
                     </span>
                     {category._count?.products > 0 && (
                         <span className="text-xs text-gray-400">({category._count.products})</span>
@@ -181,6 +192,7 @@ function CategoryItem({
                             variant={variant}
                             depth={depth + 1}
                             onNavigate={onNavigate}
+                            getCategoryName={getCategoryName}
                         />
                     ))}
                     {/* Explicit "View all" link for the parent category inserted as a child entry for clarity?
