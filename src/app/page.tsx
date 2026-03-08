@@ -71,7 +71,6 @@ async function getFeaturedProducts() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
-        Store: { verified: true },
         OR: [
           { promotionLabel: { not: null } },
           { discountPrice: { not: null } }
@@ -122,7 +121,6 @@ async function getNewArrivals() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
-        Store: { verified: true },
         ...TEST_FILTER,
       },
       select: {
@@ -166,7 +164,6 @@ async function getPromotions() {
     const products = await prisma.product.findMany({
       where: {
         status: 'APPROVED',
-        Store: { verified: true },
         OR: [
           { discountPrice: { not: null } },
           { promotionLabel: { not: null } }
@@ -248,7 +245,6 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
       where: {
         categoryId: { in: categoryIds },
         status: 'APPROVED',
-        Store: { verified: true },
         ...TEST_FILTER,
       },
       select: {
@@ -289,28 +285,34 @@ async function getCategoryProducts(categoryId: string, limit: number = 8) {
 // Fetch clothing sections (Femme, Homme, Enfants) with products
 async function getClothingSections() {
   try {
-    // Using top-level category IDs (REAL IDs from database - verified in Prisma Studio Feb 9 2026)
-    const sections = [
-      { id: '9affd04aa8ebc8631587f7d3d7f76e3a', name: 'Femme', slug: 'femmes' }, // Vêtements Femme - 16 children
-      { id: '7978b971816bcebcb3734e4aade82620', name: 'Homme', slug: 'hommes' }, // Vêtements Homme - 14 children
-      { id: 'a041678aa693e0f26bb81f6d0046f7be', name: 'Enfant', slug: 'enfants' }
+    // Use slug-based lookup to avoid hardcoded IDs becoming stale after DB migrations
+    const slugMap = [
+      { name: 'Femme', slug: 'femmes' },
+      { name: 'Homme', slug: 'hommes' },
+      { name: 'Enfant', slug: 'enfants' }
     ];
 
     const sectionsWithProducts = await Promise.all(
-      sections.map(async (section) => {
+      slugMap.map(async ({ name, slug }) => {
+        const category = await prisma.category.findFirst({ where: { slug } });
+        if (!category) return null;
+
         // getCategoryProducts includes all descendant categories recursively
-        const products = await getCategoryProducts(section.id, 8);
+        const products = await getCategoryProducts(category.id, 8);
         return {
-          id: section.id,
-          name: section.name,
-          slug: section.slug,
+          id: category.id,
+          name,
+          slug,
           products
         };
       })
     );
 
-    // Filter out sections with no products
-    return sectionsWithProducts.filter(section => section.products.length > 0);
+    // Filter out sections with no category found or no products
+    return sectionsWithProducts.filter(
+      (section): section is NonNullable<typeof section> =>
+        section !== null && section.products.length > 0
+    );
   } catch (error) {
     console.error('Failed to fetch clothing sections:', error);
     return [];
@@ -320,8 +322,10 @@ async function getClothingSections() {
 // Fetch Maroquinerie products
 async function getMaroquinerieProducts() {
   try {
-    const categoryId = '071afaec3544214899128fe1293330e6'; // CORRECT ID from database
-    return await getCategoryProducts(categoryId, 20); // Increased from 8 to show all products
+    // Dynamic slug-based lookup — avoids stale hardcoded IDs after DB migrations
+    const category = await prisma.category.findFirst({ where: { slug: 'maroquinerie' } });
+    if (!category) return [];
+    return await getCategoryProducts(category.id, 20);
   } catch (error) {
     console.error('Failed to fetch maroquinerie products:', error);
     return [];
@@ -331,8 +335,10 @@ async function getMaroquinerieProducts() {
 // Fetch Accessoires products
 async function getAccessoiresProducts() {
   try {
-    const categoryId = '2db6a96e26fdba4431025b4a3421e48e'; // CORRECT ID from database
-    return await getCategoryProducts(categoryId, 20); // Increased from 8
+    // Dynamic slug-based lookup — avoids stale hardcoded IDs after DB migrations
+    const category = await prisma.category.findFirst({ where: { slug: 'accessoires' } });
+    if (!category) return [];
+    return await getCategoryProducts(category.id, 20);
   } catch (error) {
     console.error('Failed to fetch accessoires products:', error);
     return [];

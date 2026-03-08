@@ -56,19 +56,25 @@ function LoginForm() {
                 window.dispatchEvent(new Event('storage'));
                 await refresh();
 
-                if (data.user.isSeller || data.user.role === 'SELLER') {
-                    router.push('/sell');
-                } else if (selectedType === 'delivery') {
-                    router.push('/livreur');
-                } else if (data.user.role === 'ADMIN') {
+                if (data.user.role === 'ADMIN') {
                     router.push('/admin');
+                } else if (selectedType === 'delivery' || data.user.activeRole === 'DELIVERY_AGENT' || data.user.role === 'DELIVERY_AGENT') {
+                    router.push('/livreur');
+                } else if (data.user.isSeller || data.user.role === 'SELLER') {
+                    router.push('/sell');
                 } else {
                     router.push(callbackUrl);
                 }
                 router.refresh();
             } else {
                 const data = await res.json();
-                setError(data.error || tr('error_generic'));
+                // Handle delivery agent trying the wrong portal (403)
+                if (res.status === 403 && data.redirectTo) {
+                    setError('⚠️ Compte livreur détecté. Redirection vers votre espace...');
+                    setTimeout(() => router.push('/livreur'), 1500);
+                } else {
+                    setError(data.error || tr('error_generic'));
+                }
             }
         } catch (err) {
             setError(tr('error_generic'));

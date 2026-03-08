@@ -137,6 +137,26 @@ export default function VendorsPage() {
         }
     };
 
+    const handleDeleteStore = async (storeId: string, storeName: string, ownerEmail: string) => {
+        if (!confirm(`⚠️ SUPPRESSION DÉFINITIVE\n\nBoutique: "${storeName}"\nPropriétaire: ${ownerEmail}\n\nCela supprimera TOUS les produits de cette boutique et retirera le rôle vendeur. Cette action est irréversible.\n\nConfirmer ?`)) {
+            return;
+        }
+        const toastId = toast.loading('Suppression en cours...');
+        try {
+            const res = await fetch(`/api/admin/stores/${storeId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success(`✅ ${data.message}`, { id: toastId, duration: 6000 });
+                setTimeout(() => fetchVendors(), 500);
+            } else {
+                toast.error(`❌ ${data.error}`, { id: toastId });
+            }
+        } catch (error) {
+            logger.error('Error deleting store', { error, storeId });
+            toast.error('❌ Erreur technique', { id: toastId });
+        }
+    };
+
     const filteredVendors = vendors.filter(vendor => {
         if (!search) return true;
         const searchLower = search.toLowerCase();
@@ -312,18 +332,27 @@ export default function VendorsPage() {
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => {
-                                                    console.log('[VENDOR CERTIFICATION] Button clicked for vendor:', vendor.id, 'verified:', vendor.verified);
-                                                    handleVerify(vendor.id, vendor.verified);
-                                                }}
-                                                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${vendor.verified
-                                                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
-                                                    }`}
-                                            >
-                                                {vendor.verified ? '✓ Retirer' : '✓ Certifier'}
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        console.log('[VENDOR CERTIFICATION] Button clicked for vendor:', vendor.id, 'verified:', vendor.verified);
+                                                        handleVerify(vendor.id, vendor.verified);
+                                                    }}
+                                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${vendor.verified
+                                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                                                        }`}
+                                                >
+                                                    {vendor.verified ? '✓ Retirer' : '✓ Certifier'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteStore(vendor.id, vendor.name, vendor.owner.email)}
+                                                    className="px-3 py-2 rounded-lg font-medium text-sm bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all border border-red-200 hover:border-red-600"
+                                                    title="Supprimer la boutique (irréversible)"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

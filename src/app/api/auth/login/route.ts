@@ -42,6 +42,21 @@ export async function POST(request: Request) {
         // 3. Generate Token with roles (handle null/undefined roles safely)
         const userRoles = user.roles || [user.role]; // Fallback to legacy role if roles is null
 
+        // 🚫 BLOCK: Delivery agents cannot use the regular client/seller login
+        // They must use /delivery/login dedicated portal
+        const rolesAsStrings = Array.from(userRoles).map(r => String(r));
+        const isDeliveryOnly = rolesAsStrings.length > 0 &&
+            rolesAsStrings.every(r => r === 'DELIVERY_AGENT');
+        if (isDeliveryOnly && loginType !== 'delivery') {
+            return NextResponse.json(
+                {
+                    error: 'Compte livreur détecté. Veuillez vous connecter via le portail livreur.',
+                    redirectTo: '/delivery/login'
+                },
+                { status: 403 }
+            );
+        }
+
         // Determine active role based on login type
         let activeRole = userRoles[0]; // Default to first role (usually BUYER)
 

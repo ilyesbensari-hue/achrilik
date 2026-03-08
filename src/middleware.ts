@@ -29,7 +29,8 @@ export function middleware(request: NextRequest) {
     // ========================================
     // Delivery agents should ONLY access /livreur routes
     // If they want to shop, they should use a separate buyer account
-    const authToken = request.cookies.get('auth-token')?.value;
+    // FIX: Cookie name must match what the login API sets ('auth_token' with underscore)
+    const authToken = request.cookies.get('auth_token')?.value;
 
     if (authToken) {
         try {
@@ -38,14 +39,24 @@ export function middleware(request: NextRequest) {
                 Buffer.from(authToken.split('.')[1], 'base64').toString()
             );
 
-            const userRole = payload.role;
-            const isDeliveryAgent = userRole === 'DELIVERY_AGENT';
+            // Check activeRole first (multi-role system), then fall back to legacy role
+            const activeRole = payload.activeRole || payload.role;
+            const userRoles: string[] = Array.isArray(payload.roles)
+                ? payload.roles.map((r: unknown) => String(r))
+                : [String(payload.role || '')];
+
+            // A user is a delivery-only agent if their active role is DELIVERY_AGENT
+            // OR if ALL their roles are DELIVERY_AGENT (pure delivery account)
+            const isDeliveryAgent =
+                activeRole === 'DELIVERY_AGENT' ||
+                (userRoles.length > 0 && userRoles.every(r => r === 'DELIVERY_AGENT'));
 
             // Whitelist routes delivery agents CAN access
             const allowedForDeliveryAgent =
                 pathname.startsWith('/livreur') ||
                 pathname.startsWith('/api/deliveries') ||
                 pathname.startsWith('/api/delivery') ||
+                pathname.startsWith('/api/auth') ||
                 pathname.startsWith('/login') ||
                 pathname.startsWith('/logout') ||
                 pathname === '/' || // Allow seeing homepage briefly before redirect
