@@ -107,257 +107,293 @@ export default function DeliveryDashboardClient({ initialUser }: DeliveryDashboa
         delivered: deliveries.filter(d => d.status === 'DELIVERED').length
     };
 
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (_) { }
+        // Clear local storage and redirect
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+    };
+
     return (
-        <div className="container py-6 max-w-2xl mx-auto px-4">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-black text-gray-900">
-                        🚚 Tableau de Bord
-                    </h1>
-                    <p className="text-gray-600 mt-0.5 text-sm">
-                        Bienvenue, {initialUser.name}
-                    </p>
+        <div className="max-w-2xl mx-auto px-4">
+            {/* Header fixe avec logout */}
+            <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm -mx-4 px-4 py-3 mb-6 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-[#006233] text-white flex items-center justify-center text-base font-black">
+                        {initialUser.name[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                        <div className="font-bold text-gray-900 text-sm leading-tight">{initialUser.name}</div>
+                        <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+                            <span className="text-[10px] text-green-600 font-semibold">En ligne</span>
+                        </div>
+                    </div>
                 </div>
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-sm font-bold border border-red-200"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Déconnexion
+                </button>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-4 gap-2 mb-6">
-                <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm text-center">
-                    <div className="text-xl font-black text-gray-900">{stats.total}</div>
-                    <div className="text-[10px] text-gray-600">Total</div>
+            <div className="pb-6">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-900">
+                            🚚 Tableau de Bord
+                        </h1>
+                        <p className="text-gray-600 mt-0.5 text-sm">
+                            Bienvenue, {initialUser.name}
+                        </p>
+                    </div>
                 </div>
-                <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-200 text-center">
-                    <div className="text-xl font-black text-yellow-700">{stats.pending}</div>
-                    <div className="text-[10px] text-yellow-600">En attente</div>
-                </div>
-                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200 text-center">
-                    <div className="text-xl font-black text-blue-700">{stats.inTransit}</div>
-                    <div className="text-[10px] text-blue-600">En cours</div>
-                </div>
-                <div className="bg-green-50 p-3 rounded-xl border border-green-200 text-center">
-                    <div className="text-xl font-black text-green-700">{stats.delivered}</div>
-                    <div className="text-[10px] text-green-600">Livrées</div>
-                </div>
-            </div>
 
-            {/* Filters */}
-            <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
-                {(['ALL', 'PENDING', 'IN_TRANSIT', 'DELIVERED'] as const).map(status => (
-                    <button
-                        key={status}
-                        onClick={() => setFilter(status)}
-                        className={`px-3 py-1.5 rounded-lg font-bold whitespace-nowrap text-sm ${filter === status
-                            ? 'bg-[#006233] text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                    >
-                        {status === 'ALL' ? 'Toutes' :
-                            status === 'PENDING' ? 'En attente' :
-                                status === 'IN_TRANSIT' ? 'En cours' : 'Livrées'}
-                    </button>
-                ))}
-            </div>
-
-            {/* Deliveries List */}
-            {loading ? (
-                <div className="text-center py-20">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#006233]"></div>
-                    <p className="text-gray-600 mt-4">Chargement...</p>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-4 gap-2 mb-6">
+                    <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm text-center">
+                        <div className="text-xl font-black text-gray-900">{stats.total}</div>
+                        <div className="text-[10px] text-gray-600">Total</div>
+                    </div>
+                    <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-200 text-center">
+                        <div className="text-xl font-black text-yellow-700">{stats.pending}</div>
+                        <div className="text-[10px] text-yellow-600">En attente</div>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-xl border border-blue-200 text-center">
+                        <div className="text-xl font-black text-blue-700">{stats.inTransit}</div>
+                        <div className="text-[10px] text-blue-600">En cours</div>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-xl border border-green-200 text-center">
+                        <div className="text-xl font-black text-green-700">{stats.delivered}</div>
+                        <div className="text-[10px] text-green-600">Livrées</div>
+                    </div>
                 </div>
-            ) : filteredDeliveries.length === 0 ? (
-                <div className="text-center py-20 bg-gray-50 rounded-2xl">
-                    <p className="text-2xl mb-2">📭</p>
-                    <p className="text-gray-600 font-bold">Aucune livraison</p>
-                    <p className="text-sm text-gray-500">
-                        {filter === 'ALL'
-                            ? 'Vous n\'avez pas encore de livraisons assignées'
-                            : `Aucune livraison ${filter.toLowerCase()}`}
-                    </p>
+
+                {/* Filters */}
+                <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+                    {(['ALL', 'PENDING', 'IN_TRANSIT', 'DELIVERED'] as const).map(status => (
+                        <button
+                            key={status}
+                            onClick={() => setFilter(status)}
+                            className={`px-3 py-1.5 rounded-lg font-bold whitespace-nowrap text-sm ${filter === status
+                                ? 'bg-[#006233] text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            {status === 'ALL' ? 'Toutes' :
+                                status === 'PENDING' ? 'En attente' :
+                                    status === 'IN_TRANSIT' ? 'En cours' : 'Livrées'}
+                        </button>
+                    ))}
                 </div>
-            ) : (
-                <div className="space-y-3">
-                    {filteredDeliveries.map(delivery => {
-                        const pickupPoints = delivery.pickupPoints && delivery.pickupPoints.length > 0
-                            ? delivery.pickupPoints
-                            : [{ storeName: delivery.storeName, pickupAddress: delivery.pickupAddress, storePhone: delivery.storePhone, storeLatitude: delivery.storeLatitude, storeLongitude: delivery.storeLongitude, storeId: null, storeAddress: '', storeCity: '' }];
-                        const pickupCount = pickupPoints.length;
-                        const pickupBadgeColor = pickupCount === 1
-                            ? 'bg-green-500'
-                            : pickupCount === 2
-                                ? 'bg-orange-500'
-                                : 'bg-red-500';
 
-                        return (
-                            <Link
-                                key={delivery.id}
-                                href={`/livreur/orders/${delivery.id}`}
-                                className="block bg-white border-2 border-gray-100 rounded-2xl p-4 hover:shadow-xl hover:border-gray-200 transition-all active:scale-[0.98]"
-                            >
-                                {/* Header */}
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="font-mono text-base font-black text-gray-900">
-                                                #{delivery.orderId.slice(-6).toUpperCase()}
-                                            </div>
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${delivery.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                                delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-green-100 text-green-700'
-                                                }`}>
-                                                {delivery.status === 'PENDING' ? 'En attente' :
-                                                    delivery.status === 'IN_TRANSIT' ? 'En cours' : 'Livrée'}
-                                            </span>
-                                        </div>
-                                        <div className="text-[11px] text-gray-500">
-                                            {new Date(delivery.createdAt).toLocaleDateString('fr-FR', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </div>
-                                    </div>
-                                    {/* Pickup Count Badge */}
-                                    <div className={`${pickupBadgeColor} text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md`}>
-                                        <span className="text-sm">📍</span>
-                                        <span className="text-xs font-bold">{pickupCount} collecte{pickupCount > 1 ? 's' : ''}</span>
-                                    </div>
-                                </div>
+                {/* Deliveries List */}
+                {loading ? (
+                    <div className="text-center py-20">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#006233]"></div>
+                        <p className="text-gray-600 mt-4">Chargement...</p>
+                    </div>
+                ) : filteredDeliveries.length === 0 ? (
+                    <div className="text-center py-20 bg-gray-50 rounded-2xl">
+                        <p className="text-2xl mb-2">📭</p>
+                        <p className="text-gray-600 font-bold">Aucune livraison</p>
+                        <p className="text-sm text-gray-500">
+                            {filter === 'ALL'
+                                ? 'Vous n\'avez pas encore de livraisons assignées'
+                                : `Aucune livraison ${filter.toLowerCase()}`}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {filteredDeliveries.map(delivery => {
+                            const pickupPoints = delivery.pickupPoints && delivery.pickupPoints.length > 0
+                                ? delivery.pickupPoints
+                                : [{ storeName: delivery.storeName, pickupAddress: delivery.pickupAddress, storePhone: delivery.storePhone, storeLatitude: delivery.storeLatitude, storeLongitude: delivery.storeLongitude, storeId: null, storeAddress: '', storeCity: '' }];
+                            const pickupCount = pickupPoints.length;
+                            const pickupBadgeColor = pickupCount === 1
+                                ? 'bg-green-500'
+                                : pickupCount === 2
+                                    ? 'bg-orange-500'
+                                    : 'bg-red-500';
 
-                                {/* Badge prêt à collecter / en préparation */}
-                                {delivery.status === 'PENDING' && (
-                                    <div className={`mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${delivery.pickupReady
-                                            ? 'bg-green-100 text-green-700 border border-green-300'
-                                            : 'bg-orange-100 text-orange-700 border border-orange-300'
-                                        }`}>
-                                        {delivery.pickupReady ? '✅ Prêt à collecter' : '⏳ En préparation vendeur'}
-                                    </div>
-                                )}
-
-                                {/* Tous les Points de collecte */}
-                                <div className="mb-3 space-y-2">
-                                    {pickupPoints.map((pt, idx) => (
-                                        <div key={pt.storeId || idx} className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
-                                            <div className="flex items-center gap-1.5 mb-2">
-                                                <span className="text-base">📦</span>
-                                                <span className="text-[10px] font-bold text-green-700 uppercase">
-                                                    Pt. Collecte{pickupCount > 1 ? ` ${idx + 1}/${pickupCount}` : ''}
+                            return (
+                                <Link
+                                    key={delivery.id}
+                                    href={`/livreur/orders/${delivery.id}`}
+                                    className="block bg-white border-2 border-gray-100 rounded-2xl p-4 hover:shadow-xl hover:border-gray-200 transition-all active:scale-[0.98]"
+                                >
+                                    {/* Header */}
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className="font-mono text-base font-black text-gray-900">
+                                                    #{delivery.orderId.slice(-6).toUpperCase()}
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${delivery.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
+                                                    delivery.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-green-100 text-green-700'
+                                                    }`}>
+                                                    {delivery.status === 'PENDING' ? 'En attente' :
+                                                        delivery.status === 'IN_TRANSIT' ? 'En cours' : 'Livrée'}
                                                 </span>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <div className="font-bold text-sm text-gray-900 line-clamp-1">{pt.storeName}</div>
-                                                <div className="text-[11px] text-gray-600 line-clamp-2">{pt.pickupAddress}</div>
-                                                {pt.storePhone && (
-                                                    <a
-                                                        href={`tel:${pt.storePhone}`}
-                                                        className="text-[11px] font-semibold text-green-700 hover:underline flex items-center gap-1"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        📞 <span className="line-clamp-1">{pt.storePhone}</span>
-                                                    </a>
-                                                )}
-                                                {pt.storeLatitude && pt.storeLongitude && (
-                                                    <a
-                                                        href={`https://www.google.com/maps/dir/?api=1&destination=${pt.storeLatitude},${pt.storeLongitude}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-green-600 text-white text-[10px] font-bold rounded-md hover:bg-green-700"
-                                                    >
-                                                        🗺️ GPS
-                                                    </a>
-                                                )}
+                                            <div className="text-[11px] text-gray-500">
+                                                {new Date(delivery.createdAt).toLocaleDateString('fr-FR', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
                                             </div>
                                         </div>
-                                    ))}
-
-                                </div>
-
-                                {/* Point de livraison */}
-                                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-3 mb-3">
-                                    <div className="flex items-center gap-1.5 mb-2">
-                                        <span className="text-base">🏠</span>
-                                        <span className="text-[10px] font-bold text-blue-700 uppercase">Pt. Livraison</span>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.customerName}</div>
-                                        <div className="text-[11px] text-gray-600 line-clamp-2">{delivery.deliveryAddress}</div>
-                                        <a
-                                            href={`tel:${delivery.customerPhone}`}
-                                            className="text-[11px] font-semibold text-blue-700 hover:underline flex items-center gap-1"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            📞 <span className="line-clamp-1">{delivery.customerPhone}</span>
-                                        </a>
-                                        {delivery.deliveryLatitude && delivery.deliveryLongitude && (
-                                            <a
-                                                href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.deliveryLatitude},${delivery.deliveryLongitude}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-md hover:bg-blue-700"
-                                            >
-                                                🗺️ GPS
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Products Preview with images */}
-                                {delivery.items && delivery.items.length > 0 && (
-                                    <div className="mb-3 bg-gray-50 rounded-lg p-2.5">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-gray-700">📋 Produits à collecter</span>
-                                            <span className="text-[10px] font-bold text-gray-500 bg-white px-2 py-0.5 rounded-full">
-                                                {delivery.items.length} article{delivery.items.length > 1 ? 's' : ''}
-                                            </span>
+                                        {/* Pickup Count Badge */}
+                                        <div className={`${pickupBadgeColor} text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md`}>
+                                            <span className="text-sm">📍</span>
+                                            <span className="text-xs font-bold">{pickupCount} collecte{pickupCount > 1 ? 's' : ''}</span>
                                         </div>
-                                        <div className="flex gap-2 overflow-x-auto pb-1">
-                                            {delivery.items.slice(0, 4).map((item, idx) => (
-                                                <div key={idx} className="flex-shrink-0 text-center">
-                                                    {item.image ? (
-                                                        <img
-                                                            src={item.image}
-                                                            alt={item.productName}
-                                                            className="w-14 h-14 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-14 h-14 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-200">
-                                                            <span className="text-xl">📦</span>
-                                                        </div>
+                                    </div>
+
+                                    {/* Badge prêt à collecter / en préparation */}
+                                    {delivery.status === 'PENDING' && (
+                                        <div className={`mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${delivery.pickupReady
+                                            ? 'bg-green-100 text-green-700 border border-green-300'
+                                            : 'bg-orange-100 text-orange-700 border border-orange-300'
+                                            }`}>
+                                            {delivery.pickupReady ? '✅ Prêt à collecter' : '⏳ En préparation vendeur'}
+                                        </div>
+                                    )}
+
+                                    {/* Tous les Points de collecte */}
+                                    <div className="mb-3 space-y-2">
+                                        {pickupPoints.map((pt, idx) => (
+                                            <div key={pt.storeId || idx} className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3">
+                                                <div className="flex items-center gap-1.5 mb-2">
+                                                    <span className="text-base">📦</span>
+                                                    <span className="text-[10px] font-bold text-green-700 uppercase">
+                                                        Pt. Collecte{pickupCount > 1 ? ` ${idx + 1}/${pickupCount}` : ''}
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <div className="font-bold text-sm text-gray-900 line-clamp-1">{pt.storeName}</div>
+                                                    <div className="text-[11px] text-gray-600 line-clamp-2">{pt.pickupAddress}</div>
+                                                    {pt.storePhone && (
+                                                        <a
+                                                            href={`tel:${pt.storePhone}`}
+                                                            className="text-[11px] font-semibold text-green-700 hover:underline flex items-center gap-1"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            📞 <span className="line-clamp-1">{pt.storePhone}</span>
+                                                        </a>
                                                     )}
-                                                    <div className="text-[9px] text-gray-600 mt-1 w-14 leading-tight line-clamp-2">{item.productName}</div>
-                                                    {item.quantity > 1 && (
-                                                        <div className="text-[9px] font-bold text-[#006233]">x{item.quantity}</div>
+                                                    {pt.storeLatitude && pt.storeLongitude && (
+                                                        <a
+                                                            href={`https://www.google.com/maps/dir/?api=1&destination=${pt.storeLatitude},${pt.storeLongitude}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-green-600 text-white text-[10px] font-bold rounded-md hover:bg-green-700"
+                                                        >
+                                                            🗺️ GPS
+                                                        </a>
                                                     )}
                                                 </div>
-                                            ))}
-                                            {delivery.items.length > 4 && (
-                                                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300">
-                                                    <span className="text-xs font-bold text-gray-600">+{delivery.items.length - 4}</span>
-                                                </div>
+                                            </div>
+                                        ))}
+
+                                    </div>
+
+                                    {/* Point de livraison */}
+                                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-3 mb-3">
+                                        <div className="flex items-center gap-1.5 mb-2">
+                                            <span className="text-base">🏠</span>
+                                            <span className="text-[10px] font-bold text-blue-700 uppercase">Pt. Livraison</span>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <div className="font-bold text-sm text-gray-900 line-clamp-1">{delivery.customerName}</div>
+                                            <div className="text-[11px] text-gray-600 line-clamp-2">{delivery.deliveryAddress}</div>
+                                            <a
+                                                href={`tel:${delivery.customerPhone}`}
+                                                className="text-[11px] font-semibold text-blue-700 hover:underline flex items-center gap-1"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                📞 <span className="line-clamp-1">{delivery.customerPhone}</span>
+                                            </a>
+                                            {delivery.deliveryLatitude && delivery.deliveryLongitude && (
+                                                <a
+                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${delivery.deliveryLatitude},${delivery.deliveryLongitude}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-md hover:bg-blue-700"
+                                                >
+                                                    🗺️ GPS
+                                                </a>
                                             )}
                                         </div>
                                     </div>
-                                )}
 
-                                {/* Footer: Total + Action */}
-                                <div className="pt-3 border-t border-gray-200 flex justify-between items-center">
-                                    <div className="flex items-baseline gap-1.5">
-                                        <span className="text-xl font-black text-[#006233]">
-                                            {(delivery.totalAmount || 0).toLocaleString()}
-                                        </span>
-                                        <span className="text-sm font-bold text-gray-500">DA</span>
+                                    {/* Products Preview with images */}
+                                    {delivery.items && delivery.items.length > 0 && (
+                                        <div className="mb-3 bg-gray-50 rounded-lg p-2.5">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-xs font-bold text-gray-700">📋 Produits à collecter</span>
+                                                <span className="text-[10px] font-bold text-gray-500 bg-white px-2 py-0.5 rounded-full">
+                                                    {delivery.items.length} article{delivery.items.length > 1 ? 's' : ''}
+                                                </span>
+                                            </div>
+                                            <div className="flex gap-2 overflow-x-auto pb-1">
+                                                {delivery.items.slice(0, 4).map((item, idx) => (
+                                                    <div key={idx} className="flex-shrink-0 text-center">
+                                                        {item.image ? (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={item.productName}
+                                                                className="w-14 h-14 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-14 h-14 bg-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-200">
+                                                                <span className="text-xl">📦</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="text-[9px] text-gray-600 mt-1 w-14 leading-tight line-clamp-2">{item.productName}</div>
+                                                        {item.quantity > 1 && (
+                                                            <div className="text-[9px] font-bold text-[#006233]">x{item.quantity}</div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {delivery.items.length > 4 && (
+                                                    <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-gray-300">
+                                                        <span className="text-xs font-bold text-gray-600">+{delivery.items.length - 4}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Footer: Total + Action */}
+                                    <div className="pt-3 border-t border-gray-200 flex justify-between items-center">
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="text-xl font-black text-[#006233]">
+                                                {(delivery.totalAmount || 0).toLocaleString()}
+                                            </span>
+                                            <span className="text-sm font-bold text-gray-500">DA</span>
+                                        </div>
+                                        <div className="bg-[#006233] text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
+                                            Voir détails →
+                                        </div>
                                     </div>
-                                    <div className="bg-[#006233] text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
-                                        Voir détails →
-                                    </div>
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </div>
-            )}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
