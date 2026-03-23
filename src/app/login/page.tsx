@@ -29,8 +29,8 @@ function LoginForm() {
         {
             id: 'delivery' as const,
             icon: '🚚',
-            title: tr('checkout_standard').split('(')[0].trim(),
-            description: tr('footer_delivery'),
+            title: 'Espace Livreur',
+            description: 'Mon espace de livraison',
         }
     ];
 
