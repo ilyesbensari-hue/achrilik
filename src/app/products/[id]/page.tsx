@@ -113,6 +113,42 @@ async function getRecommendations(currentProduct: any) {
     return { similar, complementary };
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const product = await getProduct(id);
+
+    if (!product) {
+        return { title: 'Produit introuvable | Achrilik' };
+    }
+
+    const images = product.images ? product.images.split(',') : [];
+    const firstImage = images[0]?.trim() || 'https://achrilik.com/og-default.jpg';
+    const price = product.discountPrice || product.price;
+    const description = product.description
+        ? product.description.substring(0, 155)
+        : `${product.title} — ${price.toLocaleString('fr-DZ')} DA. Livraison depuis ${product.Store?.city || 'Algérie'}. Commandez sur Achrilik.`;
+
+    return {
+        title: `${product.title} | Achrilik`,
+        description,
+        openGraph: {
+            title: `${product.title} — ${price.toLocaleString('fr-DZ')} DA`,
+            description,
+            url: `https://achrilik.com/products/${id}`,
+            siteName: 'Achrilik',
+            images: [{ url: firstImage, width: 800, height: 600, alt: product.title }],
+            type: 'website',
+            locale: 'fr_DZ',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${product.title} — ${price.toLocaleString('fr-DZ')} DA`,
+            description,
+            images: [firstImage],
+        },
+    };
+}
+
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const product = await getProduct(id);

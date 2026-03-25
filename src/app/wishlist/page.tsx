@@ -73,15 +73,40 @@ export default function WishlistPage() {
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 py-12">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold mb-2">❤️ {tr('wishlist_title')}</h1>
-                    <p className="text-gray-600">
-                        {products.length > 0
-                            ? `${products.length} ${tr('card_photo').replace('Photo', '')}${products.length > 1 ? 's' : ''}`
-                            : tr('wishlist_empty')
-                        }
-                    </p>
+                <div className="mb-8 flex items-start justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold mb-2">❤️ {tr('wishlist_title')}</h1>
+                        <p className="text-gray-600">
+                            {products.length > 0
+                                ? `${products.length} ${tr('card_photo').replace('Photo', '')}${products.length > 1 ? 's' : ''}`
+                                : tr('wishlist_empty')
+                            }
+                        </p>
+                    </div>
+                    {products.length > 0 && (
+                        <button
+                            onClick={() => {
+                                const ids = products.map((p) => p.id).join(',');
+                                const url = `${window.location.origin}/wishlist/share?ids=${ids}`;
+                                navigator.clipboard.writeText(url).then(() => {
+                                    const el = document.getElementById('share-toast');
+                                    if (el) { el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); }
+                                });
+                            }}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#006233] hover:text-[#006233] transition-all shadow-sm whitespace-nowrap"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                            Partager
+                        </button>
+                    )}
                 </div>
+                {/* Share toast */}
+                <div id="share-toast" className="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-[#006233] text-white rounded-xl shadow-lg text-sm font-medium">
+                    ✅ Lien copié dans le presse-papiers !
+                </div>
+
 
                 {/* Empty State */}
                 {products.length === 0 ? (

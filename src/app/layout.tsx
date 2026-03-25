@@ -85,6 +85,8 @@ import { Providers } from "@/app/providers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import PWARegistration from "@/components/PWARegistration";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import dynamic from 'next/dynamic';
+import NewsletterBannerClient from '@/components/NewsletterBannerClient';
 
 export default function RootLayout({
   children,
@@ -110,6 +112,7 @@ export default function RootLayout({
               <Footer />
               <ToastContainer />
               <CookieBanner />
+              <NewsletterBannerClient />
             </ErrorBoundary>
           </LanguageProvider>
         </Providers>

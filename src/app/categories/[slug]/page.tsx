@@ -24,6 +24,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [expandedSection, setExpandedSection] = useState<string | null>('categories');
     const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+    const [selectedColors, setSelectedColors] = useState<string[]>([]);
     const [filtersInitialized, setFiltersInitialized] = useState(false);
 
     // Helper: Detect if this is a shoe category
@@ -171,6 +172,15 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         return a.localeCompare(b);
     });
 
+    // Get unique colors from product variants
+    const availableColors = Array.from(
+        new Set(
+            products.flatMap(p =>
+                p.Variant?.map((v: any) => v.color).filter(Boolean) || []
+            )
+        )
+    ).sort() as string[];
+
     // Apply filters and sorting
     const filteredProducts = products
         .filter((p) => {
@@ -216,6 +226,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 const productSizes = p.Variant?.map((v: any) => v.size) || [];
                 const hasSelectedSize = selectedSizes.some(size => productSizes.includes(size));
                 if (!hasSelectedSize) return false;
+            }
+
+            // Color filter
+            if (selectedColors.length > 0) {
+                const productColors = p.Variant?.map((v: any) => v.color).filter(Boolean) || [];
+                const hasSelectedColor = selectedColors.some(color => productColors.includes(color));
+                if (!hasSelectedColor) return false;
             }
 
             return true;
@@ -570,6 +587,57 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                 )}
                                             </div>
                                         )}
+                                        {/* Color Filter Accordion */}
+                                        {availableColors.length > 0 && (
+                                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                <button
+                                                    onClick={() => setExpandedSection(expandedSection === 'color' ? null : 'color')}
+                                                    className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                >
+                                                    <span className="font-semibold text-gray-900">Couleur</span>
+                                                    <svg
+                                                        className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'color' ? 'rotate-180' : ''}`}
+                                                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                {expandedSection === 'color' && (
+                                                    <div className="p-4">
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {availableColors.map((color) => {
+                                                                const isSelected = selectedColors.includes(color);
+                                                                return (
+                                                                    <button
+                                                                        key={color}
+                                                                        onClick={() => {
+                                                                            if (isSelected) {
+                                                                                setSelectedColors(selectedColors.filter(c => c !== color));
+                                                                            } else {
+                                                                                setSelectedColors([...selectedColors, color]);
+                                                                            }
+                                                                        }}
+                                                                        title={color}
+                                                                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border-2 text-xs font-semibold transition-all ${
+                                                                            isSelected
+                                                                                ? 'border-[#006233] bg-[#006233]/10 text-[#006233]'
+                                                                                : 'border-gray-200 text-gray-700 hover:border-gray-400'
+                                                                        }`}
+                                                                    >
+                                                                        <span
+                                                                            className="w-3.5 h-3.5 rounded-full border border-gray-300 flex-shrink-0"
+                                                                            style={{ backgroundColor: color.toLowerCase() }}
+                                                                        />
+                                                                        {color}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {/* Footer Actions */}
                                         <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3 rounded-b-xl">
                                             <button
@@ -578,6 +646,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                     setPriceRange([0, 50000]);
                                                     setSelectedWilaya('');
                                                     setSelectedSizes([]);
+                                                    setSelectedColors([]);
                                                 }}
                                                 className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                                             >
