@@ -23,28 +23,41 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ canReview: false, hasAlreadyReviewed: false });
     }
 
+    const userId = userData.userId as string;
+
     try {
-        // Check if user has a DELIVERED order containing this product (via Variant)
-        const deliveredOrder = await prisma.order.findFirst({
+        // Step 1: Get all variant IDs for this specific product
+        const variants = await prisma.variant.findMany({
+            where: { productId },
+            select: { id: true },
+        });
+
+        if (variants.length === 0) {
+            // Product has no variants, so can never have been purchased
+            return NextResponse.json({ canReview: false, hasAlreadyReviewed: false });
+        }
+
+        const variantIds = variants.map((v) => v.id);
+
+        // Step 2: Check if user has a DELIVERED order containing any of these variants
+        const purchasedItem = await prisma.orderItem.findFirst({
             where: {
-                userId: userData.userId as string,
-                status: 'DELIVERED',
-                OrderItem: {
-                    some: {
-                        Variant: { productId },
-                    },
+                variantId: { in: variantIds },
+                Order: {
+                    userId,
+                    status: 'DELIVERED',
                 },
             },
             select: { id: true },
         });
 
-        const canReview = !!deliveredOrder;
+        const canReview = !!purchasedItem;
 
-        // Check if user has already left a review for this product
+        // Step 3: Check if user already left a review for this product
         const existingReview = await prisma.review.findFirst({
             where: {
                 productId,
-                userId: userData.userId as string,
+                userId,
             },
             select: { id: true },
         });

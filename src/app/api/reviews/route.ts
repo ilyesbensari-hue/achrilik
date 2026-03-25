@@ -56,28 +56,41 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        // Verify the user has a DELIVERED order with this product (via Variant)
-        const deliveredOrder = await prisma.order.findFirst({
-            where: {
-                userId,
-                status: 'DELIVERED',
-                OrderItem: {
-                    some: {
-                        Variant: { productId },
-                    },
-                },
-            },
+        // Step 1: Get all variant IDs for this product
+        const variants = await prisma.variant.findMany({
+            where: { productId },
             select: { id: true },
         });
 
-        if (!deliveredOrder) {
+        if (variants.length === 0) {
             return NextResponse.json(
                 { error: 'Vous devez avoir acheté ce produit pour laisser un avis.' },
                 { status: 403 }
             );
         }
 
-        // Check for duplicate review
+        const variantIds = variants.map((v) => v.id);
+
+        // Step 2: Verify the user has a DELIVERED order containing one of these variants
+        const purchasedItem = await prisma.orderItem.findFirst({
+            where: {
+                variantId: { in: variantIds },
+                Order: {
+                    userId,
+                    status: 'DELIVERED',
+                },
+            },
+            select: { id: true },
+        });
+
+        if (!purchasedItem) {
+            return NextResponse.json(
+                { error: 'Vous devez avoir acheté ce produit pour laisser un avis.' },
+                { status: 403 }
+            );
+        }
+
+        // Step 3: Check for duplicate review
         const existing = await prisma.review.findFirst({
             where: { productId, userId },
         });
@@ -86,6 +99,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Vous avez déjà laissé un avis.' }, { status: 409 });
         }
 
+        // Step 4: Create the review
         const review = await prisma.review.create({
             data: {
                 productId,
