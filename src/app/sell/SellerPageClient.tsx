@@ -293,6 +293,12 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                         <Link href="/sell/settings" className="btn btn-outline whitespace-nowrap">
                             🚚 {tr('sell_free_delivery')}
                         </Link>
+                        <Link href="/sell/promotions" className="btn btn-outline whitespace-nowrap">
+                            🏷️ Promotions
+                        </Link>
+                        <Link href="/sell/analytics" className="btn btn-outline whitespace-nowrap">
+                            📊 Statistiques
+                        </Link>
                         <Link href="/sell/new" className="btn btn-primary whitespace-nowrap">
                             + {tr('sell_add_product')}
                         </Link>
