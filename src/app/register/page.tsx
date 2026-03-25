@@ -12,6 +12,7 @@ export default function RegisterPage() {
     const { tr } = useTranslation();
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [wantToSell, setWantToSell] = useState(false);
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -27,12 +28,13 @@ export default function RegisterPage() {
             const response = await fetch('/api/auth/register-v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, name }),
+                body: JSON.stringify({ email, password, name, wantToSell }),
             });
 
             if (response.ok) {
                 await refresh();
-                router.push('/profile');
+                // Redirect sellers to /sell to start their seller onboarding
+                router.push(wantToSell ? '/sell' : '/profile');
                 router.refresh();
             } else {
                 const data = await response.json();
@@ -102,6 +104,41 @@ export default function RegisterPage() {
                                 {tr('error_password_short')}
                             </p>
                         </div>
+                    </div>
+
+                    {/* Seller Toggle — B7 */}
+                    <div
+                        onClick={() => setWantToSell(!wantToSell)}
+                        className={`cursor-pointer border-2 rounded-xl p-4 transition-all select-none ${
+                            wantToSell
+                                ? 'border-green-500 bg-green-50'
+                                : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                        }`}
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">{wantToSell ? '🏪' : '🛍️'}</span>
+                                <div>
+                                    <p className="font-semibold text-gray-900 text-sm">
+                                        {wantToSell ? 'Je veux vendre sur Achrilik' : 'Je veux acheter sur Achrilik'}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                        {wantToSell
+                                            ? 'Vendez vos produits à des milliers de clients à Oran'
+                                            : 'Cliquez pour activer le mode vendeur'}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className={`w-12 h-6 rounded-full transition-all relative ${wantToSell ? 'bg-green-500' : 'bg-gray-300'}`}>
+                                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${wantToSell ? 'left-6' : 'left-0.5'}`} />
+                            </div>
+                        </div>
+                        {wantToSell && (
+                            <div className="mt-3 pt-3 border-t border-green-200">
+                                <p className="text-xs text-green-700 font-medium">✅ Après inscription, vous serez guidé pour créer votre boutique.</p>
+                                <p className="text-xs text-green-600 mt-1">Votre compte vendeur sera activé par nos équipes sous 24h.</p>
+                            </div>
+                        )}
                     </div>
 
                     {error && (

@@ -55,10 +55,19 @@ export default function VendorsPage() {
         try {
             setLoading(true);
             const res = await fetch(`/api/admin/vendors?status=${filter}`);
+            if (!res.ok) {
+                const text = await res.text();
+                logger.error('Error fetching vendors — API error', { status: res.status, text });
+                toast.error(`❌ Erreur chargement vendeurs (${res.status})`);
+                setVendors([]);
+                return;
+            }
             const data = await res.json();
-            setVendors(data.vendors);
+            setVendors(Array.isArray(data.vendors) ? data.vendors : []);
         } catch (error) {
             logger.error('Error fetching vendors', { error });
+            toast.error('❌ Erreur réseau lors du chargement des vendeurs');
+            setVendors([]);
         } finally {
             setLoading(false);
         }

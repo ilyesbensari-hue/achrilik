@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import SellerRating from '@/components/SellerRating';
+import ProductReviews from '@/components/product/ProductReviews';
 import ProductPageClient from './ProductPageClient';
 import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
 import { prisma } from '@/lib/prisma'; // Direct DB access for efficiency
@@ -185,7 +185,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <p className="font-semibold text-gray-900 hover:text-indigo-600 underline decoration-dotted">{product.Store.name}</p>
-                                        <SellerRating rating={0} count={0} size="sm" />
                                     </div>
                                     <p className="text-gray-500">📍 {product.Store.city} <span className="text-xs text-indigo-500">(Voir la boutique)</span></p>
                                 </div>
@@ -375,6 +374,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                         </section>
                     )}
                 </div>
+
+                {/* Reviews Section */}
+                <ProductReviews productId={product.id} />
 
             </div>
         </div>
