@@ -152,7 +152,10 @@ export default function HeroVideoBanner() {
     }
 
     const banner = banners[currentSlide];
-    const title = currentLang === 'ar' && banner.title_ar ? banner.title_ar : banner.title_fr;
+    const rawTitle = currentLang === 'ar' && banner.title_ar ? banner.title_ar : banner.title_fr;
+    // 'LOGO' or empty title → logo-only slide, no text overlay
+    const isLogoOnly = !rawTitle || rawTitle === 'LOGO';
+    const title = isLogoOnly ? '' : rawTitle;
     const subtitle = currentLang === 'ar' && banner.subtitle_ar ? banner.subtitle_ar : banner.subtitle_fr;
     const ctaText = currentLang === 'ar' && banner.cta_text_ar ? banner.cta_text_ar : banner.cta_text_fr;
 
@@ -185,6 +188,16 @@ export default function HeroVideoBanner() {
                 >
                     <source src={banner.video_url} type="video/mp4" />
                 </video>
+            ) : isLogoOnly ? (
+                <div
+                    className="absolute inset-0 w-full h-full flex items-center justify-center bg-white"
+                >
+                    <img
+                        src={banner.thumbnail_url}
+                        alt="Achrilik"
+                        className="max-h-full max-w-full object-contain p-8"
+                    />
+                </div>
             ) : (
                 <div
                     className="absolute inset-0 w-full h-full bg-cover bg-center"
@@ -192,53 +205,57 @@ export default function HeroVideoBanner() {
                 />
             )}
 
-            {/* Overlay - Smoother gradient */}
-            <div
-                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 mix-blend-multiply"
-                style={{ opacity: banner.overlay_opacity ? (banner.overlay_opacity / 100) + 0.1 : 0.45 }}
-            />
+            {/* Overlay - hidden for logo-only slides */}
+            {!isLogoOnly && (
+                <div
+                    className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 mix-blend-multiply"
+                    style={{ opacity: banner.overlay_opacity ? (banner.overlay_opacity / 100) + 0.1 : 0.45 }}
+                />
+            )}
 
-            {/* Content */}
-            <div
-                className={`
+            {/* Content — hidden when title is empty (logo-only slide) */}
+            {title && (
+                <div
+                    className={`
           relative z-10 h-full flex items-center px-6 md:px-12
           ${banner.text_position === 'left' ? 'justify-start text-left' : ''}
           ${banner.text_position === 'center' ? 'justify-center text-center' : ''}
           ${banner.text_position === 'right' ? 'justify-end text-right' : ''}
         `}
-            >
-                <div className="max-w-2xl px-2">
-                    <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-fade-in-up tracking-tight leading-tight">
-                        {title}
-                    </h1>
+                >
+                    <div className="max-w-2xl px-2">
+                        <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-fade-in-up tracking-tight leading-tight">
+                            {title}
+                        </h1>
 
-                    <p className="text-white/95 text-lg md:text-xl lg:text-2xl mb-8 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] animate-fade-in-up delay-100 font-medium">
-                        {subtitle}
-                    </p>
+                        <p className="text-white/95 text-lg md:text-xl lg:text-2xl mb-8 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] animate-fade-in-up delay-100 font-medium">
+                            {subtitle}
+                        </p>
 
-                    <Link
-                        href={banner.cta_link}
-                        className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-white text-gray-900 font-bold rounded-full hover:bg-gray-50 transition-all duration-300 hover:scale-[1.03] shadow-[0_8px_30px_rgba(255,255,255,0.2)] hover:shadow-[0_8px_40px_rgba(255,255,255,0.3)] overflow-hidden animate-fade-in-up delay-200"
-                    >
-                        <span className="relative z-10 flex items-center gap-2">
-                            {ctaText}
-                            <svg
-                                className={`w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5 ${currentLang === 'ar' ? 'rotate-180 group-hover:-translate-x-1.5' : ''}`}
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </span>
+                        <Link
+                            href={banner.cta_link}
+                            className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-white text-gray-900 font-bold rounded-full hover:bg-gray-50 transition-all duration-300 hover:scale-[1.03] shadow-[0_8px_30px_rgba(255,255,255,0.2)] hover:shadow-[0_8px_40px_rgba(255,255,255,0.3)] overflow-hidden animate-fade-in-up delay-200"
+                        >
+                            <span className="relative z-10 flex items-center gap-2">
+                                {ctaText}
+                                <svg
+                                    className={`w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5 ${currentLang === 'ar' ? 'rotate-180 group-hover:-translate-x-1.5' : ''}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </span>
 
-                        {/* Shine Effect */}
-                        <div
-                            className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-0 pointer-events-none"
-                        />
-                    </Link>
+                            {/* Shine Effect */}
+                            <div
+                                className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent z-0 pointer-events-none"
+                            />
+                        </Link>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Navigation Arrows - Desktop Only */}
             {banners.length >= 1 && (

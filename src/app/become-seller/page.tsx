@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import dynamic from 'next/dynamic';
+
+// Leaflet map — no API key needed, no SSR
+const LeafletAddressPicker = dynamic(
+    () => import('@/components/LeafletAddressPicker'),
+    { ssr: false, loading: () => <div className="w-full h-[300px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400 text-sm">Chargement de la carte...</div> }
+);
 
 export default function BecomeSellerPage() {
     const [step, setStep] = useState(1);
@@ -22,15 +28,9 @@ export default function BecomeSellerPage() {
     const [hasPhysicalStore, setHasPhysicalStore] = useState(true);
     const [latitude, setLatitude] = useState('');
     const [longitude, setLongitude] = useState('');
-    const [mapCenter, setMapCenter] = useState({ lat: 35.6969, lng: -0.6331 }); // Oran center
 
     // Wilayas disponibles (pour le moment uniquement Oran)
     const wilayas = ['Oran'];
-
-    // Google Maps
-    const { isLoaded } = useLoadScript({
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
-    });
 
     useEffect(() => {
         // Fetch user from server-side auth instead of localStorage
@@ -298,42 +298,27 @@ export default function BecomeSellerPage() {
                                 </label>
                             </div>
 
-                            {/* Google Maps Location Picker */}
+                            {/* Leaflet Map Location Picker */}
                             {hasPhysicalStore && (
                                 <div className="space-y-3">
                                     <label className="block text-sm font-medium text-gray-700">
                                         📍 Localisation sur la carte (optionnel)
                                     </label>
-                                    <div className="bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
-                                        {isLoaded ? (
-                                            <div className="space-y-3">
-                                                <GoogleMap
-                                                    mapContainerStyle={{ width: '100%', height: '300px', borderRadius: '12px' }}
-                                                    center={latitude && longitude ? { lat: parseFloat(latitude), lng: parseFloat(longitude) } : mapCenter}
-                                                    zoom={14}
-                                                    onClick={(e) => {
-                                                        if (e.latLng) {
-                                                            setLatitude(e.latLng.lat().toString());
-                                                            setLongitude(e.latLng.lng().toString());
-                                                        }
-                                                    }}
-                                                >
-                                                    {latitude && longitude && (
-                                                        <Marker position={{ lat: parseFloat(latitude), lng: parseFloat(longitude) }} />
-                                                    )}
-                                                </GoogleMap>
-                                                <p className="text-xs text-gray-500">
-                                                    {latitude && longitude
-                                                        ? `📌 Position sélectionnée : ${parseFloat(latitude).toFixed(4)}, ${parseFloat(longitude).toFixed(4)}`
-                                                        : 'Cliquez sur la carte pour épingler votre boutique'}
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="h-[300px] flex items-center justify-center bg-gray-100 rounded-xl">
-                                                <p className="text-gray-500">Chargement de la carte...</p>
-                                            </div>
-                                        )}
+                                    <div className="rounded-xl overflow-hidden border-2 border-gray-200">
+                                        <LeafletAddressPicker
+                                            initialLat={latitude ? parseFloat(latitude) : undefined}
+                                            initialLng={longitude ? parseFloat(longitude) : undefined}
+                                            onLocationSelect={(loc) => {
+                                                setLatitude(loc.coordinates.lat.toString());
+                                                setLongitude(loc.coordinates.lng.toString());
+                                            }}
+                                        />
                                     </div>
+                                    {latitude && longitude && (
+                                        <p className="text-xs text-green-600 font-medium">
+                                            ✅ Position sélectionnée : {parseFloat(latitude).toFixed(4)}, {parseFloat(longitude).toFixed(4)}
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>

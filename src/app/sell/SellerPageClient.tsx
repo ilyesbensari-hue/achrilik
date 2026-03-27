@@ -3,7 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useTranslation } from '@/hooks/useTranslation';
+
+// Dynamically import LeafletAddressPicker to avoid SSR issues with Leaflet
+const LeafletAddressPicker = dynamic(
+    () => import('@/components/LeafletAddressPicker'),
+    { ssr: false, loading: () => <div className="w-full h-[400px] bg-gray-100 rounded-xl animate-pulse flex items-center justify-center text-gray-400">Chargement de la carte...</div> }
+);
 
 interface Product {
     id: string;
@@ -94,22 +101,6 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
         }
     };
 
-    const handleGetLocation = () => {
-        if (!navigator.geolocation) {
-            setLocationError(tr('sell_geoloc_unsupported'));
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                setLatitude(position.coords.latitude.toString());
-                setLongitude(position.coords.longitude.toString());
-                setLocationError('');
-            },
-            (error) => {
-                setLocationError(tr('sell_geoloc_error') + error.message);
-            }
-        );
-    };
 
     const handleCreateOrUpdateStore = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -232,25 +223,24 @@ export default function SellerPageClient({ initialUser }: SellerPageClientProps)
                                     <input className="input" required={hasPhysicalStore} value={storeAddress} onChange={e => setStoreAddress(e.target.value)} placeholder="Ex: 12 Rue Larbi Ben M'hidi" />
                                 </div>
 
-                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <label className="block text-sm font-medium mb-2">{tr('sell_location_label')}</label>
-                                    <div className="flex gap-2 mb-2">
-                                        <button type="button" onClick={handleGetLocation} className="btn btn-sm bg-white border border-gray-300 hover:bg-gray-100 flex items-center gap-1">
-                                            📍 {tr('sell_my_location')}
-                                        </button>
-                                        {locationError && <span className="text-red-500 text-xs flex items-center">{locationError}</span>}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-xs text-gray-500">{tr('sell_latitude')}</label>
-                                            <input type="number" step="any" className="input text-sm" value={latitude} onChange={e => setLatitude(e.target.value)} placeholder="35.69..." />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs text-gray-500">{tr('sell_longitude')}</label>
-                                            <input type="number" step="any" className="input text-sm" value={longitude} onChange={e => setLongitude(e.target.value)} placeholder="-0.63..." />
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-gray-400 mt-1">{tr('sell_location_hint')}</p>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium">{tr('sell_location_label')}</label>
+                                    <p className="text-xs text-gray-500">Déplacez le marqueur sur la carte pour indiquer l&apos;emplacement exact de votre boutique.</p>
+                                    <LeafletAddressPicker
+                                        initialLat={latitude ? parseFloat(latitude) : undefined}
+                                        initialLng={longitude ? parseFloat(longitude) : undefined}
+                                        onLocationSelect={(loc) => {
+                                            setLatitude(loc.coordinates.lat.toString());
+                                            setLongitude(loc.coordinates.lng.toString());
+                                            setLocationError('');
+                                        }}
+                                    />
+                                    {(latitude && longitude) && (
+                                        <p className="text-xs text-green-600 font-medium">
+                                            ✅ Position sélectionnée : {parseFloat(latitude).toFixed(5)}, {parseFloat(longitude).toFixed(5)}
+                                        </p>
+                                    )}
+                                    {locationError && <p className="text-xs text-red-500">{locationError}</p>}
                                 </div>
                             </div>
                         )}
