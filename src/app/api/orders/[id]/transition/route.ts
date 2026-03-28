@@ -3,6 +3,7 @@ import { hasRole, hasAnyRole } from "@/lib/role-helpers";
 import { verifyToken } from '@/lib/auth-token';
 import { prisma } from '@/lib/prisma';
 import { getDeliveryFeeForStoreAndWilaya } from '@/lib/deliveryFeeCalculator';
+import { sendReviewRequestEmail } from '@/lib/email';
 
 // Define OrderStatus type inline to avoid Prisma import issues
 type OrderStatus =
@@ -311,8 +312,31 @@ export async function POST(
                 }
             } catch (commissionErr) {
                 console.error('[COMMISSION CALCULATION ERROR]', commissionErr);
-                // Non-blocking error - order status still updated
             }
+        }
+
+        // =========================================
+        // SEND REVIEW REQUEST EMAIL ON DELIVERED
+        // =========================================
+        if (newStatus === 'DELIVERED' && updatedOrder.User?.email) {
+            const items = updatedOrder.OrderItem?.map(item => ({
+                title: item.Variant?.Product?.title || 'Produit',
+                image: (() => {
+                    const imgs = item.Variant?.Product?.images as any;
+                    if (!imgs) return undefined;
+                    const str = Array.isArray(imgs) ? imgs[0] : imgs.toString().split(',')[0];
+                    return str || undefined;
+                })(),
+                productId: item.Variant?.Product?.id || '',
+            })) || [];
+
+            // Fire-and-forget — non-blocking
+            sendReviewRequestEmail({
+                to: updatedOrder.User.email,
+                userName: updatedOrder.User.name || '',
+                orderId: orderId,
+                orderItems: items,
+            }).catch(err => console.error('[REVIEW EMAIL ERROR]', err));
         }
 
         return NextResponse.json({

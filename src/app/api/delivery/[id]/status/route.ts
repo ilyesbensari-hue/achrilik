@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth-token';
+import { sendReviewRequestEmail } from '@/lib/email';
 
 /**
  * PATCH /api/delivery/[id]/status
@@ -69,14 +70,43 @@ export async function PUT(
             }
         });
 
-        // If delivered, also update order status
+        // If delivered, also update order status and send review email
         if (status === 'DELIVERED' && delivery.order) {
-            await prisma.order.update({
+            const updatedOrder = await prisma.order.update({
                 where: { id: delivery.orderId },
-                data: {
-                    status: 'DELIVERED'
+                data: { status: 'DELIVERED' },
+                include: {
+                    User: { select: { name: true, email: true } },
+                    OrderItem: {
+                        include: {
+                            Variant: {
+                                include: { Product: { select: { id: true, title: true, images: true } } }
+                            }
+                        }
+                    }
                 }
             });
+
+            // Fire-and-forget review email
+            if (updatedOrder.User?.email) {
+                const items = updatedOrder.OrderItem?.map(item => ({
+                    title: item.Variant?.Product?.title || 'Produit',
+                    image: (() => {
+                        const imgs = item.Variant?.Product?.images as any;
+                        if (!imgs) return undefined;
+                        const s = Array.isArray(imgs) ? imgs[0] : imgs.toString().split(',')[0];
+                        return s || undefined;
+                    })(),
+                    productId: item.Variant?.Product?.id || '',
+                })) || [];
+
+                sendReviewRequestEmail({
+                    to: updatedOrder.User.email,
+                    userName: updatedOrder.User.name || '',
+                    orderId: delivery.orderId,
+                    orderItems: items,
+                }).catch(err => console.error('[REVIEW EMAIL ERROR]', err));
+            }
         }
 
         return NextResponse.json({
