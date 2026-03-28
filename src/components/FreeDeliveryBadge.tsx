@@ -1,5 +1,8 @@
+'use client';
+
 import { Truck, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FreeDeliveryBadgeProps {
     threshold?: number | null;
@@ -18,6 +21,8 @@ export default function FreeDeliveryBadge({
     storeName,
     storeId
 }: FreeDeliveryBadgeProps) {
+    const { tr, lang } = useTranslation();
+
     // Card variant (homepage, categories, search)
     if (variant === 'card') {
         const sizeClasses = {
@@ -32,8 +37,8 @@ export default function FreeDeliveryBadge({
                 <Truck className={`h-${iconSize} w-${iconSize} text-[#00753D]`} strokeWidth={2.5} />
                 <span>
                     {threshold && threshold > 0
-                        ? `Gratuit dès ${threshold.toLocaleString('fr-DZ')} DA`
-                        : 'Livraison Gratuite'
+                        ? `${lang === 'ar' ? 'مجاني من' : 'Gratuit dès'} ${threshold.toLocaleString('fr-DZ')} DA`
+                        : lang === 'ar' ? 'توصيل مجاني' : 'Livraison Gratuite'
                     }
                 </span>
             </div>
@@ -57,19 +62,19 @@ export default function FreeDeliveryBadge({
                         </div>
                         <div className="flex-1">
                             <h3 className="text-xl font-bold text-green-700 mb-1 flex items-center gap-2">
-                                ✅ LIVRAISON GRATUITE
+                                {tr('free_delivery_badge_title')}
                             </h3>
                             <p className="text-base font-semibold text-green-600 mb-2">
-                                🎉 Félicitations ! Vous avez la livraison offerte avec ce produit !
+                                {tr('free_delivery_badge_congrats')}
                             </p>
                             {thresholdAmount > 0 && (
                                 <p className="text-sm text-gray-700 bg-white/60 inline-block px-3 py-1.5 rounded-full">
-                                    ✓ Livraison gratuite à partir de <span className="font-bold">{thresholdAmount.toLocaleString('fr-DZ')} DA</span>
+                                    ✓ {tr('free_delivery_badge_from')} <span className="font-bold">{thresholdAmount.toLocaleString('fr-DZ')} DA</span>
                                 </p>
                             )}
                             {storeName && (
                                 <p className="text-xs text-gray-600 mt-2">
-                                    Boutique : <span className="font-semibold">{storeName}</span>
+                                    {tr('free_delivery_badge_store')} <span className="font-semibold">{storeName}</span>
                                 </p>
                             )}
                         </div>
@@ -87,11 +92,11 @@ export default function FreeDeliveryBadge({
                     </div>
                     <div className="flex-1">
                         <h3 className="text-lg font-bold text-orange-700 mb-1">
-                            🚚 Livraison GRATUITE possible
+                            {tr('free_delivery_badge_possible')}
                         </h3>
                         <p className="text-sm text-orange-600 mb-3">
-                            <strong>📦 Ajoutez seulement {missing.toLocaleString('fr-DZ')} DA</strong>
-                            {storeName && ` d'autres produits de ${storeName}`}
+                            <strong>{tr('free_delivery_badge_add_more')} {missing.toLocaleString('fr-DZ')} DA</strong>
+                            {storeName && ` ${tr('free_delivery_badge_other_products')} ${storeName}`}
                         </p>
 
                         {/* Progress bar */}
@@ -116,7 +121,7 @@ export default function FreeDeliveryBadge({
                                 className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-md hover:shadow-lg"
                             >
                                 <ShoppingBag className="h-4 w-4" />
-                                Voir boutique {storeName}
+                                {tr('free_delivery_badge_view_store')} {storeName}
                             </Link>
                         )}
                     </div>

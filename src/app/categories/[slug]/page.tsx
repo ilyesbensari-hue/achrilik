@@ -6,12 +6,13 @@ import Link from 'next/link';
 import ProductGrid from '@/components/ProductGrid';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { useTranslation } from '@/hooks/useTranslation';
+import { CATEGORY_AR_NAMES } from '@/app/categories/page';
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { tr } = useTranslation();
+    const { tr, lang } = useTranslation();
 
     const [products, setProducts] = useState<any[]>([]);
     const [category, setCategory] = useState<any>(null);
@@ -304,7 +305,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
                     <div className="mt-4 flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
+                            <h1 className="text-3xl font-bold text-gray-900">
+                                {lang === 'ar'
+                                    ? (CATEGORY_AR_NAMES[category.slug] || category.name)
+                                    : category.name
+                                }
+                            </h1>
                             <p className="text-sm text-gray-500 mt-1">
                                 {filteredProducts.length} {tr('cat_page_results')}
                             </p>
@@ -502,10 +508,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2">
                                                             {[
-                                                                { label: '- de 2 000 DA', range: [0, 2000] },
-                                                                { label: '2 000 – 5 000 DA', range: [2000, 5000] },
-                                                                { label: '5 000 – 10 000 DA', range: [5000, 10000] },
-                                                                { label: '+ de 10 000 DA', range: [10000, 50000] },
+                                                                { label: tr('price_below_2000'), range: [0, 2000] },
+                                                                { label: tr('price_2000_5000'), range: [2000, 5000] },
+                                                                { label: tr('price_5000_10000'), range: [5000, 10000] },
+                                                                { label: tr('price_above_10000'), range: [10000, 50000] },
                                                             ].map((option, idx) => (
                                                                 <button
                                                                     key={idx}
@@ -530,7 +536,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                         onClick={() => setExpandedSection(expandedSection === 'color' ? null : 'color')}
                                                         className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                                                     >
-                                                        <span className="font-semibold text-gray-900">Couleur</span>
+                                                        <span className="font-semibold text-gray-900">{tr('cat_page_color')}</span>
                                                         <svg className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'color' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                                         </svg>

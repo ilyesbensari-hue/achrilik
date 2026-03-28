@@ -15,7 +15,7 @@ interface Category {
 }
 
 // Arabic names mapped by slug (for DB categories)
-const CATEGORY_AR_NAMES: Record<string, string> = {
+export const CATEGORY_AR_NAMES: Record<string, string> = {
     // === Top-level categories ===
     femmes: 'ملابس المرأة',
     hommes: 'ملابس الرجل',

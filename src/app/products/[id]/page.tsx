@@ -7,6 +7,28 @@ import ProductPageClient from './ProductPageClient';
 import FreeDeliveryBadge from '@/components/FreeDeliveryBadge';
 import { prisma } from '@/lib/prisma'; // Direct DB access for efficiency
 import { getSizeConfig } from '@/lib/variantHelpers';
+import { cookies } from 'next/headers';
+import { translations } from '@/lib/translations';
+import type { Lang } from '@/lib/translations';
+
+// Helper to get lang from cookies (server component)
+async function getServerLang(): Promise<Lang> {
+    const cookieStore = await cookies();
+    const lang = cookieStore.get('achrilik_lang')?.value as Lang | undefined;
+    return lang === 'ar' ? 'ar' : 'fr';
+}
+
+const CATEGORY_AR_NAMES: Record<string, string> = {
+    femmes: 'ملابس المرأة', hommes: 'ملابس الرجل', enfants: 'ملابس الأطفال',
+    accessoires: 'إكسسوارات', maroquinerie: 'الجلديات', electronique: 'الإلكترونيات', chaussures: 'أحذية',
+    'robes-femme': 'فساتين', 'tops-femme': 'توبات', 'pantalons-femme': 'بناطيل', 'jupes-femme': 'تنانير',
+    'vestes-manteaux-femme': 'جاكيتات ومعاطف', 'lingerie-femme': 'لانجري', 'sport-femme': 'ملابس رياضية نسائية',
+    bebe: 'ملابس الرضع', garcon: 'ملابس الأولاد', fille: 'ملابس البنات',
+    bijoux: 'مجوهرات', montres: 'ساعات', lunettes: 'نظارات', ceintures: 'أحزمة',
+    sacs: 'حقائب', 'sacs-main': 'حقائب يد', 'sacs-dos': 'حقائب ظهر', portefeuilles: 'محافظ',
+    't-shirts-homme': 'تيشيرتات رجالية', 'chemises-homme': 'قمصان رجالية', 'pantalons-homme': 'بناطيل رجالية',
+    'chaussures-hommes': 'أحذية رجالية', 'chaussures-femmes': 'أحذية نسائية', 'chaussures-enfants': 'أحذية الأطفال',
+};
 
 // Enable ISR with 5 minute revalidation
 export const revalidate = 300;
@@ -157,6 +179,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         notFound();
     }
 
+    const lang = await getServerLang();
+    const t = translations[lang];
+
     const { similar, complementary } = await getRecommendations(product);
 
     // Filter variants sizes based on actual category configuration
@@ -181,11 +206,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     const images = product.images ? product.images.split(',') : [];
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-gray-50 py-12" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
             <div className="container">
                 {/* Breadcrumb with full hierarchy */}
                 <nav className="mb-8 flex items-center gap-2 text-sm text-gray-600 flex-wrap">
-                    <Link href="/" className="hover:text-indigo-600">Accueil</Link>
+                    <Link href="/" className="hover:text-indigo-600">{lang === 'ar' ? 'الرئيسية' : 'Accueil'}</Link>
                     {product.breadcrumbs && product.breadcrumbs.map((crumb: any, idx: number) => (
                         <Fragment key={idx}>
                             <span>/</span>
@@ -222,7 +247,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                     <div className="flex items-center gap-2">
                                         <p className="font-semibold text-gray-900 hover:text-indigo-600 underline decoration-dotted">{product.Store.name}</p>
                                     </div>
-                                    <p className="text-gray-500">📍 {product.Store.city} <span className="text-xs text-indigo-500">(Voir la boutique)</span></p>
+                                    <p className="text-gray-500">📍 {product.Store.city} <span className="text-xs text-indigo-500">({t.product_view_store})</span></p>
                                 </div>
                             </Link>
                         </div>
@@ -231,7 +256,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                         {product.Store.storageCity && product.Store.storageCity !== 'Oran' && (
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg border border-amber-200 text-xs font-medium">
                                 <span>📦</span>
-                                <span>Stocké à {product.Store.storageCity}</span>
+                                <span>{t.product_stored_in} {product.Store.storageCity}</span>
                             </div>
                         )}
 
@@ -287,8 +312,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="font-black text-lg leading-tight">🛡️ Garantie vendeur : {product.warranty}</p>
-                                    <p className="text-white/80 text-sm mt-0.5">Ce produit est couvert par la garantie du vendeur. En cas de problème, contactez la boutique.</p>
+                                    <p className="font-black text-lg leading-tight">🛡️ {t.product_warranty_seller} : {product.warranty}</p>
+                                    <p className="text-white/80 text-sm mt-0.5">{t.product_warranty_text}</p>
                                 </div>
                             </div>
                         )}
@@ -297,30 +322,30 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                         {/* Product Specifications Table */}
                         <div className="border border-gray-100 rounded-xl overflow-hidden">
                             <h3 className="bg-gray-50 px-4 py-3 font-semibold text-gray-900 border-b border-gray-100 flex items-center gap-2">
-                                <span>📋</span> Caractéristiques
+                                <span>📋</span> {t.product_characteristics}
                             </h3>
                             <div className="divide-y divide-gray-50 text-sm">
                                 {product.material && (
                                     <div className="grid grid-cols-3 px-4 py-3">
-                                        <span className="text-gray-500">Matière</span>
+                                        <span className="text-gray-500">{lang === 'ar' ? 'القماش' : 'Matière'}</span>
                                         <span className="col-span-2 font-medium text-gray-900">{product.material}</span>
                                     </div>
                                 )}
                                 {product.fit && (
                                     <div className="grid grid-cols-3 px-4 py-3 bg-white">
-                                        <span className="text-gray-500">Coupe</span>
+                                        <span className="text-gray-500">{lang === 'ar' ? 'القصة' : 'Coupe'}</span>
                                         <span className="col-span-2 font-medium text-gray-900">{product.fit}</span>
                                     </div>
                                 )}
                                 {product.dimensions && (
                                     <div className="grid grid-cols-3 px-4 py-3">
-                                        <span className="text-gray-500">Dimensions</span>
+                                        <span className="text-gray-500">{lang === 'ar' ? 'الأبعاد' : 'Dimensions'}</span>
                                         <span className="col-span-2 font-medium text-gray-900">{product.dimensions}</span>
                                     </div>
                                 )}
                                 {/* Status default fallback */}
                                 {(!product.material && !product.fit && !product.dimensions) && (
-                                    <div className="px-4 py-3 text-gray-400 italic">Aucune caractéristique spécifique renseignée.</div>
+                                    <div className="px-4 py-3 text-gray-400 italic">{lang === 'ar' ? 'لا توجد مواصفات محددة.' : 'Aucune caractéristique spécifique renseignée.'}</div>
                                 )}
                             </div>
                         </div>
@@ -340,7 +365,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
                         {/* Description */}
                         <div>
-                            <h3 className="font-semibold text-gray-900 mb-2">Description détaillée</h3>
+                            <h3 className="font-semibold text-gray-900 mb-2">{t.product_description_detail}</h3>
                             <div className="prose prose-sm text-gray-600">
                                 <p>{product.description}</p>
                             </div>
@@ -354,8 +379,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     {complementary.length > 0 && (
                         <section>
                             <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                                👔 Complétez votre look
-                                <span className="text-sm font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">Suggestions</span>
+                                👔 {lang === 'ar' ? 'أكمل إطلالتك' : 'Complétez votre look'}
+                                <span className="text-sm font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">{lang === 'ar' ? 'اقتراحات' : 'Suggestions'}</span>
                             </h2>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                                 {complementary.map((item: any) => (
@@ -384,8 +409,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                     {similar.length > 0 && (
                         <section>
                             <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                                ✨ Vous aimerez aussi
-                                <span className="text-sm font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">Similaires</span>
+                                ✨ {lang === 'ar' ? 'قد تحب أيضاً' : 'Vous aimerez aussi'}
+                                <span className="text-sm font-normal text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">{lang === 'ar' ? 'مشابهة' : 'Similaires'}</span>
                             </h2>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                                 {similar.map((item: any) => (
