@@ -152,6 +152,25 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                 </h2>
             </div>
 
+            {/* --- Contextual call-to-action ABOVE the form --- */}
+            {!user && (
+                <div className="mb-6 flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4">
+                    <span className="text-xl">🔐</span>
+                    <p className="text-sm text-blue-800">
+                        <a href="/login" className="font-bold underline underline-offset-2">Connectez-vous</a>
+                        {' '}pour laisser un avis sur ce produit.
+                    </p>
+                </div>
+            )}
+            {user && !canReview && !hasAlreadyReviewed && (
+                <div className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-2xl px-5 py-4">
+                    <span className="text-xl">🛍️</span>
+                    <p className="text-sm text-amber-800">
+                        <strong>Achat requis.</strong> Vous devez avoir commandé et reçu ce produit pour laisser un avis.
+                    </p>
+                </div>
+            )}
+
             {/* Review Form — only for verified buyers */}
             {canReview && !hasAlreadyReviewed && !submitSuccess && (
                 <div className="mb-8 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-6">
@@ -212,8 +231,17 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             {reviews.length === 0 ? (
                 <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-2xl">
                     <p className="text-4xl mb-3">💬</p>
-                    <p className="font-medium">Aucun avis pour le moment.</p>
-                    <p className="text-sm mt-1">Soyez le premier à partager votre expérience !</p>
+                    <p className="font-medium text-gray-600">Aucun avis pour le moment.</p>
+                    {!user ? (
+                        <p className="text-sm mt-2 text-gray-500">
+                            <a href="/login" className="text-[#006233] font-semibold underline underline-offset-2">Connectez-vous</a>
+                            {' '}et commandez pour partager votre avis.
+                        </p>
+                    ) : !canReview && !hasAlreadyReviewed ? (
+                        <p className="text-sm mt-2 text-gray-500">
+                            Achetez ce produit pour laisser un avis.
+                        </p>
+                    ) : null}
                 </div>
             ) : (
                 <div className="space-y-4">

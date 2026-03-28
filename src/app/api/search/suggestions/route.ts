@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
                 { name: 'Category.name', weight: 0.1 },
                 { name: 'Store.name', weight: 0.05 },
             ],
-            threshold: 0.45,
+            threshold: 0.35,
             distance: 200,
             minMatchCharLength: 2,
             ignoreLocation: true, // match anywhere in the string
