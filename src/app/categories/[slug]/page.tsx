@@ -26,6 +26,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     const [expandedSection, setExpandedSection] = useState<string | null>('categories');
     const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
     const [selectedColors, setSelectedColors] = useState<string[]>([]);
+    const [selectedStores, setSelectedStores] = useState<string[]>([]);
     const [filtersInitialized, setFiltersInitialized] = useState(false);
 
     // Helper: Detect if this is a shoe category
@@ -173,6 +174,15 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
         return a.localeCompare(b);
     });
 
+    // Get unique stores from products
+    const availableStores = Array.from(
+        new Map(
+            products
+                .filter(p => p.Store?.id || p.store?.id)
+                .map(p => [(p.Store?.id || p.store?.id), (p.Store?.name || p.store?.name)])
+        ).entries()
+    ).map(([id, name]) => ({ id: id as string, name: name as string })).sort((a, b) => a.name.localeCompare(b.name));
+
     // Get unique colors from product variants
     const availableColors = Array.from(
         new Set(
@@ -234,6 +244,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 const productColors = p.Variant?.map((v: any) => v.color).filter(Boolean) || [];
                 const hasSelectedColor = selectedColors.some(color => productColors.includes(color));
                 if (!hasSelectedColor) return false;
+            }
+
+            // Store filter
+            if (selectedStores.length > 0) {
+                const storeId = p.Store?.id || p.store?.id;
+                if (!storeId || !selectedStores.includes(storeId)) return false;
             }
 
             return true;
@@ -571,6 +587,49 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                                                     );
                                                                 })}
                                                             </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* === Boutique === */}
+                                            {availableStores.length > 1 && (
+                                                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                                    <button
+                                                        onClick={() => setExpandedSection(expandedSection === 'store' ? null : 'store')}
+                                                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        <span className="font-semibold text-gray-900">
+                                                            {lang === 'ar' ? 'البائع' : 'Boutique'}
+                                                        </span>
+                                                        <svg className={`w-5 h-5 text-gray-500 transition-transform ${expandedSection === 'store' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </button>
+                                                    {expandedSection === 'store' && (
+                                                        <div className="p-4 space-y-2 max-h-60 overflow-y-auto">
+                                                            {availableStores.map((store) => {
+                                                                const isSelected = selectedStores.includes(store.id);
+                                                                return (
+                                                                    <label key={store.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={isSelected}
+                                                                            onChange={() => {
+                                                                                if (isSelected) {
+                                                                                    setSelectedStores(selectedStores.filter(s => s !== store.id));
+                                                                                } else {
+                                                                                    setSelectedStores([...selectedStores, store.id]);
+                                                                                }
+                                                                            }}
+                                                                            className="w-4 h-4 text-[#006233] focus:ring-[#006233] rounded"
+                                                                        />
+                                                                        <span className={`text-sm flex-1 ${isSelected ? 'font-medium text-[#006233]' : 'text-gray-700'}`}>
+                                                                            {store.name}
+                                                                        </span>
+                                                                    </label>
+                                                                );
+                                                            })}
                                                         </div>
                                                     )}
                                                 </div>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import DeliveryTracking from '@/components/DeliveryTracking';
+import OrderTimeline from '@/components/OrderTimeline';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface Order {
@@ -61,6 +62,10 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
             }
         };
         fetchOrder();
+
+        // Poll every 30s for live status updates
+        const interval = setInterval(fetchOrder, 30000);
+        return () => clearInterval(interval);
     }, [id, router]);
 
     if (loading) return <div className="p-10 text-center">{tr('loading_text')}</div>;
@@ -141,6 +146,11 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                         </div>
                     </div>
 
+                    <OrderTimeline
+                        status={order.status}
+                        createdAt={order.createdAt}
+                        updatedAt={order.createdAt}
+                    />
                     <DeliveryTracking order={order} />
                 </div>
 

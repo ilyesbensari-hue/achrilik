@@ -7,6 +7,7 @@ import { showToast } from '@/lib/toast';
 import Image from 'next/image';
 import { getSizeConfig } from '@/lib/variantHelpers';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 
 interface ProductPageClientProps {
     product: any;
@@ -18,6 +19,13 @@ interface ProductPageClientProps {
 export default function ProductPageClient({ product, sizes: sizesProps, colors: colorsProps, images: imagesProps }: ProductPageClientProps) {
     const router = useRouter();
     const { tr } = useTranslation();
+    const { addProduct } = useRecentlyViewed();
+
+    // Track recently viewed on mount
+    useEffect(() => {
+        if (product?.id) addProduct(product.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [product?.id]);
 
     // Safe defaults to prevent crashes if props are null/undefined
     const images = imagesProps || [];

@@ -24,6 +24,10 @@ const ClothingProductSections = dynamicImport(() => import('@/components/home/Cl
 
 const BottomNav = dynamicImport(() => import('@/components/home/BottomNav'));
 
+// RecentlyViewed is rendered via a client-side wrapper (see RecentlyViewedWrapper)
+import RecentlyViewedWrapper from '@/components/home/RecentlyViewedWrapper';
+
+
 export const metadata = {
   title: 'Achrilik - Mode & Tendance Algérie | Vêtements en Ligne',
   description: 'Achrilik – Mode, maroquinerie et électronique en Algérie. Large choix de vêtements, sacs et accessoires. Livraison dans les 58 wilayas, paiement à la livraison.',
@@ -489,7 +493,8 @@ export default async function Home({
           />
         )}
 
-        {/* 10. Trust & Legal Section */}
+        {/* 10. Recently Viewed — client only, no SSR */}
+        <RecentlyViewedWrapper />
 
         {/* 11. Bottom Navigation - Mobile Only */}
         <div className="md:hidden">

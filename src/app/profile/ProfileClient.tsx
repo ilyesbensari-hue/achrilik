@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from '@/hooks/useTranslation';
+import LoyaltyBadge from '@/components/LoyaltyBadge';
 
 interface Order {
     id: string;
@@ -114,6 +115,11 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
     if (loading) return <div className="p-10 text-center">{tr('loading')}</div>;
     if (!user) return null;
 
+    // Compute loyalty points from DELIVERED orders
+    const totalSpent = orders
+        .filter(o => o.status === 'DELIVERED')
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+
     return (
         <div className="container py-10">
             <h1 className="text-3xl font-bold mb-8">{tr('profile_title')}</h1>
@@ -141,6 +147,13 @@ export default function ProfileClient({ initialUser }: ProfileClientProps) {
                                     <span className="mt-2 text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full inline-block">
                                         {user.role === 'SELLER' ? tr('nav_myshop') : tr('nav_profile')}
                                     </span>
+
+                                    {/* Loyalty Badge */}
+                                    {user.role === 'BUYER' && (
+                                        <div className="mt-4 w-full">
+                                            <LoyaltyBadge totalSpent={totalSpent} compact />
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <form onSubmit={handleUpdateProfile} className="w-full space-y-3">
