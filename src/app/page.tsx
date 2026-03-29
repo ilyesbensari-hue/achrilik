@@ -31,6 +31,14 @@ import RecentlyViewedWrapper from '@/components/home/RecentlyViewedWrapper';
 export const metadata = {
   title: 'Achrilik - Mode & Tendance Algérie | Vêtements en Ligne',
   description: 'Achrilik – Mode, maroquinerie et électronique en Algérie. Large choix de vêtements, sacs et accessoires. Livraison dans les 58 wilayas, paiement à la livraison.',
+  // ✅ BUG-02 FIX: Explicit canonical for homepage
+  alternates: {
+    canonical: 'https://achrilik.com',
+    languages: {
+      'fr': 'https://achrilik.com',
+      'ar': 'https://achrilik.com/?lang=ar',
+    },
+  },
 };
 
 // Force dynamic rendering to enable searchParams filtering

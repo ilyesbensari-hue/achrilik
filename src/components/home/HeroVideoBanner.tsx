@@ -172,6 +172,10 @@ export default function HeroVideoBanner() {
             className="relative w-full mx-3 mt-4 mb-6 max-w-md md:max-w-7xl md:mx-auto overflow-hidden rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] ring-1 ring-black/5 h-[400px] md:h-[500px] lg:h-[600px] transform-gpu"
             dir={currentLang === 'ar' ? 'rtl' : 'ltr'}
         >
+            {/* ✅ PROB-01 FIX: Always present primary H1 for SEO, visually hidden when banner shows its own title */}
+            {isLogoOnly && (
+                <h1 className="sr-only">Mode &amp; Tendance Algérie</h1>
+            )}
             {/* Background Video or Image */}
             {banner.video_url ? (
                 <video
@@ -224,6 +228,7 @@ export default function HeroVideoBanner() {
         `}
                 >
                     <div className="max-w-2xl px-2">
+                        {/* ✅ PROB-01 FIX: Use H1 for the main banner title — it IS the primary H1 */}
                         <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-fade-in-up tracking-tight leading-tight">
                             {title}
                         </h1>

@@ -29,7 +29,8 @@ export default function RecentlyViewed() {
             <div className="container">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                        <span>🕐</span>
+                        {/* ✅ PROB-03 FIX: Emoji moved outside heading text for clean crawling */}
+                        <span aria-hidden="true">🕐</span>
                         {lang === 'ar' ? 'شاهدته مؤخراً' : 'Récemment consultés'}
                     </h2>
                 </div>

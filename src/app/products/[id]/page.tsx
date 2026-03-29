@@ -10,6 +10,7 @@ import { getSizeConfig } from '@/lib/variantHelpers';
 import { cookies } from 'next/headers';
 import { translations } from '@/lib/translations';
 import type { Lang } from '@/lib/translations';
+import JsonLd from '@/components/JsonLd';
 
 // Helper to get lang from cookies (server component)
 async function getServerLang(): Promise<Lang> {
@@ -143,22 +144,48 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         return { title: 'Produit introuvable | Achrilik' };
     }
 
-    const images = product.images ? product.images.split(',') : [];
-    const firstImage = images[0]?.trim() || 'https://achrilik.com/og-default.jpg';
+    // ✅ BUG-01 FIX: Safely parse images field (can be comma-string or JSON array)
+    let firstImageUrl = 'https://achrilik.com/og-image.jpg';
+    try {
+        const rawImages = product.images || '';
+        if (rawImages.startsWith('[')) {
+            // JSON array format
+            const parsed = JSON.parse(rawImages);
+            firstImageUrl = Array.isArray(parsed) && parsed[0] ? parsed[0] : firstImageUrl;
+        } else if (rawImages.includes(',')) {
+            // Comma-separated string
+            firstImageUrl = rawImages.split(',')[0].trim() || firstImageUrl;
+        } else if (rawImages.length > 0) {
+            firstImageUrl = rawImages.trim();
+        }
+        // Guarantee absolute URL — never serve localhost in production
+        if (firstImageUrl.startsWith('http://localhost') || firstImageUrl.startsWith('/[')) {
+            firstImageUrl = 'https://achrilik.com/og-image.jpg';
+        }
+    } catch {
+        firstImageUrl = 'https://achrilik.com/og-image.jpg';
+    }
+
     const price = product.discountPrice || product.price;
     const description = product.description
         ? product.description.substring(0, 155)
         : `${product.title} — ${price.toLocaleString('fr-DZ')} DA. Livraison depuis ${product.Store?.city || 'Algérie'}. Commandez sur Achrilik.`;
 
+    const canonicalUrl = `https://achrilik.com/products/${id}`;
+
     return {
         title: `${product.title} | Achrilik`,
         description,
+        // ✅ BUG-02 FIX: Canonical URL must point to this product, not the homepage
+        alternates: {
+            canonical: canonicalUrl,
+        },
         openGraph: {
             title: `${product.title} — ${price.toLocaleString('fr-DZ')} DA`,
             description,
-            url: `https://achrilik.com/products/${id}`,
+            url: canonicalUrl,
             siteName: 'Achrilik',
-            images: [{ url: firstImage, width: 800, height: 600, alt: product.title }],
+            images: [{ url: firstImageUrl, width: 800, height: 600, alt: product.title }],
             type: 'website',
             locale: 'fr_DZ',
         },
@@ -166,7 +193,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             card: 'summary_large_image',
             title: `${product.title} — ${price.toLocaleString('fr-DZ')} DA`,
             description,
-            images: [firstImage],
+            images: [firstImageUrl],
         },
     };
 }
@@ -207,6 +234,34 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     return (
         <div className="min-h-screen bg-gray-50 py-12" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+            {/* ✅ P2 FIX: Schema.org Product JSON-LD for Google rich snippets */}
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'Product',
+                name: product.title,
+                description: product.description || '',
+                image: images[0] || 'https://achrilik.com/og-image.jpg',
+                url: `https://achrilik.com/products/${product.id}`,
+                brand: {
+                    '@type': 'Brand',
+                    name: product.Store?.name || 'Achrilik',
+                },
+                offers: {
+                    '@type': 'Offer',
+                    price: String(product.discountPrice || product.price),
+                    priceCurrency: 'DZD',
+                    availability: 'https://schema.org/InStock',
+                    url: `https://achrilik.com/products/${product.id}`,
+                    seller: {
+                        '@type': 'Organization',
+                        name: product.Store?.name || 'Achrilik',
+                    },
+                },
+                // BreadcrumbList for SEO navigation
+                ...(product.breadcrumbs && product.breadcrumbs.length > 0 ? {
+                    '@id': `https://achrilik.com/products/${product.id}`,
+                } : {}),
+            }} />
             <div className="container">
                 {/* Breadcrumb with full hierarchy */}
                 <nav className="mb-8 flex items-center gap-2 text-sm text-gray-600 flex-wrap">

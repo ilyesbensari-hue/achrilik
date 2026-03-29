@@ -4,5 +4,16 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /profile
 Disallow: /checkout
+Disallow: /login
+Disallow: /register
+Disallow: /cart
+Disallow: /orders
+Disallow: /livreur/
+Disallow: /seller/
+Disallow: /account/
+Disallow: /order-confirmation
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /wishlist
 
 Sitemap: https://achrilik.com/sitemap.xml

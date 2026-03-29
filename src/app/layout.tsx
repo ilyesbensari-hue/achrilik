@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     siteName: "Achrilik",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "https://achrilik.com/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Achrilik - Mode & Tendance Algérie"
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Achrilik - Mode & Tendance Algérie",
     description: "Marketplace mode #1 en Algérie. Click & Collect, paiement à la livraison.",
-    images: ["/og-image.jpg"],
+    images: ["https://achrilik.com/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -61,8 +61,16 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  // ✅ BUG-02 FIX: Do NOT set a global canonical here.
+  // Each page defines its own canonical via generateMetadata or page-level metadata.
+  // The homepage canonical is defined in src/app/page.tsx.
+  // ✅ PROB-02 FIX: Declare global hreflang for fr/ar multilingual support
   alternates: {
-    canonical: "https://achrilik.com",
+    canonical: 'https://achrilik.com',
+    languages: {
+      'fr': 'https://achrilik.com',
+      'ar': 'https://achrilik.com/?lang=ar',
+    },
   },
   manifest: "/manifest.json",
   appleWebApp: {
