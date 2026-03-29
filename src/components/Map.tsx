@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -62,6 +62,7 @@ function LocationMarker({ stores, onSelect }: { stores: any[], onSelect: (store:
 export default function MapPicker({ stores, onSelectStore }: { stores: any[], onSelectStore: (store: any) => void }) {
     // Default center: Algiers
     const [position, setPosition] = useState<[number, number]>([36.75, 3.05]);
+    const mapWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         // Basic geolocation to center map
@@ -72,8 +73,29 @@ export default function MapPicker({ stores, onSelectStore }: { stores: any[], on
         }
     }, []);
 
+    // ✅ SEO FIX: Leaflet injects tile <img> elements without alt attribute.
+    // This MutationObserver watches for new images added by Leaflet and sets alt=""
+    // (empty alt = decorative image, correct for map tiles per WCAG/Google guidelines)
+    useEffect(() => {
+        const wrapper = mapWrapperRef.current;
+        if (!wrapper) return;
+
+        const patchImages = () => {
+            wrapper.querySelectorAll('img:not([alt])').forEach(img => {
+                img.setAttribute('alt', '');
+            });
+        };
+
+        // Patch immediately and on every DOM mutation (tiles loaded lazily)
+        patchImages();
+        const observer = new MutationObserver(patchImages);
+        observer.observe(wrapper, { childList: true, subtree: true, attributes: false });
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
-        <div className="h-[400px] w-full rounded-xl overflow-hidden shadow-inner border border-gray-200">
+        <div ref={mapWrapperRef} className="h-[400px] w-full rounded-xl overflow-hidden shadow-inner border border-gray-200">
             <MapContainer center={position} zoom={13} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

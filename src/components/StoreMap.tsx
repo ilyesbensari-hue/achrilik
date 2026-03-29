@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
@@ -51,6 +51,7 @@ export default function StoreMap({ showExact = false, selectedStoreId, onStoreSe
     const [stores, setStores] = useState<Store[]>(initialStores || []);
     const [loading, setLoading] = useState(!initialStores);
     const [isMounted, setIsMounted] = useState(false);
+    const mapWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
@@ -92,17 +93,38 @@ export default function StoreMap({ showExact = false, selectedStoreId, onStoreSe
 
     if (!isMounted) return <div className="w-full h-[500px] bg-gray-100 rounded-xl animate-pulse" />;
 
+    // ✅ SEO FIX: Patch Leaflet tile images with alt="" via MutationObserver
+    // Leaflet injects <img> tiles without alt — this watches and fixes them as they load
+
     const validStores = stores.filter(s => s.latitude && s.longitude);
     const center: [number, number] = [35.6976, -0.6338]; // Oran
 
+    const MapWithPatch = () => {
+        useEffect(() => {
+            const wrapper = mapWrapperRef.current;
+            if (!wrapper) return;
+            const patchImages = () => {
+                wrapper.querySelectorAll('img:not([alt])').forEach(img => {
+                    img.setAttribute('alt', '');
+                });
+            };
+            patchImages();
+            const observer = new MutationObserver(patchImages);
+            observer.observe(wrapper, { childList: true, subtree: true });
+            return () => observer.disconnect();
+        }, []);
+        return null;
+    };
+
     return (
-        <div className="w-full h-[500px] rounded-xl overflow-hidden shadow-lg border border-gray-200 z-0 relative">
+        <div ref={mapWrapperRef} className="w-full h-[500px] rounded-xl overflow-hidden shadow-lg border border-gray-200 z-0 relative">
             {loading ? (
                 <div className="w-full h-full flex items-center justify-center bg-gray-50">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#006233]"></div>
                 </div>
             ) : (
                 <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
+                    <MapWithPatch />
                     <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
